@@ -1,0 +1,13 @@
+{% extends "multiseek/base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+    {% for element in object_list %}
+        <li>{{ element }}</li>
+    {% empty %}
+        {% trans "No elements" %}
+    {% endfor %}
+
+
+{% endblock %}

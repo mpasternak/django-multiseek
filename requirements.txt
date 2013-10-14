@@ -1,0 +1,3 @@
+django
+django-autocomplete-light
+unidecode

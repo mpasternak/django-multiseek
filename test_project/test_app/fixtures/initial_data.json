@@ -1,0 +1,76 @@
+[
+    {
+        "pk": null,
+        "model": "test_app.language",
+        "fields": {
+            "name": "english",
+            "description": "English language"
+        }
+    },
+    {
+        "pk": null,
+        "model": "test_app.language",
+        "fields": {
+            "name": "polish",
+            "description": "Polish language"
+        }
+    },
+
+    {
+        "pk": null,
+        "model": "test_app.author",
+        "fields": {
+            "last_name": "Smith",
+            "first_name": "John"
+        }
+    },
+
+    {
+        "pk": null,
+        "model": "test_app.author",
+        "fields": {
+            "last_name": "Kovalsky",
+            "first_name": "Ian"
+        }
+    },
+
+    {
+        "pk": null,
+        "model": "test_app.book",
+        "fields": {
+            "title": "A book with a title",
+            "year": 2013,
+            "language": 1,
+            "no_editors": 5
+        }
+    },
+
+    {
+        "pk": null,
+        "model": "test_app.book",
+        "fields": {
+            "title": "Second book",
+            "year": 2000,
+            "language": 1,
+            "no_editors": 5
+        }
+    },
+
+    {
+        "pk": null,
+        "model": "test_app.book_authors",
+        "fields": {
+            "book": 1,
+            "author": 1
+        }
+    },
+
+    {
+        "pk": null,
+        "model": "test_app.book_authors",
+        "fields": {
+            "book": 2,
+            "author": 2
+        }
+    }
+]

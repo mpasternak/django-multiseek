@@ -1,0 +1,12 @@
+
+
+Bug?
+1) is the input json sanitized properly?
+
+Would be nice to have:
+2) nicer alerts for saving/loading forms OR be able to plug your own yes/no
+    modal dialogs
+
+Perhaps someday:
+3) embed multiseek in admin
+4) multiseek.create_registry could autodiscover fields basing on model

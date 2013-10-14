@@ -1,0 +1,2 @@
+include *.rst *.txt PLAN README LICENSE
+recursive-include multiseek *.html *.css *.js *.py *.po *.mo

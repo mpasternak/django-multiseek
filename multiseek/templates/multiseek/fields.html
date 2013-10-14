@@ -1,0 +1,115 @@
+{% load i18n %}
+
+    <!-- Here we go with field definitions, that will be cloned with jQuery
+    when building the form interactivley -->
+
+    <div style="display: none;">
+
+        <div id="frame-__no__" class="frame">
+
+            <div class="subframe">
+
+                <div id="fieldset">
+                </div>
+
+                <button id="add_field" onclick="addFieldViaButton(this);">
+                    {% trans "Add field" %}
+                </button>
+
+                <button id="add_frame" onclick="addFrameViaButton(this);">
+                    {% trans "Add frame" %}
+                </button>
+
+            </div>
+
+            <select id="next_operation" style="visibility: hidden;">
+                <option value="{{ js_and }}">{% trans "and" %}</option>
+                <option value="{{ js_or }}">{% trans "or" %}</option>
+            </select>
+
+            <div style="display: none;"><!-- Remove frame button --></div>
+
+        </div>
+
+
+        <field id="field-__no__" style="display: none;" class="field">
+
+            <select name="field">
+                <option value="1">field 1</option>
+                <option value="1">field 2</option>
+            </select>
+
+            <select name="operation" class="operations">
+                <option value="1">op 1</option>
+                <option value="1">op 2</option>
+            </select>
+
+            <input name="value">
+
+            <select name="next_operation" style="visibility: hidden;">
+                <option value="{{ js_and }}">{% trans "and" %}</option>
+                <option value="{{ js_or }}">{% trans "or" %}</option>
+            </select>
+
+            <input type="button" value="X" name="close_button"
+                   onclick="removeField(this);"/>
+
+        </field>
+
+
+        <span style="display: inline-block; clear: both;"
+              class="autocomplete-light-widget"
+              data-bootstrap="normal"
+              data-autocomplete-choice-selector="[data-value]"
+              data-max-values="1"
+              data-minimum-characters="0"
+              data-autocomplete-placeholder="wpisz, aby wyszukać..."
+              data-autocomplete-url="...">
+
+            <input type="text" id="autocomplete-__no__" />
+
+            <span class="deck">
+            </span>
+
+            <select style="display:none" class="value-select" name="autocomplete-__no__-value">
+            </select>
+
+            <span style="display:none" class="remove">
+                {% trans "Remove this choice" %}</span>
+
+            <span style="display:none" class="choice-template">
+                <span class="choice">
+                </span>
+            </span>
+        </span>
+
+    </div>
+
+    <script type="text/javascript">
+        /* ------------------------------------------------------------------ */
+        /* Data containing the description of the form, generated server-side
+        /* ------------------------------------------------------------------ */
+
+        var fields = {{ js_fields|safe }};
+        var ops = {{ js_ops|safe }};
+        var types = {{ js_types|safe }};
+        var value_lists = {{ js_value_lists|safe }};
+        var autocompletes = {{ js_autocompletes|safe }};
+        var last_field_remove_message = '{{ js_remove_message }}';
+
+        /* ------------------------------------------------------ */
+        /* After loading the document, we initialize first frame
+        /* ------------------------------------------------------ */
+        $(document).ready(function(){
+            {% if not js_init %}
+            addField($("#frame-0"), fields[0], ops[fields[0]][0], "");
+            {% else %}
+            {{ js_init|safe }}
+            {% endif %}
+            {% if saved_forms %}
+            $("#formsSelector").show();
+            {% else %}
+            $("#formsSelector").hide();
+            {% endif %}
+        });
+    </script>

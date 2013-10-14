@@ -1,0 +1,6 @@
+django
+django-multiseek
+ludibrio
+selenium
+django-any
+django-selenium-helpers
