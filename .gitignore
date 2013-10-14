@@ -34,3 +34,14 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+
+static/
+.coverage
+ghostdriver.log
+chromedriver.log
+.idea/
+test_project/db.sqlite
+build/
+dist/
+django_multiseek.egg-info/*
