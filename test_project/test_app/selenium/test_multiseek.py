@@ -355,6 +355,14 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field = self.page.get_field("field-0")
         self.assertEquals(field['next_operation'].val(), unicode(_("or")))
 
+    def test_frame_bug(self):
+        self.page.find_elements_by_jquery("button#add_frame")[1].click()
+        self.page.find_elements_by_jquery("input[name=close_button]")[1].click()
+        self.page.find_element_by_jquery("button#sendQueryButton").click()
+        self.page.switch_to_frame("if")
+        print self.page.page_source
+        self.assertNotIn("Server Error (500)", self.page.page_source)
+
 
 class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
     def test_initial(self):

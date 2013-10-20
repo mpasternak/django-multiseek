@@ -77,7 +77,7 @@ setup(
         'templates/multiseek/*.html']},
     include_package_data=True,
     zip_safe=False,
-    long_description=read('README'),
+    long_description=read('README.md'),
     license='MIT',
     keywords='django multiseek',
     cmdclass={'test': RunTests},
