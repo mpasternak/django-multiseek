@@ -1,0 +1,27 @@
+.autocomplete-light-widget .deck [data-value] .remove {
+    margin-top:1px;
+}
+
+.autocomplete-light-widget .deck [data-value] {
+    margin-bottom: 0px;
+    padding-bottom: 2px;
+    padding-right: 5px;
+    border: 1px solid #bbbbbb;
+    font-family: sans-serif;
+    font-size: 0.8em;
+}
+
+.subframe {
+    margin: 30px;
+    padding-left: 5px;
+    border-left: 1px solid black;
+    border-radius: 15px;
+}
+
+.operations {
+    width: 150px;
+}
+
+.values {
+    width: 250px;
+}
