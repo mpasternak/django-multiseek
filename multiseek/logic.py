@@ -434,7 +434,7 @@ class MultiseekRegistry:
         if report_types:
             default_retval = self.report_types[0].id
 
-        if data is None or not data.has_key('report_type'):
+        if data is None or type(data) == list or not data.has_key('report_type'):
             return default_retval
 
         try:
@@ -584,6 +584,10 @@ class MultiseekRegistry:
 
         frame_counter = 0
         field_counter = -1
+
+        # Pre-0.9.2 compatibility
+        if type(data) == list:
+            data = {"form_data": data}
 
         result, frame_counter, field_counter = self.recreate_form_recursive(
             data['form_data'], frame_counter, field_counter)
