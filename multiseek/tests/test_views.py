@@ -44,6 +44,11 @@ class RegistryMixin:
 
 class TestViews(RegistryMixin, TestCase):
 
+    def test_new_page(self):
+        mfp = MultiseekFormPage(registry=self.registry)
+        mfp.request = self.request
+        ret = mfp.get_context_data()
+
     def test_multiseek(self):
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
             {'form_data':
