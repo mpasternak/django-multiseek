@@ -9,15 +9,14 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     RangeQueryObject, RANGE_OPS, StringQueryObject, QueryObject, DIFFERENT, \
     NOT_CONTAINS, NOT_STARTS_WITH, MultiseekRegistry, STRING, ParseError, \
     UnknownField, EQUALITY_OPS_ALL, OR, AND, create_registry, get_registry, \
-    EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE
+    EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
 from multiseek.util import make_field
 
-test_json = json.dumps([
-    dict(field='foo', operation=unicode(EQUALITY_OPS_ALL[0]), value='foo')])
+test_json = json.dumps({'form_data': [
+    dict(field='foo', operation=unicode(EQUALITY_OPS_ALL[0]), value='foo')]})
 
 
 class TestQueryObject(TestCase):
-
     def setUp(self):
         class MyQueryObject(QueryObject):
             field_name = "foo"
@@ -50,7 +49,8 @@ class TestStringQueryObject(TestCase):
         args = [
             (DIFFERENT, "(AND: (NOT (AND: ('foo', 'foobar'))))"),
             (NOT_CONTAINS, "(AND: (NOT (AND: ('foo__icontains', 'foobar'))))"),
-            (NOT_STARTS_WITH, "(AND: (NOT (AND: ('foo__startswith', 'foobar'))))")
+            (NOT_STARTS_WITH,
+             "(AND: (NOT (AND: ('foo__startswith', 'foobar'))))")
         ]
 
         for param, result in args:
@@ -85,9 +85,9 @@ class TestRangeQueryObject(TestCase):
         self.assertEquals(r.value_from_web('123'), None)
 
         self.assertRaises(
-            UnknownOperation, r.real_query, [1,2], 'foo')
+            UnknownOperation, r.real_query, [1, 2], 'foo')
 
-        res = r.real_query([1,2], RANGE_OPS[1])
+        res = r.real_query([1, 2], RANGE_OPS[1])
         self.assertEquals(
             str(res), "(AND: (NOT (AND: ('foo__gte', 1), ('foo__lte', 2))))")
 
@@ -111,6 +111,14 @@ class TestMultiseekRegistry(TestCase):
         self.registry.add_field(StringQueryObject('foo'))
         self.registry.add_field(RangeQueryObject('bar'))
         self.registry.add_field(RangeQueryObject('quux', public=False))
+        self.registry.report_types = [
+            ReportType("list", "List"),
+            ReportType("table", "Table")
+        ]
+        self.registry.ordering = [
+            Ordering("foo", "Foo"),
+            Ordering("bar", "Bar"),
+        ]
 
     def test_add_field_raises(self):
         self.assertRaises(
@@ -130,7 +138,8 @@ class TestMultiseekRegistry(TestCase):
             self.registry.extract('field_name'), ['foo', 'bar'])
 
         self.assertEquals(
-            self.registry.extract('field_name', public=False), ['foo', 'bar', 'quux'])
+            self.registry.extract('field_name', public=False),
+            ['foo', 'bar', 'quux'])
 
     def test_parse_field(self):
         self.assertRaises(
@@ -170,8 +179,11 @@ class TestMultiseekRegistry(TestCase):
         self.assertEquals(str(res), "(OR: ('foo', 'foo'), ('foo', 'bar'))")
 
     def test_get_query(self):
-        self.assertEquals(str(self.registry.get_query(json.loads(test_json))),
-                          "(AND: ('foo', u'foo'))")
+        self.assertEquals(
+            str(
+                self.registry.get_query(
+                    json.loads(test_json)['form_data'])),
+            "(AND: ('foo', u'foo'))")
 
     def test_get_query_for_model(self):
         self.registry.model = Dummy()
@@ -182,7 +194,14 @@ class TestMultiseekRegistry(TestCase):
         op = EQUALITY_OPS_ALL[0]
         fld = dict(field='foo', operation=op, value=u'foo')
         res = self.registry.recreate_form(
-            [fld, OR, fld, AND, [fld, OR, fld], AND, fld, AND, [fld, OR, fld]])
+            {'form_data':
+                 [fld, OR, fld, AND, [fld, OR, fld], AND, fld, AND,
+                  [fld, OR, fld]],
+             'ordering': {
+                 '%s1' % MULTISEEK_ORDERING_PREFIX: "1",
+                 '%s1_dir' % MULTISEEK_ORDERING_PREFIX: "1",
+             },
+             'report_type': '1'})
 
         self.maxDiff = None
 
@@ -201,6 +220,9 @@ set_join($("#field-0"), "or");
 set_join($("#field-1"), "and");
 set_join($("#frame-1"), "and");
 set_join($("#field-4"), "and");
+\t\t\t$($("select[name=order_1]").children()[1]).attr("selected", "");
+\t\t\t$("input[name=order_1_dir]").attr("checked", "");
+\t\t\t$($("select[name=_ms_report_type]").children()[1]).attr("selected", "");
 """ % dict(equal=EQUAL)
 
         self.assertEquals(ex, res)
@@ -211,6 +233,7 @@ set_join($("#field-4"), "and");
     def test_get_registry(self):
         r = get_registry('test_app.multiseek_registry')
         from test_app.multiseek_registry import registry
+
         self.assertEquals(r, registry)
 
     def test_bug_3(self):
@@ -220,12 +243,7 @@ set_join($("#field-4"), "and");
 
         field = make_field(f, v, value)
 
-        form = [field, field, field, OR, field]
+        form = {'form_data': [field, field, field, OR, field]}
 
         self.assertRaises(
             ParseError, self.registry.recreate_form, form)
-
-    def test_add_field(self):
-        r = self.registry
-        q = QueryObject("_ms_ordering_5")
-        self.assertRaises(AssertionError, r.add_field, q)

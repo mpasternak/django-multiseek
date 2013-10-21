@@ -4,7 +4,7 @@ from django.conf.urls import patterns, url
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
-from . import views
+from multiseek import views
 from multiseek.views import load_form
 
 js_info_dict = {
@@ -22,13 +22,13 @@ urlpatterns = patterns(
 
     url(r'^$', csrf_exempt(views.MultiseekFormPage.as_view(
         registry=settings.MULTISEEK_REGISTRY,
-        template_name = "multiseek/index.html"
+        template_name ="multiseek/index.html"
     )), name="index"),
 
     url(r'^results/$',
         csrf_exempt(views.MultiseekResults.as_view(
             registry=settings.MULTISEEK_REGISTRY,
-            template_name = "multiseek/results.html"
+            template_name ="multiseek/results.html"
         )), name="results"),
 
     url(r'^save_form/$',

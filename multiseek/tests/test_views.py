@@ -14,6 +14,7 @@ from multiseek.views import MultiseekFormPage, MULTISEEK_SESSION_KEY, \
     reset_form, get_registry, user_allowed_to_save_forms, MultiseekSaveForm, \
     ERR_NO_FORM_DATA, ERR_PARSING_DATA, ERR_LOADING_DATA, ERR_FORM_NAME, \
     OVERWRITE_PROMPT, SAVED, load_form, MultiseekResults
+from test_app import multiseek_registry
 
 
 class Session(dict):
@@ -45,7 +46,8 @@ class TestViews(RegistryMixin, TestCase):
 
     def test_multiseek(self):
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
-            [dict(field="foo", operation=unicode(EQUALITY_OPS_ALL[0]), value="foo")])
+            {'form_data':
+                 [dict(field="foo", operation=unicode(EQUALITY_OPS_ALL[0]), value="foo")]})
 
         mfp = MultiseekFormPage(registry=self.registry)
         mfp.request = self.request
@@ -70,8 +72,6 @@ class TestViews(RegistryMixin, TestCase):
 
     def test_get_registry(self):
         self.assertEquals(get_registry({}), {})
-
-        from test_app import multiseek_registry
 
         self.assertEquals(
             get_registry('test_app.multiseek_registry'),
@@ -122,9 +122,9 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
             dict(result=unicode(ERR_LOADING_DATA)))
         
         self.request.POST['json'] = \
-            '[{"field": "foo", "operation": "' \
+            '{"form_data": [{"field": "foo", "operation": "' \
             + unicode(EQUAL) \
-            + '", "value": "foo"}]'
+            + '", "value": "foo"}]}'
         self.request.POST['name'] = ''
         self.assertEquals(
             self.msp.get_context_data(),
@@ -194,9 +194,9 @@ class TestMultiseekResults(RegistryMixin, TestCase):
         self.mr = MultiseekResults(registry=self.registry)
         self.mr.request = self.request
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
-            [{'field': unicode(self.registry.fields[0].label),
+            {'form_data': [{'field': unicode(self.registry.fields[0].label),
               'operation': unicode(self.registry.fields[0].ops[0]),
-              'value': u'foobar'}])
+              'value': u'foobar'}]})
 
     def test_post(self):
         res = self.mr.post(self.request)

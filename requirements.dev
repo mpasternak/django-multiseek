@@ -1,5 +1,4 @@
-django
-django-multiseek
+# For testing:
 ludibrio
 selenium
 django-any

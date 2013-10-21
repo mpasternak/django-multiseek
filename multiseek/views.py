@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-import importlib
 
 import json
 
@@ -7,11 +6,12 @@ from django import shortcuts, http
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
-from django.views.generic import TemplateView, ListView, RedirectView, View
+from django.views.generic import TemplateView, ListView
+from django.utils.translation import ugettext_lazy as _
 
 from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
-    UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE
-from django.utils.translation import ugettext_lazy as _
+    UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
+from multiseek.logic import MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
 
 SAVED = 'saved'

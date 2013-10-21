@@ -6,22 +6,22 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django_any import any_model
-from selenium.common.exceptions import InvalidSelectorException
-from selenium.webdriver.common.keys import Keys
 from django.conf import settings
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium_helpers import SeleniumTestCase, select_option_by_text, \
     get_selected_option, wd
 
+from selenium.common.exceptions import InvalidSelectorException
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
 from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
 from multiseek import logic
 from multiseek.logic import get_registry, RANGE_OPS, EQUAL, CONTAINS
-from .. import multiseek_registry
+import multiseek_registry
 from multiseek.util import make_field
 from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
 from multiseek.logic import OR
-from ..models import Author
+from models import Author
 
 
 FRAME = "frame-0"
@@ -525,7 +525,7 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
             name="lol",
             owner=User.objects.all()[0],
             public=True,
-            data=json.dumps([fld]))
+            data=json.dumps({"form_data": [fld]}))
 
         self.page.load_form_by_name('lol')
 
@@ -566,7 +566,7 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
             name="bug-2",
             owner=User.objects.all()[0],
             public=True,
-            data=json.dumps(form))
+            data=json.dumps({"form_data": form}))
         self.page.load_form_by_name('bug-2')
         elements = self.page.find_elements_by_jquery(
             '[name=next_operation]:visible')
@@ -575,7 +575,9 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
                 self.assertEquals(elem.val(), logic.OR)
 
     def test_save_ordering_direction(self):
-        elem = "input[name=%s_1_dir]" % MULTISEEK_ORDERING_PREFIX
+        elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
+        print elem
+        print "X" * 90
         self.page.find_element_by_jquery(elem).click()
         self.save_form_as("foobar")
         # Should the dialog be public?
@@ -590,7 +592,7 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
             "1")
 
     def test_save_ordering_box(self):
-        elem = "select[name=%s_0] option[value=2]" % MULTISEEK_ORDERING_PREFIX
+        elem = "select[name=%s0] option[value=2]" % MULTISEEK_ORDERING_PREFIX
         self.assertEquals(
             len(self.page.find_elements_by_jquery(elem + ":selected")),
             0)

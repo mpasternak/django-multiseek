@@ -22,7 +22,7 @@ DATABASES = {
         'NAME': os.path.abspath(
             os.path.join(
                 os.path.dirname(__file__),
-                '..', 'db.sqlite')),
+                '', '../db.sqlite')),
     }
 }
 
@@ -68,7 +68,7 @@ MEDIA_URL = ''
 # Example: "/var/www/example.com/static/"
 STATIC_ROOT = os.path.abspath(
     os.path.join(
-        os.path.dirname(__file__), "../../", "static"))
+        os.path.dirname(__file__), "../..//", "static"))
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -111,7 +111,7 @@ if 'test' in sys.argv:
     # XXX IMPORTANT XXX Remove LocaleMiddleware in case of testing
     MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES[:-1]
 
-ROOT_URLCONF = 'test_project.urls'
+ROOT_URLCONF = 'urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'test_project.wsgi.application'
@@ -120,7 +120,8 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.abspath(os.path.join(os.path.dirname(__file__), '../templates')),
+    os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                 '../../../templates')),
 )
 
 INSTALLED_APPS = (

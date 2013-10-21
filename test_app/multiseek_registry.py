@@ -1,12 +1,10 @@
 # -*- encoding: utf-8 -*-
-from multiseek.logic import Ordering, ReportType
+from django.utils.translation import ugettext_lazy as _
 
+from multiseek.logic import Ordering, ReportType
 from multiseek.logic import AutocompleteQueryObject, StringQueryObject, \
     RangeQueryObject, create_registry, ValueListQueryObject, IntegerQueryObject
-
-from models import Author, Book, Language
-
-from django.utils.translation import ugettext_lazy as _
+from test_app.models import Author, Book, Language
 
 
 class TitleQueryObject(StringQueryObject):
@@ -46,7 +44,7 @@ registry = create_registry(
     ordering=[
         Ordering("", _("(nothing)")),
         Ordering("title", _("title")),
-        Ordering("author", _("author")),
+        Ordering("author", _("authors")),
         Ordering("year", _("year")),
     ],
     report_types=[

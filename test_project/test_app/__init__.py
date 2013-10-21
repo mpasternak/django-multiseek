@@ -1,1 +1,0 @@
-import autocomplete_light_registry

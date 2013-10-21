@@ -8,9 +8,8 @@ from django.db.models.options import get_verbose_name
 from django.utils.translation import ugettext_lazy as _
 from collections import namedtuple
 
-MULTISEEK_REPORT_TYPE = "_ms_report_type"
-
-MULTISEEK_ORDERING_PREFIX = "_ms_ordering"
+MULTISEEK_REPORT_TYPE = '_ms_report_type'
+MULTISEEK_ORDERING_PREFIX = "order_"
 
 AND = "and"
 OR = "or"
@@ -328,7 +327,7 @@ class MultiseekRegistry:
         "ptype field: multiseek.logic.QueryObject
         """
         if field.field_name:
-            for pfx in MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE:
+            for pfx in [MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE]:
                 assert (not field.field_name.startswith(pfx)), \
                     "Field names cannot start with '" + pfx + "'"
         self.fields.append(field)
@@ -435,11 +434,11 @@ class MultiseekRegistry:
         if report_types:
             default_retval = self.report_types[0].id
 
-        if data is None:
+        if data is None or not data.has_key('report_type'):
             return default_retval
 
         try:
-            idx = int(data[0].get(MULTISEEK_REPORT_TYPE, '-1'))
+            idx = int(data['report_type'])
         except (ValueError, IndexError, TypeError):
             return default_retval
 
@@ -452,34 +451,36 @@ class MultiseekRegistry:
         if data is None:
             return self.model.objects.all()
 
-        query = self.get_query(data)
+        query = self.get_query(data['form_data'])
         retval = self.model.objects.filter(query)
         sb = []
-        for no, element in enumerate(self.order_boxes):
-            key = "%s_%s" % (MULTISEEK_ORDERING_PREFIX, no)
-            key_dir = key + "_dir"
+        if data.has_key('ordering'):
+            for no, element in enumerate(self.order_boxes):
+                key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
+                key_dir = key + "_dir"
 
-            if data[0].has_key(key):
-                try:
-                    sort_idx = int(data[0][key])
-                except (TypeError, ValueError):
-                    continue
+                if data['ordering'].has_key(key):
+                    try:
+                        sort_idx = int(data['ordering'][key])
+                    except (TypeError, ValueError):
+                        continue
 
-                try:
-                    srt = self.ordering[sort_idx].field
-                except (IndexError, TypeError, ValueError):
-                    continue
+                    try:
+                        srt = self.ordering[sort_idx].field
+                    except (IndexError, TypeError, ValueError):
+                        continue
 
-                if not srt:
-                    continue
+                    if not srt:
+                        continue
 
-                if data[0].has_key(key_dir) and data[0][key_dir] == "1":
-                    srt = "-" + srt
+                    if data['ordering'].has_key(key_dir) and \
+                                    data['ordering'][key_dir] == "1":
+                        srt = "-" + srt
 
-                sb.append(srt)
+                    sb.append(srt)
 
-        if sb:
-            retval = retval.order_by(*sb)
+            if sb:
+                retval = retval.order_by(*sb)
         return retval
 
     def recreate_form_recursive(self, element, frame_counter, field_counter):
@@ -566,33 +567,9 @@ class MultiseekRegistry:
 
         ret.extend(ops)
 
-        if frame_counter == 0:
-            # At the top level, we can find '_ms_ordering_N' information
-            for no, elem in enumerate(self.order_boxes):
-                key = "%s_%s" % (MULTISEEK_ORDERING_PREFIX, no)
-                if element[0].has_key(key):
-                    ret.append(
-                        '\t\t\t'
-                        '$($("select[name=%s]").children()[%s]).attr("selected", "");' % (
-                            key, element[0][key]))
-                key = key + "_dir"
-                if element[0].has_key(key):
-                    if element[0][key] == "1":
-                        ret.append(
-                            '\t\t\t'
-                            '$("input[name=%s]").attr("checked", "");' % (
-                                key))
-
-            if element[0].has_key(MULTISEEK_REPORT_TYPE):
-                ret.append(
-                    '\t\t\t'
-                    '$($("select[name=%s]").children()[%s]).attr("selected", "")'
-                    % (
-                    MULTISEEK_REPORT_TYPE, element[0][MULTISEEK_REPORT_TYPE]))
-
         return ret, frame_counter, field_counter
 
-    def recreate_form(self, lst):
+    def recreate_form(self, data):
         """Recreate a JavaScript code to create a given form, basing
         on a list.
 
@@ -605,7 +582,32 @@ class MultiseekRegistry:
         field_counter = -1
 
         result, frame_counter, field_counter = self.recreate_form_recursive(
-            lst, frame_counter, field_counter)
+            data['form_data'], frame_counter, field_counter)
+
+        if data.has_key("ordering"):
+            for no, elem in enumerate(self.order_boxes):
+                key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
+                if data['ordering'].has_key(key):
+                    result.append(
+                        '\t\t\t'
+                        '$($("select[name=%s]").children()[%s]).attr("selected", "")' % (
+                            key, data['ordering'][key]))
+                key = key + "_dir"
+                if data['ordering'].has_key(key):
+                    if data['ordering'][key] == "1":
+                        result.append(
+                            '\t\t\t'
+                            '$("input[name=%s]").attr("checked", "")' % (
+                                key))
+
+        if data.has_key('report_type'):
+            if data['report_type']:
+                result.append(
+                    '\t\t\t'
+                    '$($("select[name=%s]").children()[%s]).attr("selected", "")'
+                    % (
+                    MULTISEEK_REPORT_TYPE, data['report_type']))
+
 
         return u";\n".join(result) + u";\n"
 
