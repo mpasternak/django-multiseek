@@ -64,17 +64,17 @@ else:
 
 setup(
     name='django-multiseek',
-    version='0.9',
+    version='0.9.1',
     description='Seek records using multiple parameters',
     author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
     url='http://TODO',
     packages=['multiseek'],
     package_data={'multiseek': [
-        'multiseek/locale/*/LC_MESSAGES/*',
-        'multiseek/static/multiseek/*.js',
-        'multiseek/static/multiseek/*.css',
-        'multiseek/templates/multiseek/*.html']},
+        'locale/*/LC_MESSAGES/*',
+        'static/multiseek/*.js',
+        'static/multiseek/*.css',
+        'templates/multiseek/*.html']},
     include_package_data=True,
     zip_safe=False,
     long_description=read('README.md'),
