@@ -32,8 +32,6 @@ nosetests.xml
 .project
 .pydevproject
 
-
-static/
 .coverage
 ghostdriver.log
 chromedriver.log
@@ -42,3 +40,5 @@ test_project/db.sqlite
 build/
 dist/
 django_multiseek.egg-info/*
+static/
+!multiseek/static
