@@ -61,10 +61,10 @@ class MultiseekWebPage(wd()):
         pól (np dla multiseek.logic.RANGE jest to lista z wartościami z obu pól)
         """
         ret = {}
-        for elem in ['field', 'operation', 'next_operation', 'close_button']:
-            ret[elem] = element.find_elements_by_name(elem)[0]
+        for elem in ['type', 'op', 'prev-op', 'close-button']:
+            ret[elem] = element.find_elements_by_id(elem)[0]
 
-        selected = get_selected_option(ret['field'])
+        selected = get_selected_option(ret['type'])
         ret['selected'] = selected.text()
 
         inner_type = self.registry.field_by_name.get(selected.text()).type
@@ -147,19 +147,19 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field = self.page.get_field(FIELD)
 
         select_option_by_text(
-            field['field'], unicode(multiseek_registry.YearQueryObject.label))
+            field['type'], unicode(multiseek_registry.YearQueryObject.label))
         field = self.page.get_field(FIELD)
         self.assertEquals(field['type'], logic.RANGE)
         self.assertEquals(len(field['value']), 2)
 
         select_option_by_text(
-            field['field'],
+            field['type'],
             unicode(multiseek_registry.LanguageQueryObject.label))
         field = self.page.get_field(FIELD)
         self.assertEquals(field['type'], logic.VALUE_LIST)
 
         select_option_by_text(
-            field['field'], unicode(multiseek_registry.AuthorQueryObject.label))
+            field['type'], unicode(multiseek_registry.AuthorQueryObject.label))
         field = self.page.get_field(FIELD)
         self.assertEquals(field['type'], logic.AUTOCOMPLETE)
 
@@ -178,15 +178,15 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         field = self.page.get_field('field-0')
         select_option_by_text(
-            field['field'], multiseek_registry.YearQueryObject.label)
+            field['type'], multiseek_registry.YearQueryObject.label)
         field = self.page.get_field('field-0')
         field['value'][0].send_keys('1999')
         field['value'][1].send_keys('2000')
-        select_option_by_text(field['next_operation'], "or")
+        select_option_by_text(field['prev-op'], "or")
 
         field = self.page.get_field('field-1')
         select_option_by_text(
-            field['field'], multiseek_registry.LanguageQueryObject.label)
+            field['type'], multiseek_registry.LanguageQueryObject.label)
         field = self.page.get_field('field-1')
         select_option_by_text(field['value'], _(u'english'))
 
@@ -210,7 +210,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         for n in range(1, 6):
             field = self.page.get_field('field-%i' % n)
-            field['close_button'].click()
+            field['close-button'].click()
 
         expected = [{u'field': _(u'Year'), u'operation': _(u'in'),
                      u'value': [u'1999', u'2000']}]
@@ -218,7 +218,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
     def test_remove_last_field(self):
         field = self.page.get_field('field-0')
-        field['close_button'].click()
+        field['close-button'].click()
 
         self.assertEquals(
             self.page.switch_to_alert().text, LAST_FIELD_REMOVE_MESSAGE)
@@ -226,7 +226,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
     def test_autocomplete_field(self):
         field = self.page.get_field(FIELD)
         select_option_by_text(
-            field['field'], multiseek_registry.AuthorQueryObject.label)
+            field['type'], multiseek_registry.AuthorQueryObject.label)
 
         field = self.page.get_field(FIELD)
 
@@ -298,10 +298,11 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         field = self.page.get_field("field-1")
         self.assertEquals(
-            field['field'].val(), multiseek_registry.LanguageQueryObject.label)
+            field['type'],
+            unicode(multiseek_registry.LanguageQueryObject.type))
         self.assertEquals(
-            field['operation'].val(),
-            multiseek_registry.LanguageQueryObject.ops[1])
+            field['op'].val(),
+            unicode(multiseek_registry.LanguageQueryObject.ops[1]))
         self.assertEquals(field['value'].val(), unicode(_(u'polish')))
 
     def test_add_field_autocomplete(self):
@@ -342,8 +343,8 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         frame['add_field'].click()
 
         field = self.page.get_field("field-0")
-        select_option_by_text(field['next_operation'], unicode(_("or")))
-        self.assertEquals(field['next_operation'].val(), unicode(_("or")))
+        select_option_by_text(field['prev-op'], unicode(_("or")))
+        self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
         button = self.page.find_element_by_id("sendQueryButton")
         button.click()
@@ -353,11 +354,11 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         self.reload()
 
         field = self.page.get_field("field-0")
-        self.assertEquals(field['next_operation'].val(), unicode(_("or")))
+        self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
     def test_frame_bug(self):
         self.page.find_elements_by_jquery("button#add_frame")[1].click()
-        self.page.find_elements_by_jquery("input[name=close_button]")[1].click()
+        self.page.find_elements_by_jquery("input[name=close-button]")[1].click()
         self.page.find_element_by_jquery("button#sendQueryButton").click()
         self.page.switch_to_frame("if")
         print self.page.page_source
@@ -367,7 +368,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field = self.page.get_field("field-0")
 
         select_option_by_text(
-            field['field'], multiseek_registry.DateLastUpdatedQueryObject.label)
+            field['type'], multiseek_registry.DateLastUpdatedQueryObject.label)
 
         select_option_by_text(
             field['operation'], multiseek_registry.DateLastUpdatedQueryObject.ops[6])
@@ -588,15 +589,13 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
             data=json.dumps({"form_data": form}))
         self.page.load_form_by_name('bug-2')
         elements = self.page.find_elements_by_jquery(
-            '[name=next_operation]:visible')
+            '[name=prev-op]:visible')
         for elem in elements:
             if elem.css("visibility") != 'hidden':
                 self.assertEquals(elem.val(), logic.OR)
 
     def test_save_ordering_direction(self):
         elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
-        print elem
-        print "X" * 90
         self.page.find_element_by_jquery(elem).click()
         self.save_form_as("foobar")
         # Should the dialog be public?
@@ -620,7 +619,6 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
         self.save_form_as("foobar")
         self.accept_alert()
         self.accept_alert()
-
         self.page.reset_form()
         self.page.load_form_by_name("foobar")
         self.assertEquals(

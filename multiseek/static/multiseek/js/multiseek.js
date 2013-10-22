@@ -27,7 +27,7 @@ function getFieldType(field) {
 }
 
 function getFieldOp(field) {
-    return field.find("#op")[0].selectedIndex;
+    return field.find("#op"); // [0].selectedIndex;
 }
 
 function getFieldWidget(field) {
@@ -38,7 +38,7 @@ function fieldOperationChanged(field) {
     field_type = getFieldType(field);
     switch (field_type) {
         case "date":
-            op = getFieldOp(field);
+            op = getFieldOp(field)[0].selectedIndex;
             w = getFieldWidget(field);
             if (op > 5) {
                 // range
@@ -65,14 +65,14 @@ function fieldOperationChanged(field) {
     }
 }
 
-function findMyParentFrame(element){
+function findMyParentFrame(element) {
     var parent = $(element).parent();
     var klass = parent.attr("class");
     if (klass && klass.startsWith("frame"))
         return parent;
     return findMyParentFrame(parent);
 }
-function findMyParentFieldset(element){
+function findMyParentFieldset(element) {
     var parent = $(element).parent();
     var id = parent.attr("id");
     if (id && id.startsWith("fieldset"))
@@ -80,7 +80,7 @@ function findMyParentFieldset(element){
     return findMyParentFieldset(parent);
 }
 
-function findMyParentField(element){
+function findMyParentField(element) {
     parent = $(element).parent();
     if (parent.attr("id").startsWith("field-"))
         return parent;
@@ -174,10 +174,10 @@ function fillFieldValues(field, values) {
 function setFieldOperationAndValue(field, operation, value) {
     var type = types[selectWithFields(field).val()];
 
-    var field_op = field.children()[1];
+    var field_op = getFieldOp(field);
     $(field_op).val(operation);
 
-    var widget = $(field.children()[2]);
+    var widget = getFieldWidget(field);
 
     switch (type) {
         case "range":
@@ -223,14 +223,14 @@ function updateNodeAttributes(node, param) {
 
 function getFieldDict(field) {
     first_select = selectWithFields($(field));
-    second_select = first_select.next();
-    third_something = second_select.next();
-    next_operation = third_something.next()
+    second_select = selectWithOperations($(field));
+    third_something = getFieldWidget($(field));
+    prev_operation = $(field).find("#prev-op"); // third_something.next()
 
     return {'first_select': first_select,
         'second_select': second_select,
         'third_something': third_something,
-        'next_operation': next_operation}
+        'prev_operation': prev_operation}
 }
 
 function getFieldValue(field) {
@@ -275,11 +275,11 @@ function getFieldValue(field) {
     return ret;
 }
 
-function getNextOperation(field) {
+function getPrevOperation(field) {
     var fieldDict = getFieldDict(field);
 
-    if (fieldDict.next_operation.css("visibility") == "visible")
-        return fieldDict.next_operation.val();
+    if (fieldDict.prev_operation.css("visibility") == "visible")
+        return fieldDict.prev_operation;
 
     return null;
 }
@@ -315,30 +315,30 @@ function serialize(topNode, level) {
 
      */
 
-    var subframe = topNode.children().first();
-    var fieldset = subframe.children().first();
+    var subframe = topNode.children(".subframe");
+    var fieldset = subframe.children("#fieldset");
 
     var cnt = 0;
     var ret = [];
 
     fieldset.children().each(function (no, elem) {
 
-        if ($(elem).attr('id').indexOf('field') == 0) {
+        if ($(elem).attr('id').startsWith('field')) {
 
             field_value = getFieldValue(elem);
-            next_operation = getNextOperation(elem);
+            prev_operation = getPrevOperation(elem);
+
+            if (prev_operation)
+                ret = ret.concat(prev_operation.val());
 
             ret = ret.concat(field_value);
 
-            if (next_operation)
-                ret = ret.concat(next_operation);
-
         } else {
-            ret = ret.concat([serialize($(elem), level + 1), ]);
 
-            next_operation = getNextOperation($(elem)); // .children().last().prev();
-            if (next_operation.css("visibility") == "visible")
-                ret = ret.concat(next_operation.val());
+            prev_operation = getPrevOperation($(elem)); // .children().last().prev();
+            if (prev_operation.css("visibility") == "visible")
+                ret = ret.concat(prev_operation.val());
+            ret = ret.concat([serialize($(elem), level + 1), ]);
         }
     });
 
@@ -485,7 +485,7 @@ function selectWithOperations(field) {
 
 function get_join(field) {
     /* SELECT z wartością LUB i I, czyli łącznik */
-    return field.find("#next-op");
+    return field.find("#prev-op");
 }
 
 function schowaj_lacznik(pole) {
@@ -516,15 +516,13 @@ function addField(root, type, operation, value) {
     var clone = field.clone();
     clone.attr('style', 'display: block;');
 
-    /* pokaż łącznik czyli operację I/LUB poprzedniego elementu */
-    pokaz_lacznik(ostatnie_pole(root));
-
     updateNodeAttributes(clone, field_counter++);
+    fieldset = root.children(".subframe").children('#fieldset');
+    fieldset.append(clone);
 
-    root.children(".subframe").children('#fieldset').append(clone);
+    if (fieldset.children().length > 1)
+        pokaz_lacznik(clone);
 
-    /* schowaj łącznik czyli operację I/LUB dodawanego elementu, bo za nim nic nie ma */
-    schowaj_lacznik(ostatnie_pole(root));
 
     initializeField(clone, type, operation, value);
 }
@@ -547,25 +545,17 @@ function removeField(button) {
             return;
         }
 
-        /* Jeżeli nie -- usuń pustą ramkę: */
-
-        /* ... ale wcześniej schowaj łącznik poprzedniego pola: */
-        schowaj_lacznik(frame.prev());
-
-        /* ... i spokojnie usuń pustą ramkę */
-        frame.remove(); // parent().parent().parent().remove();
-
+        frame.remove();
         return;
     }
 
     // Hide the join op for PREVIOUS field if this is the last 2 fields
     // in this fieldset
-    if (fieldset.children().length == 2)
-        if (field.prev())
-            schowaj_lacznik(field.prev());
-
     field.remove();
+    schowaj_lacznik($(fieldset.children()[0]));
+
 }
+
 
 function addFrame(root) {
     var base = $('#frame-__no__');
@@ -573,16 +563,15 @@ function addFrame(root) {
     clone.attr('style', 'display: block;');
     updateNodeAttributes(clone, counter++);
 
-    var ost_pol = ostatnie_pole(root);
-    pokaz_lacznik(ost_pol);
+    fieldset = root.children(".subframe").children('#fieldset');
 
-    root.children(".subframe").children('#fieldset').append(clone);
-
-    // addField(clone);
+    if (fieldset.children().length)
+        pokaz_lacznik(clone);
+    fieldset.append(clone);
 }
 
 function addFrameViaButton(node) {
-    addFrame($(node).parent().parent());
+    addFrame(findMyParentFrame($(node)));
     // Tryb interaktywny -- dodaj jeszcze pole
     addField($("#frame-" + (counter - 1)), fields[0], ops[fields[0]][0], "");
 }

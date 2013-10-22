@@ -1,60 +1,61 @@
 {% load i18n %}
 
-    <!-- Here we go with field definitions, that will be cloned with jQuery
-    when building the form interactivley -->
+<!-- Here we go with field definitions, that will be cloned with jQuery
+when building the form interactivley -->
 
-    <div style="display: none;">
+<div style="display: none;">
 
-        <div id="frame-__no__" class="frame">
+    <div id="frame-__no__" class="frame">
 
-            <div class="subframe">
 
-                <div id="fieldset">
-                </div>
+        <select id="prev-op" style="visibility: hidden;">
+            <option value="{{ js_and }}">{% trans "and" %}</option>
+            <option value="{{ js_or }}">{% trans "or" %}</option>
+        </select>
 
-                <button id="add_field" onclick="addFieldViaButton(this);">
-                    {% trans "Add field" %}
-                </button>
+        <div class="subframe">
 
-                <button id="add_frame" onclick="addFrameViaButton(this);">
-                    {% trans "Add frame" %}
-                </button>
-
+            <div id="fieldset">
             </div>
 
-            <select id="next_operation" style="visibility: hidden;">
-                <option value="{{ js_and }}">{% trans "and" %}</option>
-                <option value="{{ js_or }}">{% trans "or" %}</option>
-            </select>
+            <button id="add_field" onclick="addFieldViaButton(this);">
+                {% trans "Add field" %}
+            </button>
 
-            <div style="display: none;"><!-- Remove frame button --></div>
+            <button id="add_frame" onclick="addFrameViaButton(this);">
+                {% trans "Add frame" %}
+            </button>
 
         </div>
 
+        <div style="display: none;"><!-- Remove frame button --></div>
 
-        <field id="field-__no__" style="display: none;" class="field">
+    </div>
 
-            <select name="field" id="type">
-                <option value="1">field 1</option>
-                <option value="1">field 2</option>
-            </select>
 
-            <select name="operation" class="operations" id="op">
-                <option value="1">op 1</option>
-                <option value="1">op 2</option>
-            </select>
+    <field id="field-__no__" style="display: none;" class="field">
 
-            <input name="value" id="value">
+        <select name="next_operation" id="prev-op" style="visibility: hidden;">
+            <option value="{{ js_and }}">{% trans "and" %}</option>
+            <option value="{{ js_or }}">{% trans "or" %}</option>
+        </select>
 
-            <select name="next_operation" id="next-op" style="visibility: hidden;">
-                <option value="{{ js_and }}">{% trans "and" %}</option>
-                <option value="{{ js_or }}">{% trans "or" %}</option>
-            </select>
+        <select name="field" id="type">
+            <option value="1">field 1</option>
+            <option value="1">field 2</option>
+        </select>
 
-            <input type="button" value="X" id="close-button" name="close_button"
-                   onclick="removeField(this);"/>
+        <select name="operation" class="operations" id="op">
+            <option value="1">op 1</option>
+            <option value="1">op 2</option>
+        </select>
 
-        </field>
+        <input name="value" id="value">
+
+        <input type="button" value="X" id="close-button" name="close_button"
+               onclick="removeField(this);"/>
+
+    </field>
 
 
         <span style="display: inline-block; clear: both;"
@@ -66,12 +67,13 @@
               data-autocomplete-placeholder="wpisz, aby wyszukać..."
               data-autocomplete-url="...">
 
-            <input type="text" id="autocomplete-__no__" />
+            <input type="text" id="autocomplete-__no__"/>
 
             <span class="deck">
             </span>
 
-            <select style="display:none" class="value-select" id="value" name="autocomplete-__no__-value">
+            <select style="display:none" class="value-select" id="value"
+                    name="autocomplete-__no__-value">
             </select>
 
             <span style="display:none" class="remove">
@@ -83,33 +85,33 @@
             </span>
         </span>
 
-    </div>
+</div>
 
-    <script type="text/javascript">
-        /* ------------------------------------------------------------------ */
-        /* Data containing the description of the form, generated server-side
-        /* ------------------------------------------------------------------ */
+<script type="text/javascript">
+    /* ------------------------------------------------------------------ */
+    /* Data containing the description of the form, generated server-side
+     /* ------------------------------------------------------------------ */
 
-        var fields = {{ js_fields|safe }};
-        var ops = {{ js_ops|safe }};
-        var types = {{ js_types|safe }};
-        var value_lists = {{ js_value_lists|safe }};
-        var autocompletes = {{ js_autocompletes|safe }};
-        var last_field_remove_message = '{{ js_remove_message }}';
+    var fields = {{ js_fields|safe }};
+    var ops = {{ js_ops|safe }};
+    var types = {{ js_types|safe }};
+    var value_lists = {{ js_value_lists|safe }};
+    var autocompletes = {{ js_autocompletes|safe }};
+    var last_field_remove_message = '{{ js_remove_message }}';
 
-        /* ------------------------------------------------------ */
-        /* After loading the document, we initialize first frame
-        /* ------------------------------------------------------ */
-        $(document).ready(function(){
-            {% if not js_init %}
+    /* ------------------------------------------------------ */
+    /* After loading the document, we initialize first frame
+     /* ------------------------------------------------------ */
+    $(document).ready(function () {
+        {% if not js_init %}
             addField($("#frame-0"), fields[0], ops[fields[0]][0], "");
-            {% else %}
+        {% else %}
             {{ js_init|safe }}
-            {% endif %}
-            {% if saved_forms %}
+        {% endif %}
+        {% if saved_forms %}
             $("#formsSelector").show();
-            {% else %}
+        {% else %}
             $("#formsSelector").hide();
-            {% endif %}
-        });
-    </script>
+        {% endif %}
+    });
+</script>
