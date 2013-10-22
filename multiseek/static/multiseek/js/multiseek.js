@@ -14,6 +14,58 @@ function setFieldOperationAndTypeEvent(event) {
     }
 }
 
+function fieldOperationChangedEvent(event) {
+    /* Field's operation has been changed. */
+    var select = event.currentTarget;
+    if (select != undefined) {
+        fieldOperationChanged($(select).parent());
+    }
+}
+
+function getFieldType(field) {
+    return types[field.children().first().val()];
+}
+
+function getFieldOp(field) {
+    return field.children().next().first()[0].selectedIndex;
+}
+
+function getFieldWidget(field) {
+    return $(field.children().next().next()[0]);
+}
+function fieldOperationChanged(field) {
+    field_type = getFieldType(field);
+    switch (field_type) {
+        case "date":
+            op = getFieldOp(field);
+            w = getFieldWidget(field);
+            if (op > 5) {
+                // range
+                console.log('range');
+                if (w.children().length == 1) {
+                    // add extra field
+                    w.append("-");
+                    element = $('<input type="text" name="value" placeholder="' +
+                        gettext('today') + '" size="10" />');
+                    element.datepicker($.datepicker.regional[djangoLanguageCode]);
+                    w.append(element);
+                }
+            } else {
+                // single field
+                console.log('single');
+                if (w.children().length > 1) {
+                    // remove extra field
+                    w.contents()[1].remove();
+                    w.contents()[1].remove();
+                }
+            }
+            return;
+
+        default:
+            return;
+    }
+}
+
 function setFieldOperationAndTypeField(select) {
     /* Ustaw pole z operacjami (drugi select) ORAZ pole wyszukiwania (czyli TRZECIE pole) */
     var select = $(select);
@@ -32,6 +84,13 @@ function setFieldOperationAndTypeField(select) {
     var element;
 
     switch (typ) {
+        case "date":
+            element = $('<input type="text" name="value" placeholder="' +
+                gettext('today') + '" size="10" />');
+            element.datepicker($.datepicker.regional[djangoLanguageCode]);
+            element = $('<div style="display: inline;"/>').append(element);
+            break;
+
         case "range":
             element = $(
                 '<span class="range values" style="display: inline-block;">' +
@@ -83,6 +142,9 @@ function fillFieldValues(field, values) {
         select.append($('<option/>').val(value).html(value));
     });
     select.change(setFieldOperationAndTypeEvent);
+
+    var second_select = selectWithOperations(field);
+    second_select.change(fieldOperationChangedEvent);
 }
 
 function setFieldOperationAndValue(field, operation, value) {
@@ -159,6 +221,18 @@ function getFieldValue(field) {
     }
 
     switch (types[field_type]) {
+        case "date":
+            op_idx = field_dict.second_select[0].selectedIndex;
+            console.log(op_idx);
+            if (op_idx > 5) {
+                min = third_something.children().first().val();
+                max = third_something.children().first().next().val();
+                ret.value = [min, max];
+            } else {
+                ret.value = third_something.children().first().val();
+            }
+            break;
+
         case "range":
             min = third_something.children().first().val();
             max = third_something.children().first().next().val();
@@ -375,8 +449,15 @@ function loadForm(select) {
 /* ------------------------------------------------------------------------------------------- */
 
 function selectWithFields(field) {
-    /* SELECT z polami, czyli pierwsze pole - czyli operacja, tytuł pracy, etc */
+    /* select tag, containing the fields - which is, the first select,
+     containing field like: first name, last name, operation, title... */
     return field.children().first();
+}
+
+function selectWithOperations(field) {
+    /* returns a select tag containing the list of operations available
+     for a given field, which is: equal, not equal, different, exact... */
+    return selectWithFields(field).next();
 }
 
 function get_join(pole) {
@@ -414,7 +495,6 @@ function addField(root, type, operation, value) {
 
     /* pokaż łącznik czyli operację I/LUB poprzedniego elementu */
     pokaz_lacznik(ostatnie_pole(root));
-    ;
 
     updateNodeAttributes(clone, field_counter++);
 

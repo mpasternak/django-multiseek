@@ -3,6 +3,7 @@ import importlib
 
 import json
 import re
+from dateutil.parser import parse
 from django.db.models import Q
 from django.db.models.options import get_verbose_name
 from django.utils.translation import ugettext_lazy as _
@@ -18,6 +19,7 @@ STRING = "string"
 INTEGER = "integer"
 AUTOCOMPLETE = "autocomplete"
 RANGE = "range"
+DATE = "date"
 VALUE_LIST = 'value-list'
 
 EQUAL = _("equals")         # u"równy"
@@ -57,8 +59,8 @@ NOT_CONTAINS = _("not contains")    # u"nie zawiera"
 STARTS_WITH = _("starts with")  # u"zaczyna się od"
 NOT_STARTS_WITH = _("not starts with")  # u"nie zaczyna się od"
 
-IN_RANGE = _("in")              # u'zawiera się w'
-NOT_IN_RANGE = _("not in")      # u'nie zawiera się w'
+IN_RANGE = _("in range")              # u'zawiera się w'
+NOT_IN_RANGE = _("outside range")      # u'nie zawiera się w'
 
 STRING_OPS = [CONTAINS, NOT_CONTAINS,
               EQUAL, DIFFERENT,
@@ -71,7 +73,9 @@ INTEGER_OPS_NONE = [EQUAL_NONE, DIFFERENT_NONE, GREATER_NONE, LESSER_NONE]
 INTEGER_OPS_ALL = INTEGER_OPS_FEMALE + INTEGER_OPS_MALE + INTEGER_OPS_NONE
 
 RANGE_OPS = [IN_RANGE, NOT_IN_RANGE]
-
+DATE_OPS = [EQUAL_FEMALE, DIFFERENT_FEMALE, GREATER_FEMALE,
+            GREATER_OR_EQUAL_FEMALE, LESSER_FEMALE, LESSER_OR_EQUAL_FEMALE,
+            IN_RANGE, NOT_IN_RANGE]
 EQUALITY_OPS_MALE = [EQUAL, DIFFERENT]
 EQUALITY_OPS_FEMALE = [EQUAL_FEMALE, DIFFERENT_FEMALE]
 EQUALITY_OPS_NONE = [EQUAL_NONE, DIFFERENT_NONE]
@@ -216,6 +220,39 @@ class AutocompleteQueryObject(QueryObject):
 
         return value
 
+
+class DateQueryObject(QueryObject):
+    type = DATE
+    ops = DATE_OPS
+
+    def value_from_web(self, value):
+        if type(value) == unicode:
+            return parse(value)
+        return [parse(value[0]), parse(value[1])]
+
+    def real_query(self, value, operation):
+        if operation in RANGE_OPS:
+            ret = Q(**{self.field_name + '__gte': value[0],
+                       self.field_name + '__lte': value[1]})
+        elif operation in EQUALITY_OPS_ALL:
+            return Q(**{self.field_name: value})
+        elif operation in DIFFERENT_ALL:
+            return ~Q(**{self.field_name: value})
+        elif operation in GREATER_OPS_ALL:
+            return Q(**{self.field_name + "__gt": value})
+        elif operation in LESSER_OPS_ALL:
+            return Q(**{self.field_name + "__lt": value})
+        elif operation in GREATER_OR_EQUAL_OPS_ALL:
+            return Q(**{self.field_name + "__gte": value})
+        elif operation in LESSER_OR_EQUAL_OPS_ALL:
+            return Q(**{self.field_name + "__lte": value})
+        else:
+            raise UnknownOperation(operation)
+
+        if operation == RANGE_OPS[1]:
+            return ~ret
+
+        return ret
 
 class RangeQueryObject(QueryObject):
     type = RANGE
@@ -434,7 +471,8 @@ class MultiseekRegistry:
         if report_types:
             default_retval = self.report_types[0].id
 
-        if data is None or type(data) == list or not data.has_key('report_type'):
+        if data is None or type(data) == list or not data.has_key(
+                'report_type'):
             return default_retval
 
         try:
@@ -614,8 +652,7 @@ class MultiseekRegistry:
                     '\t\t\t'
                     '$($("select[name=%s]").children()[%s]).attr("selected", "")'
                     % (
-                    MULTISEEK_REPORT_TYPE, data['report_type']))
-
+                        MULTISEEK_REPORT_TYPE, data['report_type']))
 
         return u";\n".join(result) + u";\n"
 

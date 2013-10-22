@@ -7,207 +7,211 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-08 19:45-0500\n"
-"PO-Revision-Date: 2013-10-21 20:11+0100\n"
+"POT-Creation-Date: 2013-10-22 12:39+0200\n"
+"PO-Revision-Date: 2013-10-22 12:40+0100\n"
 "Last-Translator: Michał Pasternak <michal.dtz@gmail.com>\n"
 "Language-Team: Multiseek Translation Team ;-) <michal.dtz@gmail.com>\n"
-"Language: polski\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: polski\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 1.5.7\n"
 
-#: logic.py:24
+#: .\logic.py:24
 msgid "equals"
 msgstr "równy"
 
-#: logic.py:25
+#: .\logic.py:25
 msgid "equals (female geder)"
 msgstr "równa"
 
-#: logic.py:26
+#: .\logic.py:26
 msgid "equals (no gender)"
 msgstr "równe"
 
-#: logic.py:27
+#: .\logic.py:27
 msgid "equals (both genders)"
 msgstr "równy/a"
 
-#: logic.py:29
+#: .\logic.py:29
 msgid "greater, than"
 msgstr "większy, niż"
 
-#: logic.py:30
+#: .\logic.py:30
 msgid "greater, than (female gender)"
 msgstr "większa, niż"
 
-#: logic.py:31
+#: .\logic.py:31
 msgid "greater, than (no gender)"
 msgstr "większe, niż"
 
-#: logic.py:34
+#: .\logic.py:34
 msgid "lesser, than"
 msgstr "mniejszy, niż"
 
-#: logic.py:35
+#: .\logic.py:35
 msgid "lesser, than (female gender)"
 msgstr "mniejsza, niż"
 
-#: logic.py:36
+#: .\logic.py:36
 msgid "lesser, than (no gender)"
 msgstr "mniejsze, niż"
 
-#: logic.py:39
+#: .\logic.py:39
 msgid "greater or equal to"
 msgstr "większy lub równy"
 
-#: logic.py:40
+#: .\logic.py:40
 msgid "greater or equal to(female gender)"
 msgstr "większa lub równa"
 
-#: logic.py:41
+#: .\logic.py:41
 msgid "greater or equal to (no gender)"
 msgstr "większe lub równe"
 
-#: logic.py:45
+#: .\logic.py:45
 msgid "lesser or equal to"
 msgstr "mniejszy lub równy"
 
-#: logic.py:46
+#: .\logic.py:46
 msgid "lesser or equal to (female gender)"
 msgstr "mniejsza lub równa"
 
-#: logic.py:47
+#: .\logic.py:47
 msgid "lesser or equal to (no gender)"
 msgstr "większe lub równe"
 
-#: logic.py:51
+#: .\logic.py:51
 msgid "differs"
 msgstr "różny"
 
-#: logic.py:52
+#: .\logic.py:52
 msgid "differs (female gender)"
 msgstr "różna"
 
-#: logic.py:53
+#: .\logic.py:53
 msgid "differs (no gender)"
 msgstr "różne"
 
-#: logic.py:54
+#: .\logic.py:54
 msgid "differs (both gender)"
 msgstr "różny/a"
 
-#: logic.py:56
+#: .\logic.py:56
 msgid "contains"
 msgstr "zawiera"
 
-#: logic.py:57
+#: .\logic.py:57
 msgid "not contains"
 msgstr "nie zawiera"
 
-#: logic.py:58
+#: .\logic.py:58
 msgid "starts with"
 msgstr "zaczyna się od"
 
-#: logic.py:59
+#: .\logic.py:59
 msgid "not starts with"
 msgstr "nie zaczyna się od"
 
-#: logic.py:61
-msgid "in"
+#: .\logic.py:61
+msgid "in range"
 msgstr "w zakresie"
 
-#: logic.py:62
-msgid "not in"
+#: .\logic.py:62
+msgid "outside range"
 msgstr "poza zakresem"
 
-#: logic.py:307
+#: .\logic.py:336
 msgid "Sort by:"
 msgstr "Sortuj według:"
 
-#: logic.py:307
+#: .\logic.py:336
 msgid "then by"
 msgstr "następnie"
 
-#: models.py:17
+#: .\models.py:17
 msgid "Name"
 msgstr "Nazwa"
 
-#: models.py:20
+#: .\models.py:20
 msgid "Public"
 msgstr "Publiczny"
 
-#: models.py:22
+#: .\models.py:22
 msgid "Make this search publicly available?"
 msgstr "Dostępne dla wszystkich użytkowników?"
 
-#: models.py:23
+#: .\models.py:23
 msgid "Form data (JSON)"
 msgstr "Dane formularza (JSON)"
 
-#: views.py:20
+#: .\views.py:20
 msgid "Form name must not be empty"
 msgstr "Nazwa formularza nie może być pusta."
 
-#: views.py:21
+#: .\views.py:21
 msgid "Error while loading form data"
 msgstr "Błąd podczas wczytywania danych formularza."
 
-#: views.py:22
+#: .\views.py:22
 msgid "Error while parsing form data"
 msgstr "Błąd podczas analizowania danych formularza."
 
-#: views.py:23
+#: .\views.py:23
 msgid "No form data provided"
 msgstr "Nie dostarczono danych formularza."
 
-#: views.py:35
+#: .\views.py:35
 msgid "The ability to remove the last field has been disabled."
 msgstr "Możliwość usunięcia ostatniego pola została wyłaczona."
 
-#: templates/multiseek/fields.html:16 templates/multiseek/index.html:29
+#: .\templates\multiseek\fields.html.py:16
+#: .\templates\multiseek\index.html.py:34
 msgid "Add field"
 msgstr "Dodaj pole"
 
-#: templates/multiseek/fields.html:20 templates/multiseek/index.html:33
+#: .\templates\multiseek\fields.html.py:20
+#: .\templates\multiseek\index.html.py:38
 msgid "Add frame"
 msgstr "Dodaj ramkę"
 
-#: templates/multiseek/fields.html:26 templates/multiseek/fields.html.py:50
+#: .\templates\multiseek\fields.html.py:26
+#: .\templates\multiseek\fields.html.py:50
 msgid "and"
 msgstr "i"
 
-#: templates/multiseek/fields.html:27 templates/multiseek/fields.html.py:51
+#: .\templates\multiseek\fields.html.py:27
+#: .\templates\multiseek\fields.html.py:51
 msgid "or"
 msgstr "lub"
 
-#: templates/multiseek/fields.html:78
+#: .\templates\multiseek\fields.html.py:78
 msgid "Remove this choice"
 msgstr "Usuń ten wybór"
 
-#: templates/multiseek/index.html:17
+#: .\templates\multiseek\index.html.py:22
 msgid "Multiseek"
 msgstr "Multiwyszukiwarka"
 
-#: templates/multiseek/index.html:42
+#: .\templates\multiseek\index.html.py:47
 msgid "Report type: "
 msgstr "Typ raportu:"
 
-#: templates/multiseek/index.html:92
+#: .\templates\multiseek\index.html.py:97
 msgid "descending"
 msgstr "malejąco"
 
-#: templates/multiseek/index.html:108
+#: .\templates\multiseek\index.html.py:113
 msgid "Send query"
 msgstr "Wyślij zapytanie"
 
-#: templates/multiseek/index.html:112
+#: .\templates\multiseek\index.html.py:117
 msgid "Reset form"
 msgstr "Zresetuj formularz"
 
-#: templates/multiseek/index.html:118
+#: .\templates\multiseek\index.html.py:123
 #, python-format
 msgid ""
 "\n"
@@ -222,14 +226,20 @@ msgstr ""
 "formularze.\n"
 "            "
 
-#: templates/multiseek/index.html:127
+#: .\templates\multiseek\index.html.py:132
 msgid "Save form"
 msgstr "Zapisz formularz"
 
-#: templates/multiseek/index.html:132
+#: .\templates\multiseek\index.html.py:137
 msgid "choose form..."
 msgstr "wybierz formularz..."
 
-#: templates/multiseek/results.html:9
+#: .\templates\multiseek\results.html.py:9
 msgid "No elements"
 msgstr "Brak elementów"
+
+#~ msgid "in"
+#~ msgstr "w zakresie"
+
+#~ msgid "not in"
+#~ msgstr "poza zakresem"
