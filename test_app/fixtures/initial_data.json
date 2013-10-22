@@ -41,7 +41,8 @@
             "title": "A book with a title",
             "year": 2013,
             "language": 1,
-            "no_editors": 5
+            "no_editors": 5,
+            "last_updated": "2013-10-22"
         }
     },
 
@@ -52,7 +53,8 @@
             "title": "Second book",
             "year": 2000,
             "language": 1,
-            "no_editors": 5
+            "no_editors": 5,
+            "last_updated": "2013-09-22"
         }
     },
 

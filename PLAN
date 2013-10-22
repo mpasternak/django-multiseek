@@ -1,4 +1,12 @@
 
+Extensibility:
+ * themes?
+    - date field COULD be themeable
+    - jquery-ui OR foundation4, for example
+    - use (for example) foundation4 for all elements
+ * extensibility:
+    - my own field types (including JS) in my project
+
 
 Bug?
 1) is the input json sanitized properly?

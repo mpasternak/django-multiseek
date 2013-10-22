@@ -1,3 +1,4 @@
 django
+dateutil
 django-autocomplete-light
 unidecode

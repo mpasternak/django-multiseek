@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-from multiseek.logic import Ordering, ReportType
+from multiseek.logic import Ordering, ReportType, DateQueryObject
 from multiseek.logic import AutocompleteQueryObject, StringQueryObject, \
     RangeQueryObject, create_registry, ValueListQueryObject, IntegerQueryObject
 from test_app.models import Author, Book, Language
@@ -34,6 +34,12 @@ class CostQueryObject(IntegerQueryObject):
     field_name = "no_editors"
     label = _("Number of editors")
 
+
+class DateLastUpdatedQueryObject(DateQueryObject):
+    field_name = "last_updated"
+    label = _("Last updated on")
+
+
 registry = create_registry(
     Book,
     TitleQueryObject(),
@@ -41,10 +47,11 @@ registry = create_registry(
     YearQueryObject(),
     LanguageQueryObject(),
     CostQueryObject(),
+    DateLastUpdatedQueryObject(),
     ordering=[
         Ordering("", _("(nothing)")),
         Ordering("title", _("title")),
-        Ordering("author", _("authors")),
+        Ordering("authors", _("author")),
         Ordering("year", _("year")),
     ],
     report_types=[

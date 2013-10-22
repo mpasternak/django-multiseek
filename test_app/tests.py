@@ -363,6 +363,25 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         print self.page.page_source
         self.assertNotIn("Server Error (500)", self.page.page_source)
 
+    def test_date_field(self):
+        field = self.page.get_field("field-0")
+
+        select_option_by_text(
+            field['field'], multiseek_registry.DateLastUpdatedQueryObject.label)
+
+        select_option_by_text(
+            field['operation'], multiseek_registry.DateLastUpdatedQueryObject.ops[6])
+        self.assertEquals(
+            self.page.serialize(),
+            [{u'field': u'Last updated on', u'operation': u'in range', u'value': [u'', u'']}])
+
+        select_option_by_text(
+            field['operation'], multiseek_registry.DateLastUpdatedQueryObject.ops[3])
+        self.assertEquals(
+            self.page.serialize(),
+            [{u'field': u'Last updated on', u'operation': u'greater or equal to(female gender)', u'value': u''}])
+
+
 
 class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
     def test_initial(self):

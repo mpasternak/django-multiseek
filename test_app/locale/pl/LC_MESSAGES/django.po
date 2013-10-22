@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-08 19:45-0500\n"
-"PO-Revision-Date: 2013-10-10 13:49+0100\n"
+"POT-Creation-Date: 2013-10-22 13:06+0200\n"
+"PO-Revision-Date: 2013-10-22 13:07+0100\n"
 "Last-Translator: Michał Pasternak <michal.dtz@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -18,69 +18,79 @@ msgstr ""
 "|| n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 1.5.7\n"
 
-#: multiseek_registry.py:14 selenium/test_multiseek.py:200
-#: selenium/test_multiseek.py:201 selenium/test_multiseek.py:202
-#: selenium/test_multiseek.py:203
+#: .\multiseek_registry.py:12 .\tests.py:200 .\tests.py:202 .\tests.py:204
+#: .\tests.py:206
 msgid "Title"
 msgstr "Tytuł"
 
-#: multiseek_registry.py:18
+#: .\multiseek_registry.py:16
 msgid "Author"
 msgstr "Autor"
 
-#: multiseek_registry.py:26 selenium/test_multiseek.py:198
-#: selenium/test_multiseek.py:212
+#: .\multiseek_registry.py:24 .\tests.py:196 .\tests.py:215
 msgid "Year"
 msgstr "Rok"
 
-#: multiseek_registry.py:32 selenium/test_multiseek.py:199
+#: .\multiseek_registry.py:30 .\tests.py:198
 msgid "Language"
 msgstr "Język"
 
-#: multiseek_registry.py:37
+#: .\multiseek_registry.py:35
 msgid "Number of editors"
 msgstr "Liczba redaktorów"
 
-#: multiseek_registry.py:47
+#: .\multiseek_registry.py:40
+msgid "Last updated on"
+msgstr "Data ostatniej aktualizacji"
+
+#: .\multiseek_registry.py:52
 msgid "(nothing)"
 msgstr "(obojętne)"
 
-#: multiseek_registry.py:48
+#: .\multiseek_registry.py:53
 msgid "title"
 msgstr "tytuł"
 
-#: multiseek_registry.py:49
+#: .\multiseek_registry.py:54
 msgid "author"
 msgstr "autor"
 
-#: multiseek_registry.py:50
+#: .\multiseek_registry.py:55
 msgid "year"
 msgstr "rok"
 
-#: multiseek_registry.py:53
+#: .\multiseek_registry.py:58
 msgid "list"
 msgstr "lista"
 
-#: multiseek_registry.py:54
+#: .\multiseek_registry.py:59
 msgid "table"
 msgstr "tabela"
 
-#: selenium/test_multiseek.py:193
+#: .\multiseek_registry.py:60
+msgid "secret"
+msgstr "tajny"
+
+#: .\tests.py:191
 msgid "english"
 msgstr "angielski"
 
-#: selenium/test_multiseek.py:212
+#: .\tests.py:215
 msgid "in"
 msgstr "w"
 
-#: selenium/test_multiseek.py:292 selenium/test_multiseek.py:300
+#: .\tests.py:297 .\tests.py:305
 msgid "polish"
 msgstr "polski"
 
-#: selenium/test_multiseek.py:340 selenium/test_multiseek.py:341
-#: selenium/test_multiseek.py:351
+#: .\tests.py:345 .\tests.py:346 .\tests.py:356
 msgid "or"
 msgstr "lub"
+
+#: .\templates\multiseek\results.html.py:11
+#: .\templates\multiseek\results.html.py:27
+msgid "No elements"
+msgstr "Brak elementów"
 
 #~ msgid "equals"
 #~ msgstr "równy"
