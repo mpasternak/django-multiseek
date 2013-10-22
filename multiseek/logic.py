@@ -531,9 +531,10 @@ class MultiseekRegistry:
 
         expect_operation = False
         last_element = None
+        current_element = None
         cur_frame = frame_counter
 
-        for piece in element:
+        for no, piece in enumerate(element):
             et = type(piece)
 
             if et == list:
@@ -553,7 +554,7 @@ class MultiseekRegistry:
                 ret.extend(result)
 
                 pre_last_element = last_element
-                last_element = "frame-%s" % frame_counter
+                last_frame = "frame-%s" % frame_counter
 
                 expect_operation = True
 
@@ -590,6 +591,7 @@ class MultiseekRegistry:
                 field_counter += 1
 
                 last_element = "field-%s" % field_counter
+                current_element = "field-%s" % (field_counter+1)
 
                 expect_operation = True
 
@@ -598,8 +600,12 @@ class MultiseekRegistry:
                 if not expect_operation:
                     raise ParseError("Operation NOT expected")
 
-                ops.append(u'set_join($("#%(last)s"), "%(piece)s")' % dict(
-                    last=last_element, piece=piece))
+                if type(element[no+1]) == list:
+                    ops.append(u'set_join($("#frame-%(cur_frame)s"), "%(piece)s")' % dict(
+                        cur_frame=cur_frame+1, piece=piece))
+                else:
+                    ops.append(u'set_join($("#%(current)s"), "%(piece)s")' % dict(
+                        current=current_element, piece=piece))
 
                 expect_operation = False
                 pass

@@ -135,6 +135,7 @@ INSTALLED_APPS = (
     'test_app',
     'multiseek',
     'autocomplete_light',
+    'django_nose',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -167,3 +168,5 @@ LOGGING = {
 }
 
 MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

@@ -115,7 +115,7 @@ function setFieldOperationAndTypeField(select) {
 
         case "range":
             element = $(
-                '<span class="range values" style="display: inline-block;">' +
+                '<span class="range values" id="value" style="display: inline-block;">' +
                     '<input type="text" name="value_min" size="4" />-' +
                     '<input type="text" name="value_max" size="4" />' +
                     '</span>');
@@ -485,7 +485,7 @@ function selectWithOperations(field) {
 
 function get_join(field) {
     /* SELECT z wartością LUB i I, czyli łącznik */
-    return field.find("#prev-op");
+    return $(field.find("#prev-op")[0]);
 }
 
 function schowaj_lacznik(pole) {
@@ -546,6 +546,7 @@ function removeField(button) {
         }
 
         frame.remove();
+
         return;
     }
 

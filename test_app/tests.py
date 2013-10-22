@@ -68,7 +68,7 @@ class MultiseekWebPage(wd()):
         ret['selected'] = selected.text()
 
         inner_type = self.registry.field_by_name.get(selected.text()).type
-        ret['type'] = inner_type
+        ret['inner_type'] = inner_type
 
         if inner_type == logic.RANGE:
             v = [element.find_elements_by_name('value_min')[0],
@@ -129,7 +129,9 @@ class MultiseekWebPage(wd()):
 
 
 class MultiseekPageMixin:
-    url = reverse('multiseek:index')
+    def _get_url(self):
+        return reverse('multiseek:index')
+    url = property(_get_url)
 
     def get_page(self):
         self.registry = get_registry(settings.MULTISEEK_REGISTRY)
@@ -149,19 +151,19 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         select_option_by_text(
             field['type'], unicode(multiseek_registry.YearQueryObject.label))
         field = self.page.get_field(FIELD)
-        self.assertEquals(field['type'], logic.RANGE)
+        self.assertEquals(field['inner_type'], logic.RANGE)
         self.assertEquals(len(field['value']), 2)
 
         select_option_by_text(
             field['type'],
             unicode(multiseek_registry.LanguageQueryObject.label))
         field = self.page.get_field(FIELD)
-        self.assertEquals(field['type'], logic.VALUE_LIST)
+        self.assertEquals(field['inner_type'], logic.VALUE_LIST)
 
         select_option_by_text(
             field['type'], unicode(multiseek_registry.AuthorQueryObject.label))
         field = self.page.get_field(FIELD)
-        self.assertEquals(field['type'], logic.AUTOCOMPLETE)
+        self.assertEquals(field['inner_type'], logic.AUTOCOMPLETE)
 
     def test_serialize_form(self):
         frame = self.page.get_frame('frame-0')
@@ -182,9 +184,10 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field = self.page.get_field('field-0')
         field['value'][0].send_keys('1999')
         field['value'][1].send_keys('2000')
-        select_option_by_text(field['prev-op'], "or")
+
 
         field = self.page.get_field('field-1')
+        select_option_by_text(field['prev-op'], "or")
         select_option_by_text(
             field['type'], multiseek_registry.LanguageQueryObject.label)
         field = self.page.get_field('field-1')
@@ -193,17 +196,17 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         self.maxDiff = None
 
         expected = [
-            {u'field': _(u'Year'), u'operation': RANGE_OPS[0],
+            {u'field': u'Year', u'operation': RANGE_OPS[0],
              u'value': [u'1999', u'2000']}, u'or',
-            {u'field': _(u'Language'), u'operation': EQUAL,
+            {u'field': u'Language', u'operation': EQUAL,
              u'value': u'english'}, u'and',
-            {u'field': _(u'Title'), u'operation': CONTAINS,
+            {u'field': u'Title', u'operation': CONTAINS,
              u'value': u'aaapud!'}, u'and',
-            {u'field': _(u'Title'), u'operation': CONTAINS,
+            {u'field': u'Title', u'operation': CONTAINS,
              u'value': u'aaapud!'}, u'and',
-            [{u'field': _(u'Title'), u'operation': CONTAINS,
+            [{u'field': u'Title', u'operation': CONTAINS,
               u'value': u'aaapud!'}], u'and',
-            [{u'field': _(u'Title'), u'operation': CONTAINS, u'value': u''}]
+            [{u'field': u'Title', u'operation': CONTAINS, u'value': u''}]
         ]
 
         self.assertEquals(self.page.serialize(), expected)
@@ -212,7 +215,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
             field = self.page.get_field('field-%i' % n)
             field['close-button'].click()
 
-        expected = [{u'field': _(u'Year'), u'operation': _(u'in'),
+        expected = [{u'field': u'Year', u'operation': u'in range',
                      u'value': [u'1999', u'2000']}]
         self.assertEquals(self.page.serialize(), expected)
 
@@ -298,8 +301,8 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         field = self.page.get_field("field-1")
         self.assertEquals(
-            field['type'],
-            unicode(multiseek_registry.LanguageQueryObject.type))
+            field['type'].val(),
+            unicode(multiseek_registry.LanguageQueryObject.label))
         self.assertEquals(
             field['op'].val(),
             unicode(multiseek_registry.LanguageQueryObject.ops[1]))
@@ -342,7 +345,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         frame = self.page.get_frame('frame-0')
         frame['add_field'].click()
 
-        field = self.page.get_field("field-0")
+        field = self.page.get_field("field-1")
         select_option_by_text(field['prev-op'], unicode(_("or")))
         self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
@@ -353,12 +356,12 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         self.reload()
 
-        field = self.page.get_field("field-0")
+        field = self.page.get_field("field-1")
         self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
     def test_frame_bug(self):
         self.page.find_elements_by_jquery("button#add_frame")[1].click()
-        self.page.find_elements_by_jquery("input[name=close-button]")[1].click()
+        self.page.find_elements_by_jquery("input[id=close-button]")[1].click()
         self.page.find_element_by_jquery("button#sendQueryButton").click()
         self.page.switch_to_frame("if")
         print self.page.page_source
@@ -371,13 +374,13 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
             field['type'], multiseek_registry.DateLastUpdatedQueryObject.label)
 
         select_option_by_text(
-            field['operation'], multiseek_registry.DateLastUpdatedQueryObject.ops[6])
+            field['op'], multiseek_registry.DateLastUpdatedQueryObject.ops[6])
         self.assertEquals(
             self.page.serialize(),
             [{u'field': u'Last updated on', u'operation': u'in range', u'value': [u'', u'']}])
 
         select_option_by_text(
-            field['operation'], multiseek_registry.DateLastUpdatedQueryObject.ops[3])
+            field['op'], multiseek_registry.DateLastUpdatedQueryObject.ops[3])
         self.assertEquals(
             self.page.serialize(),
             [{u'field': u'Last updated on', u'operation': u'greater or equal to(female gender)', u'value': u''}])
@@ -606,8 +609,8 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
         self.page.reset_form()
         self.page.load_form_by_name("foobar")
         self.assertEquals(
-            self.page.find_element_by_jquery("%s:checked" % elem).val(),
-            "1")
+            len(self.page.find_elements_by_jquery("%s:checked" % elem)),
+            1)
 
     def test_save_ordering_box(self):
         elem = "select[name=%s0] option[value=2]" % MULTISEEK_ORDERING_PREFIX
