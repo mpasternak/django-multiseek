@@ -1,4 +1,12 @@
 
+
+
+    UWAGA UWAGA UWAGA
+
+        - wszystkie prodcedury zastepuje SZUKANIEM PO ID
+        - pole ma miec ODPOWIEDNIE WARTOSCI ID
+        bez tego nie da sie tematow (foundation4) zastosowac.
+
 Extensibility:
  * themes?
     - date field COULD be themeable

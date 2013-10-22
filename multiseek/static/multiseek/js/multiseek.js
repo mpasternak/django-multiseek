@@ -18,21 +18,22 @@ function fieldOperationChangedEvent(event) {
     /* Field's operation has been changed. */
     var select = event.currentTarget;
     if (select != undefined) {
-        fieldOperationChanged($(select).parent());
+        fieldOperationChanged(findMyParentField($(select)));
     }
 }
 
 function getFieldType(field) {
-    return types[field.children().first().val()];
+    return types[field.find("#type").val()];
 }
 
 function getFieldOp(field) {
-    return field.children().next().first()[0].selectedIndex;
+    return field.find("#op")[0].selectedIndex;
 }
 
 function getFieldWidget(field) {
-    return $(field.children().next().next()[0]);
+    return $(field.find("#value")[0]);
 }
+
 function fieldOperationChanged(field) {
     field_type = getFieldType(field);
     switch (field_type) {
@@ -41,7 +42,6 @@ function fieldOperationChanged(field) {
             w = getFieldWidget(field);
             if (op > 5) {
                 // range
-                console.log('range');
                 if (w.children().length == 1) {
                     // add extra field
                     w.append("-");
@@ -52,7 +52,6 @@ function fieldOperationChanged(field) {
                 }
             } else {
                 // single field
-                console.log('single');
                 if (w.children().length > 1) {
                     // remove extra field
                     w.contents()[1].remove();
@@ -66,29 +65,52 @@ function fieldOperationChanged(field) {
     }
 }
 
+function findMyParentFrame(element){
+    var parent = $(element).parent();
+    var klass = parent.attr("class");
+    if (klass && klass.startsWith("frame"))
+        return parent;
+    return findMyParentFrame(parent);
+}
+function findMyParentFieldset(element){
+    var parent = $(element).parent();
+    var id = parent.attr("id");
+    if (id && id.startsWith("fieldset"))
+        return parent;
+    return findMyParentFieldset(parent);
+}
+
+function findMyParentField(element){
+    parent = $(element).parent();
+    if (parent.attr("id").startsWith("field-"))
+        return parent;
+    return findMyParentField(parent);
+}
+
 function setFieldOperationAndTypeField(select) {
     /* Ustaw pole z operacjami (drugi select) ORAZ pole wyszukiwania (czyli TRZECIE pole) */
-    var select = $(select);
+    var field = findMyParentField(select);
 
-    var pole = select.val();
+    var typ = field.find("#type").val();
+    var type_field = getFieldType(field);
+    var ops_select = field.find("select#op");
 
-    var ops_select = select.next();
     ops_select.children().remove();
-    ops[pole].forEach(function (value) {
+    ops[typ].forEach(function (value) {
         ops_select.append($('<option/>').val(value).html(value));
     });
 
-    var type_field = ops_select.next();
 
-    var typ = types[pole];
+    var value_field = field.find("#value");
+
     var element;
 
-    switch (typ) {
+    switch (type_field) {
         case "date":
             element = $('<input type="text" name="value" placeholder="' +
                 gettext('today') + '" size="10" />');
             element.datepicker($.datepicker.regional[djangoLanguageCode]);
-            element = $('<div style="display: inline;"/>').append(element);
+            element = $('<div style="display: inline;" id="value" />').append(element);
             break;
 
         case "range":
@@ -101,14 +123,14 @@ function setFieldOperationAndTypeField(select) {
 
         case "value-list":
             element = $('<select class="values" name="value_list" />');
-            value_lists[pole].forEach(function (v) {
+            value_lists[typ].forEach(function (v) {
                 element.append($('<option/>').val(v).html(v));
             });
             break;
 
         case "autocomplete":
             element = $("#autocomplete-__no__").parent().clone();
-            element.attr("data-autocomplete-url", autocompletes[pole]);
+            element.attr("data-autocomplete-url", autocompletes[typ]);
 
             element.children().each(function (numer, node) {
                 updateNodeAttributes($(node), autocomplete_counter);
@@ -123,8 +145,10 @@ function setFieldOperationAndTypeField(select) {
             break;
     }
 
-    element.insertBefore(type_field);
-    type_field.remove();
+    current = field.find("#value");
+    element = element.attr("id", "value");
+    element.insertBefore(current);
+    current.remove();
 
 }
 
@@ -223,7 +247,6 @@ function getFieldValue(field) {
     switch (types[field_type]) {
         case "date":
             op_idx = field_dict.second_select[0].selectedIndex;
-            console.log(op_idx);
             if (op_idx > 5) {
                 min = third_something.children().first().val();
                 max = third_something.children().first().next().val();
@@ -313,7 +336,7 @@ function serialize(topNode, level) {
         } else {
             ret = ret.concat([serialize($(elem), level + 1), ]);
 
-            next_operation = $(elem).children().last().prev();
+            next_operation = getNextOperation($(elem)); // .children().last().prev();
             if (next_operation.css("visibility") == "visible")
                 ret = ret.concat(next_operation.val());
         }
@@ -451,18 +474,18 @@ function loadForm(select) {
 function selectWithFields(field) {
     /* select tag, containing the fields - which is, the first select,
      containing field like: first name, last name, operation, title... */
-    return field.children().first();
+    return field.find("#type");
 }
 
 function selectWithOperations(field) {
     /* returns a select tag containing the list of operations available
      for a given field, which is: equal, not equal, different, exact... */
-    return selectWithFields(field).next();
+    return field.find("#op");
 }
 
-function get_join(pole) {
+function get_join(field) {
     /* SELECT z wartością LUB i I, czyli łącznik */
-    return pole.children().last().prev();
+    return field.find("#next-op");
 }
 
 function schowaj_lacznik(pole) {
@@ -511,13 +534,15 @@ function addFieldViaButton(button) {
 }
 
 function removeField(button) {
-    var field = $(button).parent();
+    var field = findMyParentField($(button));
+    var fieldset = findMyParentFieldset($(button));
+    var frame = findMyParentFrame($(button));
 
     /* ostatni element w RAMCE */
-    if (field.parent().children().length == 1) {
+    if (fieldset.children().length == 1) {
 
         /* Jeżeli to ostatnia ramka, to się zbuntuj: */
-        if (field.parent().parent().parent().attr('id') == 'frame-0') {
+        if (findMyParentFrame(fieldset).attr("id") == 'frame-0') {
             alert(last_field_remove_message);
             return;
         }
@@ -525,21 +550,19 @@ function removeField(button) {
         /* Jeżeli nie -- usuń pustą ramkę: */
 
         /* ... ale wcześniej schowaj łącznik poprzedniego pola: */
-        var poprzednie_pole = field.parent().parent().parent().prev();
-        schowaj_lacznik(poprzednie_pole);
+        schowaj_lacznik(frame.prev());
 
         /* ... i spokojnie usuń pustą ramkę */
-        field.parent().parent().parent().remove();
-
+        frame.remove(); // parent().parent().parent().remove();
 
         return;
     }
 
-    if (field.parent().children().last().attr('id') == field.attr('id')) {
-        /* ostatni element w wierszu */
-        var poprzednie_pole = field.parent().children().last().prev();
-        schowaj_lacznik(poprzednie_pole);
-    }
+    // Hide the join op for PREVIOUS field if this is the last 2 fields
+    // in this fieldset
+    if (fieldset.children().length == 2)
+        if (field.prev())
+            schowaj_lacznik(field.prev());
 
     field.remove();
 }

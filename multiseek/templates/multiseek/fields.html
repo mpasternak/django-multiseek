@@ -34,24 +34,24 @@
 
         <field id="field-__no__" style="display: none;" class="field">
 
-            <select name="field">
+            <select name="field" id="type">
                 <option value="1">field 1</option>
                 <option value="1">field 2</option>
             </select>
 
-            <select name="operation" class="operations">
+            <select name="operation" class="operations" id="op">
                 <option value="1">op 1</option>
                 <option value="1">op 2</option>
             </select>
 
-            <input name="value">
+            <input name="value" id="value">
 
-            <select name="next_operation" style="visibility: hidden;">
+            <select name="next_operation" id="next-op" style="visibility: hidden;">
                 <option value="{{ js_and }}">{% trans "and" %}</option>
                 <option value="{{ js_or }}">{% trans "or" %}</option>
             </select>
 
-            <input type="button" value="X" name="close_button"
+            <input type="button" value="X" id="close-button" name="close_button"
                    onclick="removeField(this);"/>
 
         </field>
@@ -71,7 +71,7 @@
             <span class="deck">
             </span>
 
-            <select style="display:none" class="value-select" name="autocomplete-__no__-value">
+            <select style="display:none" class="value-select" id="value" name="autocomplete-__no__-value">
             </select>
 
             <span style="display:none" class="remove">
