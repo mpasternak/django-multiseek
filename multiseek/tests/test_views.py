@@ -52,7 +52,7 @@ class TestViews(RegistryMixin, TestCase):
     def test_multiseek(self):
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
             {'form_data':
-                 [dict(field="foo", operation=unicode(EQUALITY_OPS_ALL[0]), value="foo")]})
+                 [None, dict(field="foo", prev_op="or", operator=unicode(EQUALITY_OPS_ALL[0]), value="foo")]})
 
         mfp = MultiseekFormPage(registry=self.registry)
         mfp.request = self.request
@@ -64,7 +64,7 @@ class TestViews(RegistryMixin, TestCase):
         self.assertEquals(ret['js_value_lists'], '{"baz": ["a", "b", "c"]}')
         self.assertEquals(
             ret['js_init'],
-            u'addField($("#frame-0"), "foo", "' + unicode(EQUAL) + '", "foo");\n')
+            u"$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');\n")
 
     def test_reset_form(self):
         self.request.session[MULTISEEK_SESSION_KEY] = '123'

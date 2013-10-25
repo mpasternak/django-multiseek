@@ -414,7 +414,7 @@ class MultiseekRegistry:
                     field['operator'], field['field']))
 
         if field['prev_op'] not in [AND, OR, None]:
-            raise UnknownOperation("%r" % elem)
+            raise UnknownOperation("%r" % field)
 
         return f.query_for(field['value'], field['operator'])
 
@@ -529,13 +529,18 @@ class MultiseekRegistry:
                         info.frame, elem[0]))
                 result.extend(self.recreate_form_recursive(elem, info))
             else:
-                s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', '%s')"
-                print "HAHAHA" * 200
-                print elem['value']
-                print type(elem['value'])
+                if elem['prev_op'] not in [AND, OR, None]:
+                    raise ParseError
+
+                prev_op = elem['prev_op']
+                if prev_op == None or prev_op == 'None':
+                    prev_op = 'null';
+                else:
+                    prev_op = "'" + prev_op + "'"
+                s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', %s)"
                 result.append(s % (
                     info.frame, elem['field'], elem['operator'], elem['value'],
-                    elem['prev_op']))
+                    prev_op))
                 info.field += 1
 
         return result

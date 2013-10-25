@@ -12,8 +12,8 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
 from multiseek.util import make_field
 
-test_json = json.dumps({'form_data': [
-    dict(field='foo', operation=unicode(EQUALITY_OPS_ALL[0]), value='foo')]})
+test_json = json.dumps({'form_data': [None,
+    dict(field='foo', operator=unicode(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]})
 
 
 class TestQueryObject(TestCase):
@@ -149,33 +149,33 @@ class TestMultiseekRegistry(TestCase):
         self.assertRaises(
             UnknownField,
             self.registry.parse_field,
-            dict(field='XXX', operation='IS', value='LOL'))
+            dict(field='XXX', operator='IS', value='LOL', prev_op=None))
 
         self.assertRaises(
             UnknownOperation,
             self.registry.parse_field,
-            dict(field='foo', operation='XXX', value='FO'))
+            dict(field='foo', operator='XXX', value='FO', prev_op=None))
 
         res = self.registry.parse_field(
-            dict(field='foo', operation=EQUALITY_OPS_ALL[0], value='foo'))
+            dict(field='foo', operator=EQUALITY_OPS_ALL[0], value='foo', prev_op=None))
 
         self.assertEquals(str(res), "(AND: ('foo', 'foo'))")
 
     def test_get_recursive_list(self):
-        input = [
-            [[dict(field='foo', operation=EQUALITY_OPS_ALL[0], value='foo')]],
-            "BAD OP",
-            dict(field='foo', operation=EQUALITY_OPS_ALL[0], value='bar')]
+        input = [None,
+            [None, [None, dict(field='foo', operator=unicode(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]],
+            dict(field='foo', operator=unicode(EQUALITY_OPS_ALL[0]), value='bar', prev_op="BAD OP")]
 
         self.assertRaises(
             UnknownOperation,
             self.registry.get_query_recursive,
             input)
 
-        input[1] = OR
+        input[2]['prev_op'] = OR
 
         res = self.registry.get_query_recursive(input)
-
+        import pprint
+        pprint.pprint(input)
         self.assertEquals(str(res), "(OR: ('foo', 'foo'), ('foo', 'bar'))")
 
     def test_get_query(self):
@@ -191,12 +191,14 @@ class TestMultiseekRegistry(TestCase):
         self.registry.get_query_for_model(None)
 
     def test_recreate_form(self):
-        op = EQUALITY_OPS_ALL[0]
-        fld = dict(field='foo', operation=op, value=u'foo')
+        op = unicode(EQUALITY_OPS_ALL[0])
+        fld_noop = dict(field='foo', operator=op, value=u'foo', prev_op=None)
+        fld_and = dict(field='foo', operator=op, value=u'foo', prev_op=AND)
+        fld_or = dict(field='foo', operator=op, value=u'foo', prev_op=OR)
         res = self.registry.recreate_form(
             {'form_data':
-                 [fld, OR, fld, AND, [fld, OR, fld], AND, fld, AND,
-                  [fld, OR, fld]],
+                 [None, fld_noop, fld_or, [AND, fld_noop, fld_or], fld_and,
+                  [OR, fld_noop, fld_or]],
              'ordering': {
                  '%s1' % MULTISEEK_ORDERING_PREFIX: "1",
                  '%s1_dir' % MULTISEEK_ORDERING_PREFIX: "1",
@@ -205,21 +207,15 @@ class TestMultiseekRegistry(TestCase):
 
         self.maxDiff = None
 
-        ex = u"""addField($("#frame-0"), "foo", "%(equal)s", "foo");
-addField($("#frame-0"), "foo", "%(equal)s", "foo");
-addFrame($("#frame-0"));
-addField($("#frame-1"), "foo", "%(equal)s", "foo");
-addField($("#frame-1"), "foo", "%(equal)s", "foo");
-set_join($("#field-2"), "or");
-addField($("#frame-0"), "foo", "%(equal)s", "foo");
-addFrame($("#frame-0"));
-addField($("#frame-2"), "foo", "%(equal)s", "foo");
-addField($("#frame-2"), "foo", "%(equal)s", "foo");
-set_join($("#field-5"), "or");
-set_join($("#field-0"), "or");
-set_join($("#field-1"), "and");
-set_join($("#frame-1"), "and");
-set_join($("#field-4"), "and");
+        ex = u"""$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
+$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
+$('#frame-0').multiseekFrame('addFrame', 'and');
+$('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
+$('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
+$('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', 'and');
+$('#frame-1').multiseekFrame('addFrame', 'or');
+$('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
+$('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
 \t\t\t$($("select[name=order_1]").children()[1]).attr("selected", "");
 \t\t\t$("input[name=order_1_dir]").attr("checked", "");
 \t\t\t$($("select[name=_ms_report_type]").children()[1]).attr("selected", "");
@@ -242,8 +238,9 @@ set_join($("#field-4"), "and");
         value = 'foo'
 
         field = make_field(f, v, value)
+        field_or = make_field(f, v, value, "lol")
 
-        form = {'form_data': [field, field, field, OR, field]}
+        form = {'form_data': [None, field, field, field, field_or]}
 
         self.assertRaises(
             ParseError, self.registry.recreate_form, form)

@@ -34,6 +34,7 @@ class MultiseekWebPage(wd(Firefox)):
 
     def __init__(self, registry, *args, **kw):
         super(MultiseekWebPage, self).__init__(*args, **kw)
+        self.set_page_load_timeout(5)
         self.registry = registry
 
     def get_frame(self, id):
@@ -425,7 +426,7 @@ class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
             self.page.find_element_by_jquery, "#saveFormButton")
 
 
-class TestPublicReportTypes(MultiseekPageMixin, SeleniumTestCase):
+class TestPublicReportTypes(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
     def test_secret_report_invisible(self):
         elem = self.page.find_element_by_name("_ms_report_type")
         self.assertEquals(len(elem.children()), 2)
