@@ -361,9 +361,9 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         # and then you refresh the page, the operation is changed to "AND"
 
         frame = self.page.get_frame('frame-0')
-        frame['add_field'].click()
+        frame['add_field'].send_keys(Keys.ENTER)
 
-        field = self.page.get_field("field-0")
+        field = self.page.get_field("field-1")
         select_option_by_text(field['prev-op'], unicode(_("or")))
         self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
