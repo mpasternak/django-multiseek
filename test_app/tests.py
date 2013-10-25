@@ -7,12 +7,12 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django_any import any_model
 from django.conf import settings
-from selenium_helpers import SeleniumTestCase, select_option_by_text, \
-    get_selected_option, wd
-
 from selenium.common.exceptions import InvalidSelectorException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
+
+from selenium_helpers import SeleniumTestCase, select_option_by_text, \
+    get_selected_option, wd, SeleniumGlobalBrowserTestCase, SeleniumAdminGlobalBrowserTestCase, SeleniumAdminTestCase
 from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
 from multiseek import logic
@@ -26,9 +26,9 @@ from models import Author
 
 FRAME = "frame-0"
 FIELD = 'field-0'
+from selenium.webdriver import Firefox
 
-
-class MultiseekWebPage(wd()):
+class MultiseekWebPage(wd(Firefox)):
     """Helper functions, that take care of the multiseek form web page
     """
 
@@ -42,9 +42,12 @@ class MultiseekWebPage(wd()):
         frame = self.find_element_by_id(id)
         ret = dict()
         ret['frame'] = frame
-        ret['add_field'] = frame.children()[0].children()[1]
-        ret['add_frame'] = frame.children()[0].children()[2]
-        ret['fields'] = frame.children()[0].children()[0].children()
+        ret['add_field'] = frame.children('fieldset').children(
+            "button#add_field")
+        ret['add_frame'] = frame.children('fieldset').children(
+            "button#add_frame")
+        ret['fields'] = frame.children('fieldset').children(
+            "div#field-list").children()
         return ret
 
     def extract_field_data(self, element):
@@ -76,14 +79,14 @@ class MultiseekWebPage(wd()):
 
         elif inner_type == logic.AUTOCOMPLETE:
             # v = element.children()[3] <-- SELECT z wartościami
-            widget = element.children()[2]
+            widget = element.find_elements_by_id("value")[0]
             v = widget.children()[0] # INPUT do wpisywania tekstu
 
         elif inner_type == logic.VALUE_LIST:
-            v = element.find_elements_by_name('value_list')[0]
+            v = element.find_elements_by_id('value')[0]
 
         elif inner_type == logic.STRING:
-            v = element.find_elements_by_name('value')[0]
+            v = element.find_elements_by_id('value')[0]
 
         else:
             raise Exception("Unknown type: %r" % inner_type)
@@ -98,16 +101,18 @@ class MultiseekWebPage(wd()):
     def serialize(self):
         """Zwraca wartość funkcji serialize() dla formularza, w postaci
         listy -- czyli obiekt JSON"""
-        return self.execute_script('''return serialize($('#frame-0'));''')
+        return self.execute_script(
+            '''return $('#frame-0').multiseekFrame('serialize');''')
 
     def get_field_value(self, field):
         return self.execute_script("""
-        return getFieldValue($("#%s"));
+        return $("#%s").multiseekField("getValue");
         """ % field)
 
     def add_field(self, frame, label, op, value):
         self.execute_script("""
-        addField($("#%(frame)s"), "%(label)s", "%(op)s", %(value)s);
+
+        $("#%(frame)s").multiseekFrame("addField", "%(label)s", "%(op)s", %(value)s);
         """ % dict(frame=frame,
                    label=unicode(label),
                    op=unicode(op),
@@ -120,6 +125,7 @@ class MultiseekWebPage(wd()):
             if option.text() == name:
                 option.click()
                 self.switch_to_alert().accept()
+                self.wait_for_selector("select[name=order_0]", True)
                 return
 
         raise Exception("Form named %r not found" % name)
@@ -127,18 +133,26 @@ class MultiseekWebPage(wd()):
     def reset_form(self):
         self.find_element_by_id("resetFormButton").click()
 
+    def logout(self):
+        self.get("%sadmin/logout" % self.live_server_url)
+
+
 
 class MultiseekPageMixin:
+    pageClass = MultiseekWebPage
+
+    def get_page_kwargs(self):
+        self.registry = get_registry(settings.MULTISEEK_REGISTRY)
+        return dict(
+            #desired_capabilities={'browserName': 'firefox'},
+            registry=self.registry)
+
     def _get_url(self):
         return reverse('multiseek:index')
     url = property(_get_url)
 
-    def get_page(self):
-        self.registry = get_registry(settings.MULTISEEK_REGISTRY)
-        return MultiseekWebPage(self.registry)
 
-
-class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
+class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
     def test_multiseek(self):
         field = self.page.get_field(FIELD)
         # On init, the first field will be selected
@@ -185,7 +199,6 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field['value'][0].send_keys('1999')
         field['value'][1].send_keys('2000')
 
-
         field = self.page.get_field('field-1')
         select_option_by_text(field['prev-op'], "or")
         select_option_by_text(
@@ -230,26 +243,30 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field = self.page.get_field(FIELD)
         select_option_by_text(
             field['type'], multiseek_registry.AuthorQueryObject.label)
+        self.page.wait_for_selector("input[placeholder='type to lookup...']",
+                                    True)
 
         field = self.page.get_field(FIELD)
 
         field['value'].send_keys('smit')
-        self.page.wait_for_selector(".yourlabs-autocomplete", True)
 
         field['value'].send_keys(Keys.ARROW_DOWN)
         field['value'].send_keys(Keys.RETURN)
 
         def f(selenium):
-            elem = self.page.find_element_by_jquery(".yourlabs-autocomplete")
+            elem = self.page.find_element_by_jquery(
+                "span.yourlabs-autocomplete")
             return not elem.visible()
 
         WebDriverWait(self, 10).until(
             lambda driver: f(driver))
 
         got = self.page.serialize()
-        expect = [make_field(
-            multiseek_registry.AuthorQueryObject,
-            EQUAL, unicode(Author.objects.filter(last_name='Smith')[0].pk))]
+        expect = [None,
+                  make_field(
+                      multiseek_registry.AuthorQueryObject,
+                      EQUAL,
+                      unicode(Author.objects.filter(last_name='Smith')[0].pk))]
 
         self.assertEquals(got, expect)
 
@@ -316,7 +333,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
             [1, 'John Smith'])
 
         field = self.page.get_field_value("field-1")
-        self.assertEquals(field['value'], '1')
+        self.assertEquals(field, '1')
 
     def test_add_field_string(self):
         self.page.add_field(
@@ -326,17 +343,17 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
             "aaapud!")
 
         field = self.page.get_field_value("field-1")
-        self.assertEquals(field['value'], 'aaapud!')
+        self.assertEquals(field, 'aaapud!')
 
     def test_add_field_range(self):
         self.page.add_field(
             FRAME,
             multiseek_registry.YearQueryObject.label,
             multiseek_registry.YearQueryObject.ops[0],
-            [1000, 2000])
+            "[1000, 2000]")
 
         field = self.page.get_field_value("field-1")
-        self.assertEquals(field['value'], [u'1000', u'2000'])
+        self.assertEquals(field, "[1000,2000]")
 
     def test_refresh_bug(self):
         # There's a bug, that when you submit the form with "OR" operation,
@@ -377,17 +394,19 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
             field['op'], multiseek_registry.DateLastUpdatedQueryObject.ops[6])
         self.assertEquals(
             self.page.serialize(),
-            [{u'field': u'Last updated on', u'operation': u'in range', u'value': [u'', u'']}])
+            [{u'field': u'Last updated on', u'operation': u'in range',
+              u'value': [u'', u'']}])
 
         select_option_by_text(
             field['op'], multiseek_registry.DateLastUpdatedQueryObject.ops[3])
         self.assertEquals(
             self.page.serialize(),
-            [{u'field': u'Last updated on', u'operation': u'greater or equal to(female gender)', u'value': u''}])
+            [{u'field': u'Last updated on',
+              u'operation': u'greater or equal to(female gender)',
+              u'value': u''}])
 
 
-
-class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
+class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
     def test_initial(self):
         # Without SearchForm objects, the formsSelector is invisible
         elem = self.page.find_element_by_jquery("#formsSelector")
@@ -411,34 +430,25 @@ class TestPublicReportTypes(MultiseekPageMixin, SeleniumTestCase):
         elem = self.page.find_element_by_name("_ms_report_type")
         self.assertEquals(len(elem.children()), 2)
 
-class LoggedInTestCase(SeleniumTestCase):
-    def setUp(self):
-        super(LoggedInTestCase, self).setUp()
 
-        LOGIN = PASSWORD = "test"
+class TestPublicReportTypesLoggedIn(MultiseekPageMixin, SeleniumAdminGlobalBrowserTestCase):
 
-        User.objects.create_superuser(
-            username=LOGIN, password=PASSWORD, email='foo@bar.com')
-        self.login_via_admin(LOGIN, PASSWORD, then=reverse("multiseek:index"))
-
-
-
-class TestPublicReportTypesLoggedIn(MultiseekPageMixin, LoggedInTestCase):
     def test_secret_report_visible(self):
         elem = self.page.find_element_by_name("_ms_report_type")
         self.assertEquals(len(elem.children()), 3)
 
 
-class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
-
+class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminGlobalBrowserTestCase):
     def test_save_form_logged_in(self):
+        self.page.wait_for_selector("#saveFormButton")
         self.assertEquals(
             self.page.find_element_by_jquery("#saveFormButton").visible(),
             True)
 
     def click_save_button(self):
+        self.page.wait_for_selector("#saveFormButton")
         button = self.page.find_element_by_jquery("#saveFormButton")
-        button.click()
+        button.send_keys(Keys.ENTER)
 
     def save_form_as(self, name):
         self.click_save_button()
@@ -483,7 +493,7 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
 
     def test_save_form_save(self):
         self.assertEquals(SearchForm.objects.all().count(), 0)
-
+        self.reload()
         self.click_save_button()
         alert = self.page.switch_to_alert()
         alert.dismiss()
@@ -546,11 +556,12 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
             [2000, 2010])
         SearchForm.objects.create(
             name="lol",
-            owner=User.objects.all()[0],
+            owner=User.objects.create(username='foo', password='bar'),
             public=True,
-            data=json.dumps({"form_data": [fld]}))
-
+            data=json.dumps({"form_data": [None, fld]}))
+        time.sleep(1)
         self.page.load_form_by_name('lol')
+        time.sleep(1)
 
         # SERVER ERROR 500 here and I don't know why!
         field = self.page.extract_field_data(
@@ -575,21 +586,23 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, LoggedInTestCase):
         v = self.registry.fields[0].ops[0]
         value = 'foo'
 
-        field = make_field(f, v, value)
+        field = make_field(f, v, value, OR)
 
-        form = [
-            [field],
-            OR,
-            [field, OR, field, OR, field],
-            OR,
-            [field, OR, field, OR, field]
+        form = [None, field,
+                [OR, field, field, field],
+                [OR, field, field, field]
         ]
+
+        data = json.dumps({"form_data": form})
+
+        user = User.objects.create(
+            username='foo', password='bar')
 
         SearchForm.objects.create(
             name="bug-2",
-            owner=User.objects.all()[0],
+            owner=user,
             public=True,
-            data=json.dumps({"form_data": form}))
+            data=data)
         self.page.load_form_by_name('bug-2')
         elements = self.page.find_elements_by_jquery(
             '[name=prev-op]:visible')

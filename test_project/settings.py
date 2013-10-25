@@ -170,3 +170,6 @@ LOGGING = {
 MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+SELENIUM_DRIVER = "Remote"
+SELENIUM_CAPABILITIES = {"browser": "firefox"}

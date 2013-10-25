@@ -331,6 +331,14 @@ class ReportType(namedtuple("ReportType", "id label public")):
         return super(ReportType, cls).__new__(cls, id, label, public)
 
 
+class _FrameInfo:
+    frame = None
+    field = None
+
+    def __init__(self, frame=-1, field=0):
+        self.frame = frame
+        self.field = field
+
 class MultiseekRegistry:
     """This is a base class for multiseek registry. A registry is a list
     of registered fields, that will be used to render the multiseek form
@@ -392,7 +400,7 @@ class MultiseekRegistry:
         :returns: QueryObject
         :rtype: multiseek.logic.QueryObject subclass
         """
-        for key in ['field', 'operation', 'value']:
+        for key in ['field', 'operator', 'value', "prev_op"]:
             if key not in field:
                 raise ParseError("Key %s not found in field %r" % (key, field))
 
@@ -400,59 +408,44 @@ class MultiseekRegistry:
         if f is None:
             raise UnknownField("Field type %r not found!" % field)
 
-        if field['operation'] not in f.ops:
+        if field['operator'] not in f.ops:
             raise UnknownOperation(
                 "Operation %r not valid for field %r" % (
-                    field['operation'], field['field']))
+                    field['operator'], field['field']))
 
-        return f.query_for(field['value'], field['operation'])
+        if field['prev_op'] not in [AND, OR, None]:
+            raise UnknownOperation("%r" % elem)
 
-    def get_query_recursive(self, lst):
+        return f.query_for(field['value'], field['operator'])
+
+    def get_query_recursive(self, data):
         """Recursivley get query, basing on a list of elements.
         """
 
-        if not lst:
-            return None
+        ret = None
 
-        count = -1
+        for elem in data[1:]:
+            if type(elem) == list:
+                qobj = self.get_query_recursive(elem)
+                prev_op = elem[0]
+            else:
+                qobj = self.parse_field(elem)
+                prev_op = elem['prev_op']
 
-        previous = None
-        operation = None
-
-        while count < len(lst) - 1:
-
-            count += 1
-
-            elem = lst[count]
-            d = type(elem)
-
-            if d == list:
-                res = self.get_query_recursive(elem)
-
-            elif d == dict:
-                res = self.parse_field(elem)
-
-            elif d == str or d == unicode:
-                if elem not in [AND, OR]:
-                    raise UnknownOperation("%r" % elem)
-
-                if elem == AND:
-                    operation = '__and__'
-                elif elem == OR:
-                    operation = '__or__'
-                else:
-                    raise Exception
-
+            if ret is None:
+                ret = qobj
                 continue
 
-            if previous is None:
-                previous = res
-                continue
+            if prev_op == AND:
+                ret = ret & qobj
+            elif prev_op == OR:
+                ret = ret | qobj
+            else:
+                raise UnknownOperation("%s not expected" % elem['prev_op'])
 
-            method = getattr(previous, operation)
-            previous = method(res)
-
-        return previous
+        print "X" * 90
+        print ret
+        return ret
 
     def get_query(self, data):
         """Return a query for a given JSON.
@@ -525,97 +518,27 @@ class MultiseekRegistry:
                 retval = retval.order_by(*sb)
         return retval
 
-    def recreate_form_recursive(self, element, frame_counter, field_counter):
-        ret = []
-        ops = []
+    def recreate_form_recursive(self, element, info):
+        result = []
+        info.frame += 1
 
-        expect_operation = False
-        last_element = None
-        current_element = None
-        cur_frame = frame_counter
-
-        for no, piece in enumerate(element):
-            et = type(piece)
-
-            if et == list:
-                if expect_operation:
-                    raise ParseError("Operation expected")
-
-                frame_counter += 1
-
-                if frame_counter >= 0:
-                    # Frame "zero" is created, so:
-                    ret.append(u'addFrame($("#frame-%s"))' % (cur_frame))
-
-                result, frame_counter, field_counter = \
-                    self.recreate_form_recursive(
-                        piece, frame_counter, field_counter)
-
-                ret.extend(result)
-
-                pre_last_element = last_element
-                last_frame = "frame-%s" % frame_counter
-
-                expect_operation = True
-
-            elif et == dict:
-                if expect_operation:
-                    raise ParseError("Operation expected")
-
-                field = self.field_by_name.get(piece['field'])
-
-                if field is None:
-                    raise UnknownField(piece['field'])
-
-                if field.type == AUTOCOMPLETE:
-                    try:
-                        value = json.dumps([int(piece['value']), unicode(
-                            field.model.objects.get(pk=piece['value']))])
-                    except field.model.DoesNotExist:
-                        value = ''
-                else:
-                    try:
-                        value = json.dumps(piece['value'])
-                    except KeyError:
-                        raise ParseError(
-                            "Field %r has no value" % piece['field'])
-
-                ret.append(
-                    u'addField($("#frame-%(cur_frame)s"), "%(type)s", '
-                    u'"%(op)s", %(value)s)' % dict(
-                        cur_frame=cur_frame,
-                        type=re.escape(piece['field']),
-                        op=re.escape(piece['operation']),
-                        value=value))
-
-                field_counter += 1
-
-                last_element = "field-%s" % field_counter
-                current_element = "field-%s" % (field_counter+1)
-
-                expect_operation = True
-
-            elif et == unicode or et == str:
-                # last OPERATION
-                if not expect_operation:
-                    raise ParseError("Operation NOT expected")
-
-                if type(element[no+1]) == list:
-                    ops.append(u'set_join($("#frame-%(cur_frame)s"), "%(piece)s")' % dict(
-                        cur_frame=cur_frame+1, piece=piece))
-                else:
-                    ops.append(u'set_join($("#%(current)s"), "%(piece)s")' % dict(
-                        current=current_element, piece=piece))
-
-                expect_operation = False
-                pass
-
+        for elem in element[1:]:
+            if type(elem) == list:
+                result.append(
+                    "$('#frame-%s').multiseekFrame('addFrame', '%s')" % (
+                        info.frame, elem[0]))
+                result.extend(self.recreate_form_recursive(elem, info))
             else:
-                raise TypeError(et)
+                s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', '%s')"
+                print "HAHAHA" * 200
+                print elem['value']
+                print type(elem['value'])
+                result.append(s % (
+                    info.frame, elem['field'], elem['operator'], elem['value'],
+                    elem['prev_op']))
+                info.field += 1
 
-        ret.extend(ops)
-
-        return ret, frame_counter, field_counter
+        return result
 
     def recreate_form(self, data):
         """Recreate a JavaScript code to create a given form, basing
@@ -626,15 +549,11 @@ class MultiseekRegistry:
         :rtype: safestr
         """
 
-        frame_counter = 0
-        field_counter = -1
 
-        # Pre-0.9.2 compatibility
-        if type(data) == list:
-            data = {"form_data": data}
+        info = _FrameInfo()
 
-        result, frame_counter, field_counter = self.recreate_form_recursive(
-            data['form_data'], frame_counter, field_counter)
+        result = self.recreate_form_recursive(
+            data['form_data'], info)
 
         if data.has_key("ordering"):
             for no, elem in enumerate(self.order_boxes):

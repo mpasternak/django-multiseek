@@ -103,8 +103,9 @@ when building the form interactivley -->
     /* After loading the document, we initialize first frame
      /* ------------------------------------------------------ */
     $(document).ready(function () {
+        $("#frame-0").multiseekFrame();
         {% if not js_init %}
-            addField($("#frame-0"), fields[0], ops[fields[0]][0], "");
+            $("#frame-0").multiseekFrame("addField");
         {% else %}
             {{ js_init|safe }}
         {% endif %}
