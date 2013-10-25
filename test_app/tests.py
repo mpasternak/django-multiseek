@@ -12,8 +12,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
 from selenium_helpers import SeleniumTestCase, select_option_by_text, \
-    get_selected_option, wd, SeleniumGlobalBrowserTestCase, SeleniumAdminGlobalBrowserTestCase, SeleniumAdminTestCase
-from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE
+    get_selected_option, wd, SeleniumTestCase, SeleniumAdminTestCase, SeleniumAdminTestCase
+from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE, AND
 from multiseek.models import SearchForm
 from multiseek import logic
 from multiseek.logic import get_registry, RANGE_OPS, EQUAL, CONTAINS
@@ -34,7 +34,6 @@ class MultiseekWebPage(wd(Firefox)):
 
     def __init__(self, registry, *args, **kw):
         super(MultiseekWebPage, self).__init__(*args, **kw)
-        self.set_page_load_timeout(5)
         self.registry = registry
 
     def get_frame(self, id):
@@ -43,12 +42,12 @@ class MultiseekWebPage(wd(Firefox)):
         frame = self.find_element_by_id(id)
         ret = dict()
         ret['frame'] = frame
-        ret['add_field'] = frame.children('fieldset').children(
-            "button#add_field")
-        ret['add_frame'] = frame.children('fieldset').children(
-            "button#add_frame")
-        ret['fields'] = frame.children('fieldset').children(
-            "div#field-list").children()
+        ret['add_field'] = frame.children('fieldset')[0].children(
+            "button#add_field")[0]
+        ret['add_frame'] = frame.children('fieldset')[0].children(
+            "button#add_frame")[0]
+        ret['fields'] = frame.children('fieldset')[0].children(
+            "div#field-list")[0].children()
         return ret
 
     def extract_field_data(self, element):
@@ -153,7 +152,7 @@ class MultiseekPageMixin:
     url = property(_get_url)
 
 
-class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
+class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
     def test_multiseek(self):
         field = self.page.get_field(FIELD)
         # On init, the first field will be selected
@@ -182,12 +181,12 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
 
     def test_serialize_form(self):
         frame = self.page.get_frame('frame-0')
-        frame['add_field'].click()
-        frame['add_field'].click()
-        frame['add_field'].click()
+        frame['add_field'].send_keys(Keys.ENTER)
+        frame['add_field'].send_keys(Keys.ENTER)
+        frame['add_field'].send_keys(Keys.ENTER)
 
-        frame['add_frame'].click()
-        frame['add_frame'].click()
+        frame['add_frame'].send_keys(Keys.ENTER)
+        frame['add_frame'].send_keys(Keys.ENTER)
 
         for n in range(2, 5):
             field = self.page.get_field('field-%i' % n)
@@ -209,28 +208,29 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
 
         self.maxDiff = None
 
-        expected = [
-            {u'field': u'Year', u'operation': RANGE_OPS[0],
-             u'value': [u'1999', u'2000']}, u'or',
-            {u'field': u'Language', u'operation': EQUAL,
-             u'value': u'english'}, u'and',
-            {u'field': u'Title', u'operation': CONTAINS,
-             u'value': u'aaapud!'}, u'and',
-            {u'field': u'Title', u'operation': CONTAINS,
-             u'value': u'aaapud!'}, u'and',
-            [{u'field': u'Title', u'operation': CONTAINS,
-              u'value': u'aaapud!'}], u'and',
-            [{u'field': u'Title', u'operation': CONTAINS, u'value': u''}]
+        expected = [None,
+            {u'field': u'Year', u'operator': unicode(RANGE_OPS[0]),
+             u'value': u'[1999,2000]', u'prev_op': None},
+            {u'field': u'Language', u'operator': unicode(EQUAL),
+             u'value': u'english',  u'prev_op': OR},
+            {u'field': u'Title', u'operator': unicode(CONTAINS),
+             u'value': u'aaapud!', u'prev_op': AND},
+            {u'field': u'Title', u'operator': unicode(CONTAINS),
+             u'value': u'aaapud!', u'prev_op': AND},
+            [AND, {u'field': u'Title', u'operator': unicode(CONTAINS),
+              u'value': u'aaapud!', u'prev_op':None}],
+            [AND, {u'field': u'Title', u'operator': unicode(CONTAINS), 
+            u'value': u'', u'prev_op': None}]
         ]
 
         self.assertEquals(self.page.serialize(), expected)
 
         for n in range(1, 6):
             field = self.page.get_field('field-%i' % n)
-            field['close-button'].click()
+            field['close-button'].send_keys(Keys.ENTER)
 
-        expected = [{u'field': u'Year', u'operation': u'in range',
-                     u'value': [u'1999', u'2000']}]
+        expected = [None, {u'field': u'Year', u'operator': u'in range',
+                     u'value': u'[1999,2000]', u'prev_op': None}]
         self.assertEquals(self.page.serialize(), expected)
 
     def test_remove_last_field(self):
@@ -266,18 +266,19 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
         expect = [None,
                   make_field(
                       multiseek_registry.AuthorQueryObject,
-                      EQUAL,
-                      unicode(Author.objects.filter(last_name='Smith')[0].pk))]
+                      unicode(EQUAL),
+                      unicode(Author.objects.filter(last_name='Smith')[0].pk),
+                      prev_op=None)]
 
         self.assertEquals(got, expect)
 
     def test_set_join(self):
         self.page.execute_script("""
-        set_join($("#field-0"), "or");
+        $("#field-0").multiseekField('prevOperation').val('or');
         """)
 
         ret = self.page.execute_script("""
-        return get_join($("#field-0")).val();
+        return $("#field-0").multiseekField('prevOperation').val();
         """)
 
         self.assertEquals(ret, "or")
@@ -288,24 +289,23 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
                             '')
 
         self.page.execute_script("""
-        set_join($("#field-1"), "or");
+        $("#field-1").multiseekField('prevOperation').val('or');
         """)
 
         ret = self.page.execute_script("""
-        return get_join($("#field-1")).val();
+        return $("#field-1").multiseekField('prevOperation').val();
         """)
 
         self.assertEquals(ret, "or")
 
     def test_set_frame_join(self):
         self.page.execute_script("""
-        addFrame($("#frame-0"));
-        addFrame($("#frame-0"));
-        set_join($("#frame-1"), "or");
+        $("#frame-0").multiseekFrame('addFrame');
+        $("#frame-0").multiseekFrame('addFrame', 'or');
         """)
 
         ret = self.page.execute_script("""
-        return get_join($("#frame-1")).val();
+        return $("#frame-2").multiseekFrame('getPrevOperationValue');
         """)
 
         self.assertEquals(ret, "or")
@@ -363,7 +363,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
         frame = self.page.get_frame('frame-0')
         frame['add_field'].click()
 
-        field = self.page.get_field("field-1")
+        field = self.page.get_field("field-0")
         select_option_by_text(field['prev-op'], unicode(_("or")))
         self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
@@ -378,9 +378,9 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
         self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
     def test_frame_bug(self):
-        self.page.find_elements_by_jquery("button#add_frame")[1].click()
-        self.page.find_elements_by_jquery("input[id=close-button]")[1].click()
-        self.page.find_element_by_jquery("button#sendQueryButton").click()
+        self.page.find_element_by_jquery("button#add_frame").send_keys(Keys.ENTER)
+        self.page.find_elements_by_jquery("button[id=close-button]")[1].send_keys(Keys.ENTER)
+        self.page.find_element_by_jquery("button#sendQueryButton").send_keys(Keys.ENTER)
         self.page.switch_to_frame("if")
         print self.page.page_source
         self.assertNotIn("Server Error (500)", self.page.page_source)
@@ -395,19 +395,19 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
             field['op'], multiseek_registry.DateLastUpdatedQueryObject.ops[6])
         self.assertEquals(
             self.page.serialize(),
-            [{u'field': u'Last updated on', u'operation': u'in range',
-              u'value': [u'', u'']}])
+            [None, {u'field': u'Last updated on', u'operator': u'in range',
+              u'value': u'["",""]', u'prev_op': None}])
 
         select_option_by_text(
             field['op'], multiseek_registry.DateLastUpdatedQueryObject.ops[3])
         self.assertEquals(
             self.page.serialize(),
-            [{u'field': u'Last updated on',
-              u'operation': u'greater or equal to(female gender)',
-              u'value': u''}])
+            [None, {u'field': u'Last updated on',
+              u'operator': u'greater or equal to(female gender)',
+              u'value': u'[""]', u'prev_op': None}])
 
 
-class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
+class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
     def test_initial(self):
         # Without SearchForm objects, the formsSelector is invisible
         elem = self.page.find_element_by_jquery("#formsSelector")
@@ -426,20 +426,20 @@ class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
             self.page.find_element_by_jquery, "#saveFormButton")
 
 
-class TestPublicReportTypes(MultiseekPageMixin, SeleniumGlobalBrowserTestCase):
+class TestPublicReportTypes(MultiseekPageMixin, SeleniumTestCase):
     def test_secret_report_invisible(self):
         elem = self.page.find_element_by_name("_ms_report_type")
         self.assertEquals(len(elem.children()), 2)
 
 
-class TestPublicReportTypesLoggedIn(MultiseekPageMixin, SeleniumAdminGlobalBrowserTestCase):
+class TestPublicReportTypesLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
 
     def test_secret_report_visible(self):
         elem = self.page.find_element_by_name("_ms_report_type")
         self.assertEquals(len(elem.children()), 3)
 
 
-class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminGlobalBrowserTestCase):
+class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
     def test_save_form_logged_in(self):
         self.page.wait_for_selector("#saveFormButton")
         self.assertEquals(

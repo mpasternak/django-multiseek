@@ -42,3 +42,5 @@ dist/
 django_multiseek.egg-info/*
 static/
 !multiseek/static
+
+*~

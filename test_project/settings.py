@@ -113,7 +113,7 @@ if 'test' in sys.argv:
     # XXX IMPORTANT XXX Remove LocaleMiddleware in case of testing
     MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES[:-1]
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'test_project.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'test_project.wsgi.application'

@@ -1,5 +1,5 @@
 /* Counters, that give us unique ID number for fields and frames */
-var counter = 0;
+var frame_counter = 0;
 var field_counter = 0;
 var autocomplete_counter = 0;
 var LOAD_FORM_URL = './load_form/';
@@ -333,7 +333,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     _create: function () {
 
         this.element
-            .attr("id", "frame-" + counter)
+            .attr("id", "frame-" + frame_counter)
             .attr("class", "multiseekFrame")
             .append([
 
@@ -356,7 +356,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
             ]);
 
         // TODO: namespace THIS
-        counter++;
+        frame_counter++;
     },
 
 
@@ -447,7 +447,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     },
 
     addFrame: function (prevOpValue) {
-        var id = "frame-" + counter;
+        var id = "frame-" + frame_counter;
         var has_elements = this.fieldList().children().length;
         this.fieldList().append(
             $("<div/>")
@@ -455,7 +455,6 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         );
         var fr = $("#" + id);
         fr.multiseekFrame();
-        counter++;
         if (has_elements)
             fr.multiseekFrame("prevOperation").show();
         if (prevOpValue)
