@@ -1,0 +1,47 @@
+{% load i18n %}
+{% block ordering %}
+    <table>
+        <tr>
+            {% for element in order_boxes %}
+                <td>{{ element }}</td>
+                <td>
+                    <select name="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}"
+                            class="multiseek-ordering">
+                        {# class multiseek-ordering is used by multiseek.js, this has nothing #}
+                        {# to do with styles, PLEASE don't remove it #}
+                        {% for o in ordering %}
+                            <option value="{{ forloop.counter0 }}">{{ o.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <script type="text/javascript">
+                        /* Update results window when updating sort type */
+                        $("select[name={{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}]").change(function () {
+                            $("#sendQueryButton").click();
+                        });
+                    </script>
+                </td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for element in order_boxes %}
+                <td></td>
+                <td>
+                    <input type="checkbox"
+                           id="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir"
+                           name="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir"
+                           value="1">
+                    <label for="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir">
+                        <small>{% trans "descending" %}</small>
+                    </label>
+                    <script type="text/javascript">
+                        /* Update results window when updating sort type */
+                        $("input[name={{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir]").change(function () {
+                            $("#sendQueryButton").click();
+                        });
+                    </script>
+                </td>
+            {% endfor %}
+
+        </tr>
+    </table>
+{% endblock %}

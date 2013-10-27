@@ -4,22 +4,7 @@
 
 {% block extrahead %}
     {{ block.super }}
-    <link rel="stylesheet" href="{{ STATIC_URL }}multiseek/css/style.css"/>
-    <script src="{{ STATIC_URL }}multiseek/js/jquery-1.10.2.js"
-            type="text/javascript"></script>
-    <script src="{{ STATIC_URL }}multiseek/js/jquery-ui-1.10.3.custom.min.js"
-            type="text/javascript"></script>
-    <script src="{{ STATIC_URL }}multiseek/js/ui/i18n/jquery.ui.datepicker-{{ LANGUAGE_CODE }}.js"></script>
-    <link rel="stylesheet"
-          href="{{ STATIC_URL }}multiseek/css/Aristo/Aristo.css"/>
-    <script type="text/javascript" src="{% url "multiseek:js_i18n" %}"></script>
-    <script>
-        /* multiseek.js needs that to be set before */
-        djangoLanguageCode = '{{ LANGUAGE_CODE }}';
-    </script>
-    <script src="{{ STATIC_URL }}multiseek/js/multiseek.js"
-            type="text/javascript"></script>
-    {% include 'autocomplete_light/static.html' %}
+    {% include "multiseek/multiseek_head.html" %}
 {% endblock %}
 
 {% block title %}
@@ -27,116 +12,9 @@
 {% endblock %}
 
 {% block content %}
-
-    {% include "multiseek/fields.html" %}
-
-    <div id="frame-0" class="frame">
-    </div>
-
-
-    {% block report_type %}
-        {% if report_types %}
-            <table>
-                <tr>
-                    <td>
-                        {% trans "Report type: " %}</td>
-                    <td>
-                        <select name="{{ MULTISEEK_REPORT_TYPE }}">
-                            {% for t in report_types %}
-                                <option value="{{ forloop.counter0 }}">{{ t.label }}</option>
-                            {% endfor %}
-                        </select></td>
-                </tr>
-            </table>
-            <script type="text/javascript">
-                /* Update results window with change of report type */
-                $("select[name={{ MULTISEEK_REPORT_TYPE }}]").change(function () {
-                    $("#sendQueryButton").click();
-                });
-            </script>
-        {% endif %}
-    {% endblock %}
-
-    {% block ordering %}
-        <table>
-            <tr>
-                {% for element in order_boxes %}
-                    <td>{{ element }}</td>
-                    <td>
-                        <select name="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}"
-                                class="multiseek-ordering">
-                            {# class multiseek-ordering is used by multiseek.js, this has nothing #}
-                            {# to do with styles, PLEASE don't remove it #}
-                            {% for o in ordering %}
-                                <option value="{{ forloop.counter0 }}">{{ o.label }}</option>
-                            {% endfor %}
-                        </select>
-                        <script type="text/javascript">
-                            /* Update results window when updating sort type */
-                            $("select[name={{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}]").change(function () {
-                                $("#sendQueryButton").click();
-                            });
-                        </script>
-                    </td>
-                {% endfor %}
-            </tr>
-            <tr>
-                {% for element in order_boxes %}
-                    <td></td>
-                    <td>
-                        <input type="checkbox"
-                               id="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir"
-                               name="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir"
-                               value="1">
-                        <label for="{{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir">
-                            <small>{% trans "descending" %}</small>
-                        </label>
-                        <script type="text/javascript">
-                            /* Update results window when updating sort type */
-                            $("input[name={{ MULTISEEK_ORDERING_PREFIX }}{{ forloop.counter0 }}_dir]").change(function () {
-                                $("#sendQueryButton").click();
-                            });
-                        </script>
-                    </td>
-                {% endfor %}
-
-            </tr>
-        </table>
-    {% endblock %}
-
-    <button onclick="submitEvent(this);" id="sendQueryButton">
-        {% trans "Send query" %}
-    </button>
-
-    <button onclick="resetForm(this);" id="resetFormButton">
-        {% trans "Reset form" %}
-    </button>
-
-    {% if request.user.is_anonymous %}
-        {% url "admin:index" as admin_index %}
-        <br/>
-        {% blocktrans %}
-            Please go to <a href="{{ admin_index }}">admin page</a>
-            to log in, then come back. You will be able to save created
-            forms.
-        {% endblocktrans %}
-    {% endif %}
-
-    {% if user_allowed_to_save_forms %}
-        <button onclick="saveForm(this);" id="saveFormButton">
-            {% trans "Save form" %}
-        </button>
-    {% endif %}
-
-    <select name="load" onchange="loadForm(this);" id="formsSelector">
-        <option value="">{% trans "choose form..." %}</option>
-        {% for form in saved_forms %}
-            <option value="{{ form.pk }}">{{ form }}</option>
-        {% endfor %}
-    </select>
-
-    <iframe src="./results/" width="100%" height="500" id="if"
-            name="list_frame">
-    </iframe>
-
+    {% include "multiseek/multiseek_fields.html" %}
+    {% include "multiseek/multiseek_report_types.html" %}
+    {% include "multiseek/multiseek_ordering.html" %}
+    {% include "multiseek/multiseek_buttons.html" %}
+    {% include "multiseek/multiseek_results_frame.html" %}
 {% endblock %}

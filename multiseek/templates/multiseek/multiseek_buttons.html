@@ -1,0 +1,32 @@
+{% load i18n %}
+
+{% block buttons %}
+    <button onclick="submitEvent(this); return false;" id="sendQueryButton">
+        {% trans "Send query" %}
+    </button>
+
+    <button onclick="resetForm(this); return false;" id="resetFormButton">
+        {% trans "Reset form" %}
+    </button>
+
+    {% if user_allowed_to_save_forms %}
+        <button onclick="saveForm(this);return false;" id="saveFormButton">
+            {% trans "Save form" %}
+        </button>
+    {% else %}
+        {% url "admin:index" as admin_index %}
+        <br/>
+        {% blocktrans %}
+            Please go to <a href="{{ admin_index }}">admin page</a>
+            to log in, then come back. You will be able to save created
+            forms.
+        {% endblocktrans %}
+    {% endif %}
+
+    <select name="load" onchange="loadForm(this);" id="formsSelector">
+        <option value="">{% trans "choose form..." %}</option>
+        {% for form in saved_forms %}
+            <option value="{{ form.pk }}">{{ form }}</option>
+        {% endfor %}
+    </select>
+{% endblock %}
