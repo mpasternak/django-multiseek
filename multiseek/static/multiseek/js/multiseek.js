@@ -1,34 +1,260 @@
-/* Counters, that give us unique ID number for fields and frames */
-var frame_counter = 0;
-var field_counter = 0;
-var autocomplete_counter = 0;
-var LOAD_FORM_URL = './load_form/';
-var SAVE_FORM_URL = './save_form/';
+if (!window.Foundation) {
+    document.write("<style>" +
+        "div.columns { display: inline; position: relative; }" +
+        ".row { display: block;  width: 100%; }" +
+        "</style>");
+}
+
+if (typeof String.prototype.startsWith != 'function') {
+    // see below for better implementation!
+    String.prototype.startsWith = function (str) {
+        return this.indexOf(str) == 0;
+    };
+}
+
+if (window.multiseek == undefined) window.multiseek = {};
+
+multiseek = {
+    frame_counter: 0,
+    field_counter: 0,
+    autocomplete_counter: 0,
+    LOAD_FORM_URL: './load_form/',
+    SAVE_FORM_URL: './save_form/',
+
+    widgetMapping: {
+        'string': 'multiseekStringValue',
+        'value-list': 'multiseekValueListValue',
+        'date': 'multiseekDateValue',
+        'autocomplete': 'multiseekAutocompleteValue',
+        'range': 'multiseekRangeValue'
+    }
+};
 
 $.widget("multiseek.multiseekBase", {
     // Both field and frame widgets share common elements
 
-    prevOperation: function () {
-        return this.element.children("#prev-op");
+    getPrevOperationDOM: function () {
+        return $("<select />")
+            .attr("id", "prev-op")
+            .css("display", "inline")
+            .append([
+                $("<option/>").html(gettext("and")).attr("value", "and"),
+                $("<option/>").html(gettext("or")).attr("value", "or")
+            ])
+
+    },
+
+    prevOperation: function (action) {
+        if (action == "enable")
+            this.element.find("#prev-op-placeholder").first().append(
+                this.getPrevOperationDOM())
+        else if (action == "disable")
+            this.element.find("#prev-op-placeholder").first().remove()
+        else
+            return this.element.find("#prev-op-placeholder").first().children("#prev-op");
     },
 
     getPrevOperationValue: function () {
         var prev_op = this.prevOperation();
-        if (prev_op.is(":visible"))
+        if (prev_op)
             return prev_op.val();
+
         return null;
     },
 
-    tunePrevOpVisibility: function () {
+    enableOrDisablePrevOp: function () {
         if (this.element.prev().length) {
-            this.prevOperation().show();
+            this.prevOperation("enable");
             return;
         }
-        this.prevOperation().hide();
+        this.prevOperation("disable");
     }
 
 
 });
+
+$.widget("multiseek.multiseekBaseValue", {
+    _create: function () {
+
+    },
+
+    update: function (value, index) {
+        // when operation was changed
+        console.log('mbs update');
+    }
+});
+
+$.widget("multiseek.multiseekStringValue", $.multiseek.multiseekBaseValue, {
+    _create: function () {
+        this.element.append(
+            $('<input/>')
+                .attr("type", "text")
+                .attr("name", "value")
+                .attr("size", "30")
+        );
+        console.log('string value create');
+    },
+
+    getValue: function () {
+        return this.element.children().first().val();
+    },
+
+    setValue: function (value) {
+        return this.element.children().first().val(value);
+    }
+
+});
+
+
+$.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
+    _create: function () {
+        this.element.append(
+            $("<div/>")
+                .addClass("row collapse")
+                .append([
+                    $("<div/>")
+                        .addClass("large-1 small-1 columns")
+                        .text(gettext("from")),
+
+                    $("<div/>")
+                        .addClass("large-5 small-5 columns")
+                        .append([
+                            $("<input type=text name=value_min size=4 />")]),
+
+                    $("<div/>")
+                        .addClass("large-1 small-1 columns")
+                        .text(gettext("to")),
+
+                    $("<div/>")
+                        .addClass("large-5 small-5 columns")
+                        .append([
+                            $("<input type=text name=value_min size=4 />")])
+                ])
+        );
+    },
+
+    getValue: function () {
+        var min = this.element.find("input[name=value_min]");
+        var max = this.element.find("input[name=value_max]");
+        return JSON.stringify([parseInt(min), parseInt(max)]);
+
+    },
+
+    setValue: function () {
+        var value = $.parseJSON(value);
+        this.element.find("input[name=value_min]").val(value[0]);
+        this.element.find("input[name=value_max]").val(value[1]);
+    }
+});
+
+
+$.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue, {
+    _create: function () {
+        this.element.append(
+            $("<input type='text' />").autocomplete({
+                minLength: 0,
+                source: this.options.url,
+                change: $.proxy(function (evt, ui) {
+                    if (ui.item == null) {
+                        alert(gettext("Please select value from the dropdown."));
+                        this.element.children().first().val('');
+                        this.element.children().first().focus();
+                    }
+
+                    $(evt.target).attr("data-id", null);
+                }, this),
+                select: function (evt, ui) {
+
+                    $(evt.target).prop("data-id", ui.item.id);
+                }
+            })
+
+        );
+    },
+
+    getValue: function () {
+        return this.element.children().first().prop("data-id");
+    },
+
+    setValue: function (value) {
+        value = $.parseJSON(value);
+        console.log(value);
+        var elem = this.element.children().first();
+        elem.prop("id", value[0]);
+        elem.val(value[1]);
+    }
+});
+
+
+$.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
+    _create: function () {
+        var element = $('<select class="values" name="value_list" />');
+        value_lists[this.options.fieldName].forEach(function (v) {
+            element.append($('<option/>').val(v).html(v));
+        });
+        this.element.append(element);
+    },
+
+    setValue: function (value) {
+        this.element.find("select[name=value_list]").val(value);
+    },
+
+    getValue: function () {
+        return this.element.find("select[name=value_list]").val();
+    }
+});
+
+$.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
+    _create: function () {
+        var element = $('<input type="text" name="value" placeholder="' +
+            gettext('today') + '" size="10" />');
+        element.datepicker($.datepicker.regional[djangoLanguageCode]);
+
+
+        this.element.append(element);
+    },
+
+    setValue: function (value) {
+        value = $.parseJSON(value);
+        this.element.find("input[name=value]").val(value[0]);
+        if (value.length > 1)
+            this.element.find("input[name=value_max]").val(value[1]);
+    },
+
+    getValue: function () {
+        var ret = [this.element.find("input[name=value]").val()];
+        this.element.find("input[name=value_max]").each(
+            function (no, elem) {
+                console.log(no, elem);
+                ret.push($(elem).val());
+            }
+        )
+        return JSON.stringify(ret);
+    },
+
+    update: function (value, idx) {
+        /// TODO: czy to dziala?
+        if (idx > 5) {
+            // range
+            if (this.element.children().length == 1) {
+                // add extra field
+                this.element.append("-");
+                element = $('<input type="text" name="value_max" placeholder="' +
+                    gettext('today') + '" size="10" />');
+                element.datepicker($.datepicker.regional[djangoLanguageCode]);
+                w.append(element);
+            }
+        } else {
+            // single field
+            if (w.children().length > 1) {
+                // remove extra field
+                w.contents()[1].remove();
+                w.contents()[1].remove();
+            }
+        }
+    }
+});
+
 
 $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
 
@@ -37,7 +263,7 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
         this.opSelect().change($.proxy(this.opSelectChanged, this));
 
         this.setTypeSelectValues();
-        this.tunePrevOpVisibility();
+        this.enableOrDisablePrevOp();
     },
 
     typeSelect: function () {
@@ -57,6 +283,10 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
 
     getFieldName: function () {
         return this.typeSelect().val();
+    },
+
+    getWidgetType: function () {
+        return multiseek.widgetMapping[this.getFieldType()];
     },
 
     setTypeSelectValues: function () {
@@ -98,88 +328,34 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
         return ops[this.opSelect().val()];
     },
 
-
-    valueWidget: function () {
+    valueElement: function () {
         /* The third THING -- something with an ID of 'value', usually an
          input field or a select or 2 input fields, or ... */
-        return this.element.find("#value");
+        return this.element.find("#value-placeholder").children().first();
+
     },
+
 
     initializeValueWidget: function () {
         /* initialize value widget, when the type is changed. */
 
-        var element;
+        var p = this.element.find("#value-placeholder");
+        p.children().remove();
+        var x = p.append("<span/>");
+        p = $(p.children()[0]);
 
         switch (this.getFieldType()) {
-            case "date":
-                element = $('<input type="text" name="value" placeholder="' +
-                    gettext('today') + '" size="10" />');
-                element.datepicker($.datepicker.regional[djangoLanguageCode]);
-                element = $('<div style="display: inline;" id="value" />').append(element);
-                break;
-
-            case "range":
-                element = $(
-                    '<span class="range values" id="value" style="display: inline-block;">' +
-                        '<input type="text" name="value_min" size="4" />-' +
-                        '<input type="text" name="value_max" size="4" />' +
-                        '</span>');
-                break;
-
-            case "value-list":
-                element = $('<select class="values" name="value_list" />');
-                value_lists[this.getFieldName()].forEach(function (v) {
-                    element.append($('<option/>').val(v).html(v));
-                });
-                break;
-
-            case "autocomplete":
-                var id = "autocomplete-" + autocomplete_counter;
-
-                element = $("<span/>")
-                    .css("display", "inline-block")
-                    .css("clear", "both")
-                    .attr("class", "autocomplete-light-widget")
-                    .attr("data-bootstrap", "normal")
-                    .attr("data-autocomplete-choice-selector", "[data-value]")
-                    .attr("data-max-values", "1")
-                    .attr("data-minimum-characters", "0")
-                    .attr("data-autocomplete-placeholder", gettext("type to lookup..."))
-                    .attr("data-autocomplete-url", autocompletes[this.getFieldName()])
-                    .append([
-                        $("<input/>")
-                            .attr("type", "text")
-                            .attr("id", "id"),
-                        $("<span class=deck/>"),
-                        $("<select/ >")
-                            .css("display", "none")
-                            .attr("class", "value-select")
-                            .attr("id", "value")
-                            .attr("name", id + "-value"),
-                        $("<span/>")
-                            .css("display", "none")
-                            .attr("class", "remove")
-                            .text(gettext("Remove this choice")),
-                        $("<span/>")
-                            .css("display", "none")
-                            .attr("class", "choice-template").append([
-                                $("<span/>")
-                                    .attr("class", "choice")
-                            ])
-                    ])
-                autocomplete_counter++;
+            case 'autocomplete':
+                p.multiseekAutocompleteValue(
+                    {'url': autocompletes[this.getFieldName()]})
                 break;
 
             default:
-            case "string":
-                element = $('<input class="string values" type="text" name="value" />').attr('size', '30');
-                break;
+                p[this.getWidgetType()]({'fieldName': this.getFieldName()});
+
         }
 
-        current = this.element.find("#value");
-        element = element.attr("id", "value");
-        element.insertBefore(current);
-        current.remove();
+
     },
 
     updateValueWidget: function () {
@@ -187,35 +363,13 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
          * range fields, from-to - if for some operations you want to add
          * additional field, like for date field. */
 
-        switch (this.getFieldType()) {
-            case "date":
-                op = this.opSelect()[0].selectedIndex;
-                w = this.valueWidget();
-                if (op > 5) {
-                    // range
-                    if (w.children().length == 1) {
-                        // add extra field
-                        w.append("-");
-                        element = $('<input type="text" name="value" placeholder="' +
-                            gettext('today') + '" size="10" />');
-                        element.datepicker($.datepicker.regional[djangoLanguageCode]);
-                        w.append(element);
-                    }
-                } else {
-                    // single field
-                    if (w.children().length > 1) {
-                        // remove extra field
-                        w.contents()[1].remove();
-                        w.contents()[1].remove();
-                    }
-                }
-                return;
+//        this.valueWidget()(
+//            'update',
+//            this.opSelect().val(),
+//            this.opSelect()[0].selectedIndex);
 
-            default:
-                return;
-        }
+
     },
-
 
     setType: function (type) {
         /* This sets the field type (first widget) AND fills the option
@@ -230,68 +384,15 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
     },
 
     setValueWidget: function (value) {
-        var widget = this.valueWidget();
-
-        switch (this.getFieldType()) {
-            case "date":
-                value = $.parseJSON(value);
-                $(widget.children()[0]).val(value[0]);
-                op_idx = this.opSelect()[0].selectedIndex;
-                if (op_idx > 5)
-                    $(widget.children()[1]).val(value[1]);
-                break;
-
-
-            case "range":
-                value = $.parseJSON(value);
-                $(widget.children()[0]).val(value[0]);
-                $(widget.children()[1]).val(value[1]);
-                break;
-
-            case "autocomplete":
-                var widget = widget.yourlabsWidget();
-                widget.selectChoice($("<div data-value=" + value[0] + "" +
-                    ">" + value[1] + "</div>"))
-                break;
-
-            case "string":
-            case "value-list":
-            default:
-                widget.val(value);
-                break;
-        }
+        return this.valueElement()[this.getWidgetType()]('setValue', value);
     },
 
     getValue: function () {
-        var third_something = this.valueWidget();
-
-        switch (this.getFieldType()) {
-            case "date":
-                min = third_something.children().first().val();
-                op_idx = this.opSelect()[0].selectedIndex;
-                if (op_idx > 5) {
-                    max = third_something.children().first().next().val();
-                    return JSON.stringify([min, max]);
-                }
-                return JSON.stringify([min,]);
-
-            case "range":
-                min = third_something.children().first().val();
-                max = third_something.children().first().next().val();
-                return JSON.stringify([parseInt(min), parseInt(max)]);
-
-            case "autocomplete":
-                return third_something.yourlabsWidget().select.val();
-
-            case "string":
-            default:
-                return third_something.val();
-        }
-
+        return this.valueElement()[this.getWidgetType()]('getValue');
     },
 
-
     serialize: function () {
+        console.log("in serialize");
         return {
             'field': this.getFieldName(),
             'operator': this.opSelect().val(),
@@ -299,7 +400,6 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
             'prev_op': this.getPrevOperationValue()
         };
     },
-
 
     setValue: function (type, operation, value, prevOp) {
         this.setType(type);
@@ -317,54 +417,59 @@ $.multiseek.multiseekField.prototype.options = {
     'value': null
 };
 
-$.fn.multiseekPrevField = function () {
-
-    return $("<select />")
-        .attr("id", "prev-op")
-        .css("display", "inline")
-        .append([
-            $("<option/>").html(gettext("and")).attr("value", "and"),
-            $("<option/>").html(gettext("or")).attr("value", "or")
-        ]).hide()
-}
-
 $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
-    _create: function () {
-
-        this.element
-            .attr("id", "frame-" + frame_counter)
+    makeFrameDOM: function (element) {
+        // USES DOM
+        element
+            .attr("id", "frame-" + multiseek.frame_counter)
             .attr("class", "multiseekFrame")
             .append([
 
-                $.fn.multiseekPrevField(),
+                $('<div/>')
+                    .attr("id", "prev-op-placeholder"),
 
-                $("<fieldset/>")
+                $("<fieldset />")
+                    .attr("class", "multiseek-fieldset")
                     .append([
                         $("<div/>")
                             .attr("id", "field-list"),
                         $("<button/>")
                             .attr("id", "add_field")
+                            .addClass("small")
                             .text(gettext("Add field"))
-                            .click($.proxy(this.addField, this)),
+                            .click($.proxy(function (evt) {
+                                evt.preventDefault();
+                                this.addField();
+                            }, this)),
 
                         $("<button/>")
                             .attr("id", "add_frame")
+                            .addClass("small")
                             .text(gettext("Add frame"))
-                            .click($.proxy(this.addFrameViaButton, this))
+                            .css("padding-left", "10px")
+                            .click($.proxy(function (evt) {
+                                    evt.preventDefault();
+                                    this.addFrameViaButton();
+                                }, this
+                            ))
                     ])
             ]);
+    },
 
-        // TODO: namespace THIS
-        frame_counter++;
+    _create: function () {
+        this.makeFrameDOM(this.element);
+        multiseek.frame_counter++;
     },
 
 
     fieldList: function () {
+        // USES DOM
         return this.element.children("fieldset").children("#field-list");
     },
 
     noFields: function () {
+        // USES DOM
         return this.fieldList().children().length;
     },
 
@@ -377,13 +482,14 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
         var next = for_removal.next();
         for_removal.remove()
-        next.multiseekBase().multiseekBase("tunePrevOpVisibility");
+        next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
 
         if (this.empty() && this.element.attr("id") != "frame-0")
             this.removeSelf();
     },
 
     parentFrame: function () {
+        // USES DOM
         // TODO: the worst way to find parent (markup-dependent). update to use some data arugmennt or sth
         return this.element.parent().parent().parent();
     },
@@ -403,51 +509,75 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
         var next = fld.next();
         fld.remove();
-        next.multiseekBase().multiseekBase("tunePrevOpVisibility");
+        next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
 
         // remove frame if empty
         if (this.empty())
             this.removeSelf();
     },
 
+    getFieldDOM: function (id) {
+        // USES DOM
+        return $("<field/>")
+            .addClass("row collapse")
+            .attr("id", id)
+            .append([
+                $("<div/>")
+                    .addClass("large-1 small-2 columns")
+                    .append(
+                        $('<div/>').attr("id", "prev-op-placeholder")
+                    ),
+
+                $("<div/>")
+                    .addClass("large-3 small-6 small columns")
+                    .append(
+                        $("<select/>")
+                            .attr("id", "type")
+                    ),
+                $("<div/>")
+                    .addClass("large-2 small-4 columns")
+                    .append(
+                        $("<select/>")
+                            .attr("id", "op")),
+                $("<div/>")
+                    .addClass("large-5 small-10 columns")
+                    .attr("id", "value-placeholder"),
+                $("<div/>")
+                    .addClass("large-1 small-2 columns")
+                    .append(
+                        $("<button/>")
+                            .text("X")
+                            .attr("id", "close-button")
+                            .addClass('small')
+                            .data("for-field", id)
+                            .click($.proxy(function (evt) {
+                                    evt.preventDefault();
+                                    this.removeField(evt);
+                                }, this
+                            )))
+            ]);
+    },
 
     addField: function (type, operation, value, op) {
-        // TODO: namespace field_counter
-        var id = "field-" + field_counter;
+        var id = "field-" + multiseek.field_counter;
         var has_elements = this.fieldList().children().length;
 
         this.fieldList().append(
-            $("<field/>")
-                .attr("id", id)
-                .attr("class", "field")
-                .append([
-                    $.fn.multiseekPrevField(),
-
-                    $("<select/>")
-                        .attr("id", "type"),
-                    $("<select/>")
-                        .attr("id", "op"),
-                    $("<div/>")
-                        .attr("id", "value"),
-                    $("<button/>")
-                        .text("X")
-                        .attr("id", "close-button")
-                        .data("for-field", id)
-                        .click($.proxy(this.removeField, this))
-                ]));
+            this.getFieldDOM(id));
 
         var fld = $("#" + id);
         fld.multiseekField();
         if (type && operation)
             fld.multiseekField("setValue", type, operation, value, op);
-        field_counter++;
+        multiseek.field_counter++;
 
-        if (has_elements)
-            fld.multiseekField("prevOperation").show();
+        if (window['Foundation'])
+            Foundation.libs.forms.assemble();
+
     },
 
     addFrame: function (prevOpValue) {
-        var id = "frame-" + frame_counter;
+        var id = "frame-" + multiseek.frame_counter;
         var has_elements = this.fieldList().children().length;
         this.fieldList().append(
             $("<div/>")
@@ -455,10 +585,11 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         );
         var fr = $("#" + id);
         fr.multiseekFrame();
-        if (has_elements)
-            fr.multiseekFrame("prevOperation").show();
-        if (prevOpValue)
-            fr.multiseekFrame("prevOperation").val(prevOpValue);
+        if (has_elements) {
+            fr.multiseekFrame("prevOperation", "enable");
+            if (prevOpValue)
+                fr.multiseekFrame("prevOperation").val(prevOpValue);
+        }
 
         return fr;
     },
@@ -557,7 +688,7 @@ function saveForm(button) {
     dct.public = confirm(
         gettext("Should the form be available for every user of this website?"));
 
-    var url = SAVE_FORM_URL;
+    var url = multiseek.SAVE_FORM_URL;
     var error = gettext('There was a server-side error. The form was NOT saved.');
     var saved = gettext('Form was saved.');
     var form_exists = gettext('There is already a form with such name in the database. Overwrite?');
@@ -599,6 +730,6 @@ function saveForm(button) {
 
 function loadForm(select) {
     if (confirm(gettext("Are you sure you want to load selected form?")))
-        location.href = LOAD_FORM_URL + $(select).val();
+        location.href = multiseek.LOAD_FORM_URL + $(select).val();
     $(select).val('');
 }

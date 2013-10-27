@@ -26,14 +26,15 @@ from models import Author
 
 FRAME = "frame-0"
 FIELD = 'field-0'
-from selenium.webdriver import Firefox
+from selenium.webdriver import Firefox, Remote
+from selenium.webdriver import DesiredCapabilities
 
-class MultiseekWebPage(wd(Firefox)):
+class MultiseekWebPage(wd(Remote)):
     """Helper functions, that take care of the multiseek form web page
     """
 
     def __init__(self, registry, *args, **kw):
-        super(MultiseekWebPage, self).__init__(*args, **kw)
+        super(MultiseekWebPage, self).__init__(desired_capabilities=DesiredCapabilities.FIREFOX, *args, **kw)
         self.registry = registry
 
     def get_frame(self, id):

@@ -44,3 +44,4 @@ static/
 !multiseek/static
 
 *~
+selenium-server.log

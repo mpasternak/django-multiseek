@@ -1,7 +1,11 @@
 
 
-    TERAZ: zastosuje theme i foundation4
-
+    * dodanie pola, dodanie ramki, dodanie pola
+    nastepnie USUNIECIE tej ramki
+    i zostaje puste pole z "and"
+    ten z ramki (pierszy) znika
+    następny "spod" ramki zostaje
+    i pojawia sie nowy ch-wie-skąd
 
 
 Extensibility:

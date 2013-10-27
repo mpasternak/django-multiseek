@@ -260,6 +260,9 @@ class RangeQueryObject(QueryObject):
 
     def value_from_web(self, value):
         # value should be a list of integers
+
+        value = json.loads(value)
+
         try:
             int(value[0])
             int(value[1])
@@ -272,6 +275,10 @@ class RangeQueryObject(QueryObject):
         return [int(value[0]), int(value[1])]
 
     def real_query(self, value, operation):
+
+        if value is None:
+            return
+
         if operation in RANGE_OPS:
             ret = Q(**{self.field_name + '__gte': value[0],
                        self.field_name + '__lte': value[1]})
@@ -400,7 +407,8 @@ class MultiseekRegistry:
         :returns: QueryObject
         :rtype: multiseek.logic.QueryObject subclass
         """
-        for key in ['field', 'operator', 'value', "prev_op"]:
+        # prev_op key is OPTIONAL
+        for key in ['field', 'operator', 'value']:
             if key not in field:
                 raise ParseError("Key %s not found in field %r" % (key, field))
 
@@ -413,7 +421,7 @@ class MultiseekRegistry:
                 "Operation %r not valid for field %r" % (
                     field['operator'], field['field']))
 
-        if field['prev_op'] not in [AND, OR, None]:
+        if field.get('prev_op', None) not in [AND, OR, None]:
             raise UnknownOperation("%r" % field)
 
         return f.query_for(field['value'], field['operator'])
@@ -430,7 +438,7 @@ class MultiseekRegistry:
                 prev_op = elem[0]
             else:
                 qobj = self.parse_field(elem)
-                prev_op = elem['prev_op']
+                prev_op = elem.get('prev_op', None)
 
             if ret is None:
                 ret = qobj
@@ -441,7 +449,7 @@ class MultiseekRegistry:
             elif prev_op == OR:
                 ret = ret | qobj
             else:
-                raise UnknownOperation("%s not expected" % elem['prev_op'])
+                raise UnknownOperation("%s not expected" % elem.get('prev_op', None))
 
         print "X" * 90
         print ret
@@ -529,17 +537,28 @@ class MultiseekRegistry:
                         info.frame, elem[0]))
                 result.extend(self.recreate_form_recursive(elem, info))
             else:
-                if elem['prev_op'] not in [AND, OR, None]:
+                if elem.get("prev_op", None) not in [AND, OR, None]:
                     raise ParseError
 
-                prev_op = elem['prev_op']
+                prev_op = elem.get('prev_op', None)
                 if prev_op == None or prev_op == 'None':
                     prev_op = 'null';
                 else:
                     prev_op = "'" + prev_op + "'"
                 s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', %s)"
+                value = elem['value']
+
+                if self.field_by_name[elem['field']].type == AUTOCOMPLETE:
+                    value = json.dumps([value,
+
+                                        #### XXX TODO
+                                        #get autocomplete BY URL
+                                        #get choice_for() value
+
+                                        "WTF LOL"])
+
                 result.append(s % (
-                    info.frame, elem['field'], elem['operator'], elem['value'],
+                    info.frame, elem['field'], elem['operator'], value,
                     prev_op))
                 info.field += 1
 

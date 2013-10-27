@@ -74,6 +74,8 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
                 for field in registry.field_by_type(VALUE_LIST, public)]))
 
         js_init = None
+        print "X" * 200
+        print self.request.session.get(MULTISEEK_SESSION_KEY)
         if self.request.session.get(MULTISEEK_SESSION_KEY):
             js_init = registry.recreate_form(json.loads(
                 self.request.session.get(MULTISEEK_SESSION_KEY)))
