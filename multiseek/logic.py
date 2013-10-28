@@ -134,6 +134,9 @@ class QueryObject(object):
         """
         return value
 
+    def value_to_web(self, value):
+        return value
+
     def query_for(self, value, operation):
         return self.real_query(self.value_from_web(value), operation)
 
@@ -204,7 +207,16 @@ class AutocompleteQueryObject(QueryObject):
             self.model = model
 
         if url is not None:
-            self.url = url
+            self.url = '/multiseek/autocomplete/' + str(model.__name__)
+
+    def get_url(self):
+        if self.url:
+            return self.url
+        return '/multiseek/autocomplete/%s/' % self.model.__name__
+
+    @classmethod
+    def get_label(cls, model):
+        return unicode(model)
 
     def value_from_web(self, value):
         # The value should be an integer:
@@ -219,6 +231,10 @@ class AutocompleteQueryObject(QueryObject):
             return
 
         return value
+
+    def value_to_web(self, value):
+        model = self.model.objects.get(pk=value)
+        return json.dumps([value, self.get_label(model)])
 
 
 class DateQueryObject(QueryObject):
@@ -373,6 +389,11 @@ class MultiseekRegistry:
             return [x for x in self.fields if x.public]
         return self.fields
 
+    def get_field_by_name(self, name):
+        for field in self.fields:
+            if unicode(field.label) == name:
+                return field
+
     def add_field(self, field):
         """Add a field to multiseek registry.
 
@@ -412,7 +433,7 @@ class MultiseekRegistry:
             if key not in field:
                 raise ParseError("Key %s not found in field %r" % (key, field))
 
-        f = self.field_by_name.get(field['field'])
+        f = self.get_field_by_name(field['field'])
         if f is None:
             raise UnknownField("Field type %r not found!" % field)
 
@@ -546,16 +567,7 @@ class MultiseekRegistry:
                 else:
                     prev_op = "'" + prev_op + "'"
                 s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', %s)"
-                value = elem['value']
-
-                if self.field_by_name[elem['field']].type == AUTOCOMPLETE:
-                    value = json.dumps([value,
-
-                                        #### XXX TODO
-                                        #get autocomplete BY URL
-                                        #get choice_for() value
-
-                                        "WTF LOL"])
+                value = self.get_field_by_name(elem['field']).value_to_web(elem['value'])
 
                 result.append(s % (
                     info.frame, elem['field'], elem['operator'], value,

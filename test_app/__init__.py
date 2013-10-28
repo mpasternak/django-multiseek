@@ -1,1 +1,0 @@
-from test_app import autocomplete_light_registry

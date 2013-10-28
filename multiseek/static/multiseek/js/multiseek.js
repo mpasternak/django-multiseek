@@ -151,36 +151,53 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
 $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
         this.element.append(
-            $("<input type='text' />").autocomplete({
-                minLength: 0,
-                source: this.options.url,
-                change: $.proxy(function (evt, ui) {
-                    if (ui.item == null) {
-                        alert(gettext("Please select value from the dropdown."));
-                        this.element.children().first().val('');
-                        this.element.children().first().focus();
-                    }
+            $("<div/>")
+                .addClass("row collapse")
+                .append([
+                    $("<div/>")
+                        .addClass("small-11 columns")
+                        .append(
+                            $("<input data-type=search id='value' type='text' />").autocomplete({
+                                minLength: 0,
+                                source: this.options.url,
+                                change: $.proxy(function (evt, ui) {
+                                    if (ui.item == null) {
+                                        alert(gettext("Please select value from the dropdown."));
+                                        this.element.children().first().val('');
+                                        this.element.children().first().focus();
+                                    }
 
-                    $(evt.target).attr("data-id", null);
-                }, this),
-                select: function (evt, ui) {
+                                    $(evt.target).attr("data-id", null);
+                                }, this),
+                                select: function (evt, ui) {
 
-                    $(evt.target).prop("data-id", ui.item.id);
-                }
-            })
-
+                                    $(evt.target).prop("data-id", ui.item.id);
+                                }
+                            })
+                        ),
+                    $("<div/>")
+                        .addClass("small-1 columns")
+                        .append(
+                            $("<span/>")
+                                .addClass("postfix")
+                                .text("X")
+                                .click($.proxy(function(){
+                                    this.element.find("#value").first().val('').focus();
+                                }, this))
+                        )
+                ])
         );
     },
 
     getValue: function () {
-        return this.element.children().first().prop("data-id");
+        return this.element.find("#value").first().prop("data-id");
     },
 
     setValue: function (value) {
         value = $.parseJSON(value);
         console.log(value);
-        var elem = this.element.children().first();
-        elem.prop("id", value[0]);
+        var elem = this.element.find("#value").first();
+        elem.prop("data-id", value[0]);
         elem.val(value[1]);
     }
 });
@@ -561,9 +578,10 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     addField: function (type, operation, value, op) {
         var id = "field-" + multiseek.field_counter;
         var has_elements = this.fieldList().children().length;
+        var elem;
 
-        this.fieldList().append(
-            this.getFieldDOM(id));
+        elem = this.getFieldDOM(id);
+        this.fieldList().append(elem);
 
         var fld = $("#" + id);
         fld.multiseekField();

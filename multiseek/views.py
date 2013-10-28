@@ -1,4 +1,8 @@
 # -*- encoding: utf-8 -*-
+from django.db.models.query_utils import Q
+from django.http.response import HttpResponse, Http404
+from django.utils import simplejson
+from django.views.generic.base import View
 
 import json
 
@@ -64,7 +68,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             dict([(unicode(f.label), f.type) for f in fields]))
 
         js_autocompletes = json.dumps(
-            dict([(unicode(field.label), reverse_or_just_url(field.url))
+            dict([(unicode(field.label), reverse_or_just_url(field.get_url()))
                   for field in registry.field_by_type(
                     AUTOCOMPLETE, public)]))
 
@@ -209,3 +213,53 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to wówczas błąd podnoś i to samo w klasie MultiseekFormPage
         return get_registry(self.registry).get_query_for_model(
             self.get_multiseek_data())
+
+
+class MultiseekModelRouter(View):
+    registry = None
+    def get(self, request, model, *args, **kw):
+        registry = get_registry(self.registry)
+        for field in registry.fields:
+            if field.type == AUTOCOMPLETE:
+                if field.model.__name__ == model:
+                    return MultiseekModelAutocomplete(qobj=field).get(request)
+        raise Http404
+
+
+class MultiseekModelAutocomplete(View):
+    # TODO: JSONResponseMixin
+    qobj = None
+    max_items = 10
+
+    def get_queryset(self, request):
+        return self.qobj.model.objects.all()
+
+    def prepare_search_query(self, data):
+
+        def args(fld, elem):
+            return {fld + "__icontains": elem}
+
+        # split by comma, space, etc.
+        data = data.split(" ")
+
+        ret = Q(**args(self.qobj.search_fields[0], data[0]))
+        for f, v in zip(self.qobj.search_fields[1:], data[1:]):
+            ret = ret & Q(**args(f, v))
+        return ret
+
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get('term', None)
+
+        qset = self.get_queryset(request)
+        if q:
+            qset = qset.filter(self.prepare_search_query(q))
+
+        ret = []
+        for elem in qset[:self.max_items]:
+            ret.append(
+                {'id': elem.pk,
+                 'label': self.qobj.get_label(elem),
+                 'value': self.qobj.get_label(elem)})
+
+        return HttpResponse(simplejson.dumps(ret),
+                            mimetype='application/json')
