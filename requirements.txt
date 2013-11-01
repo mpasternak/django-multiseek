@@ -1,2 +1,4 @@
 django
-dateutils
+python-dateutil
+django-nose
+

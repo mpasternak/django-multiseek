@@ -205,9 +205,10 @@ class AutocompleteQueryObject(QueryObject):
 
         if model is not None:
             self.model = model
+            self.url = '/multiseek/autocomplete/' + str(model.__name__)
 
         if url is not None:
-            self.url = '/multiseek/autocomplete/' + str(model.__name__)
+            self.url = url
 
     def get_url(self):
         if self.url:

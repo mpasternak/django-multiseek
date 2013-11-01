@@ -16,7 +16,7 @@ class AuthorQueryObject(AutocompleteQueryObject):
     label = _("Author")
     model = Author
     field_name = "authors"
-    search_fields = ['last_name', 'first_name']
+    search_fields = ['first_name', 'last_name']
 
 
 class YearQueryObject(RangeQueryObject):

@@ -79,9 +79,10 @@ class TestAutocompleteQueryObject(TestCase):
 class TestRangeQueryObject(TestCase):
     def test_value_from_web(self):
         r = RangeQueryObject('foo')
-        self.assertEquals(r.value_from_web(['1', '2']), [1, 2])
-        self.assertEquals(r.value_from_web(['1', '2', '3']), None)
-        self.assertEquals(r.value_from_web(['foo', 'bar']), None)
+        self.assertEquals(r.value_from_web("[1,2]"), [1, 2])
+        self.assertEquals(r.value_from_web('["1","2"]'), [1, 2])
+        self.assertEquals(r.value_from_web("[1,2,3]"), None)
+        self.assertEquals(r.value_from_web('["foo","bar"]'), None)
         self.assertEquals(r.value_from_web('123'), None)
 
         self.assertRaises(

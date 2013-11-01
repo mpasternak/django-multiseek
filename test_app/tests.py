@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import json
+import os
 import time
 
 from django.contrib.auth.models import User
@@ -7,13 +8,16 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django_any import any_model
 from django.conf import settings
+from selenium import webdriver
 from selenium.common.exceptions import InvalidSelectorException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 
-from selenium_helpers import SeleniumTestCase, select_option_by_text, \
-    get_selected_option, wd, SeleniumTestCase, SeleniumAdminTestCase, SeleniumAdminTestCase
-from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE, AND
+from selenium_helpers import select_option_by_text, \
+    get_selected_option, wd, SeleniumTestCase, SeleniumAdminTestCase
+from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE, AND, DATE, AUTOCOMPLETE, RANGE
 from multiseek.models import SearchForm
 from multiseek import logic
 from multiseek.logic import get_registry, RANGE_OPS, EQUAL, CONTAINS
@@ -27,14 +31,23 @@ from models import Author
 FRAME = "frame-0"
 FIELD = 'field-0'
 from selenium.webdriver import Firefox, Remote
-from selenium.webdriver import DesiredCapabilities
 
 class MultiseekWebPage(wd(Remote)):
     """Helper functions, that take care of the multiseek form web page
     """
 
     def __init__(self, registry, *args, **kw):
-        super(MultiseekWebPage, self).__init__(desired_capabilities=DesiredCapabilities.FIREFOX, *args, **kw)
+        #profile = webdriver.FirefoxProfile()
+        #profile.add_extension(
+        #    os.path.join(
+        #        os.path.dirname(__file__),
+        #        'firebug-1.4.xpi'))
+        #
+        super(MultiseekWebPage, self).__init__(
+            #profile,
+            command_executor="http://linux-dev:4444/wd/hub",
+            desired_capabilities=DesiredCapabilities.FIREFOX,
+            *args, **kw)
         self.registry = registry
 
     def get_frame(self, id):
@@ -66,7 +79,12 @@ class MultiseekWebPage(wd(Remote)):
         """
         ret = {}
         for elem in ['type', 'op', 'prev-op', 'close-button']:
-            ret[elem] = element.find_elements_by_id(elem)[0]
+            try:
+                e = element.find_elements_by_id(elem)[0]
+            except IndexError:
+                # prev-op may be None
+                e = None
+            ret[elem] = e
 
         selected = get_selected_option(ret['type'])
         ret['selected'] = selected.text()
@@ -74,25 +92,13 @@ class MultiseekWebPage(wd(Remote)):
         inner_type = self.registry.field_by_name.get(selected.text()).type
         ret['inner_type'] = inner_type
 
-        if inner_type == logic.RANGE:
-            v = [element.find_elements_by_name('value_min')[0],
-                 element.find_elements_by_name('value_max')[0]]
+        ret['value'] = self.execute_script("""
+            return $(arguments[0]).multiseekField('getValue');""", element)
 
-        elif inner_type == logic.AUTOCOMPLETE:
-            # v = element.children()[3] <-- SELECT z wartościami
-            widget = element.find_elements_by_id("value")[0]
-            v = widget.children()[0] # INPUT do wpisywania tekstu
-
-        elif inner_type == logic.VALUE_LIST:
-            v = element.find_elements_by_id('value')[0]
-
-        elif inner_type == logic.STRING:
-            v = element.find_elements_by_id('value')[0]
-
-        else:
-            raise Exception("Unknown type: %r" % inner_type)
-
-        ret['value'] = v
+        if ret['inner_type'] in (DATE, AUTOCOMPLETE, RANGE):
+            if ret['value']:
+                print "JSON LOADS", ret['value'][:500]
+                ret['value'] = json.loads(ret['value'])
         return ret
 
     def get_field(self, id):
@@ -121,18 +127,13 @@ class MultiseekWebPage(wd(Remote)):
 
     def load_form_by_name(self, name):
         self.refresh()
-        select = self.find_element_by_jquery("#formsSelector")
-        for option in select.children():
-            if option.text() == name:
-                option.click()
-                self.switch_to_alert().accept()
-                self.wait_for_selector("select[name=order_0]", True)
-                return
-
-        raise Exception("Form named %r not found" % name)
+        select = Select(self.find_element_by_jquery("#formsSelector"))
+        select.select_by_visible_text(name)
+        self.switch_to_alert().accept()
+        self.refresh()
 
     def reset_form(self):
-        self.find_element_by_id("resetFormButton").click()
+        self.find_element_by_id("resetFormButton").send_keys(Keys.ENTER)
 
     def logout(self):
         self.get("%sadmin/logout" % self.live_server_url)
@@ -236,7 +237,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
     def test_remove_last_field(self):
         field = self.page.get_field('field-0')
-        field['close-button'].click()
+        field['close-button'].send_keys(Keys.ENTER)
 
         self.assertEquals(
             self.page.switch_to_alert().text, LAST_FIELD_REMOVE_MESSAGE)
@@ -245,30 +246,18 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         field = self.page.get_field(FIELD)
         select_option_by_text(
             field['type'], multiseek_registry.AuthorQueryObject.label)
-        self.page.wait_for_selector("input[placeholder='type to lookup...']",
-                                    True)
 
-        field = self.page.get_field(FIELD)
-
-        field['value'].send_keys('smit')
-
-        field['value'].send_keys(Keys.ARROW_DOWN)
-        field['value'].send_keys(Keys.RETURN)
-
-        def f(selenium):
-            elem = self.page.find_element_by_jquery(
-                "span.yourlabs-autocomplete")
-            return not elem.visible()
-
-        WebDriverWait(self, 10).until(
-            lambda driver: f(driver))
+        valueWidget = self.page.find_element_by_id("value")
+        valueWidget.send_keys('smit')
+        valueWidget.send_keys(Keys.ARROW_DOWN)
+        valueWidget.send_keys(Keys.RETURN)
 
         got = self.page.serialize()
         expect = [None,
                   make_field(
                       multiseek_registry.AuthorQueryObject,
                       unicode(EQUAL),
-                      unicode(Author.objects.filter(last_name='Smith')[0].pk),
+                      Author.objects.filter(last_name='Smith')[0].pk,
                       prev_op=None)]
 
         self.assertEquals(got, expect)
@@ -325,17 +314,17 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         self.assertEquals(
             field['op'].val(),
             unicode(multiseek_registry.LanguageQueryObject.ops[1]))
-        self.assertEquals(field['value'].val(), unicode(_(u'polish')))
+        self.assertEquals(field['value'], unicode(_(u'polish')))
 
     def test_add_field_autocomplete(self):
         self.page.add_field(
             FRAME,
             multiseek_registry.AuthorQueryObject.label,
             multiseek_registry.AuthorQueryObject.ops[1],
-            [1, 'John Smith'])
+            '[1,"John Smith"]')
 
-        field = self.page.get_field_value("field-1")
-        self.assertEquals(field, '1')
+        value = self.page.get_field_value("field-1")
+        self.assertEquals(value, 1)
 
     def test_add_field_string(self):
         self.page.add_field(
@@ -369,7 +358,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         self.assertEquals(field['prev-op'].val(), unicode(_("or")))
 
         button = self.page.find_element_by_id("sendQueryButton")
-        button.click()
+        button.send_keys(Keys.ENTER)
 
         time.sleep(0.5)
 
@@ -417,8 +406,7 @@ class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
     def test_initial_with_data(self):
         any_model(SearchForm, public=True)
         self.reload()
-        elem = self.page.find_element_by_jquery("#formsSelector")
-        self.assertEquals(elem.visible(), True)
+        elem = self.page.find_element_by_jquery("#formsSelector:visible")
 
     def test_form_save_anonymous(self):
         # Anonymous users cannot save forms:
@@ -450,7 +438,7 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
     def click_save_button(self):
         self.page.wait_for_selector("#saveFormButton")
         button = self.page.find_element_by_jquery("#saveFormButton")
-        button.send_keys(Keys.ENTER)
+        button.send_keys("\n") # Keys.ENTER)
 
     def save_form_as(self, name):
         self.click_save_button()
@@ -478,8 +466,9 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
         return passed
 
     def test_save_form_server_error(self):
+
         NAME = 'testowy formularz'
-        self.page.execute_script("SAVE_FORM_URL='/unexistent';")
+        self.page.execute_script("multiseek.SAVE_FORM_URL='/unexistent';")
         # Zapiszmy formularz
         self.save_form_as(NAME)
         # ... pytanie, czy ma być publiczny:
@@ -555,33 +544,30 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
         fld = make_field(
             self.registry.fields[2],
             self.registry.fields[2].ops[1],
-            [2000, 2010])
+            json.dumps([2000, 2010]))
         SearchForm.objects.create(
             name="lol",
             owner=User.objects.create(username='foo', password='bar'),
             public=True,
             data=json.dumps({"form_data": [None, fld]}))
-        time.sleep(1)
         self.page.load_form_by_name('lol')
-        time.sleep(1)
 
-        # SERVER ERROR 500 here and I don't know why!
         field = self.page.extract_field_data(
-            self.page.find_element_by_id("field-0"))
+            self.page.find_element_by_jquery("#field-0"))
 
         self.assertEquals(
             field['selected'], unicode(self.registry.fields[2].label))
-        self.assertEquals(field['value'][0].val(), '2000')
-        self.assertEquals(field['value'][1].val(), '2010')
+        self.assertEquals(field['value'][0], 2000)
+        self.assertEquals(field['value'][1], 2010)
 
         # Przetestuj, czy po ANULOWANIU select wróci do pierwotnej wartości
-        select = self.page.find_element_by_jquery("#formsSelector")
-        for option in select.children():
-            if option.text() == 'lol':
-                option.click()
-                self.page.switch_to_alert().dismiss()
-                break
-        self.assertEquals(select.val(), "")
+        select = Select(
+            self.page.find_element_by_jquery("#formsSelector"))
+        select.select_by_visible_text('lol')
+        self.page.switch_to_alert().dismiss()
+
+        self.assertEquals(
+            self.page.find_element_by_jquery("#formsSelector").val(), "")
 
     def test_bug_2(self):
         f = self.registry.fields[0]
@@ -614,7 +600,7 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
 
     def test_save_ordering_direction(self):
         elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
-        self.page.find_element_by_jquery(elem).click()
+        self.page.find_element_by_jquery(elem).send_keys(Keys.SPACE)
         self.save_form_as("foobar")
         # Should the dialog be public?
         self.accept_alert()

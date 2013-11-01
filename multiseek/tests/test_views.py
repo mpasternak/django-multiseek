@@ -15,6 +15,7 @@ from multiseek.views import MultiseekFormPage, MULTISEEK_SESSION_KEY, \
     ERR_NO_FORM_DATA, ERR_PARSING_DATA, ERR_LOADING_DATA, ERR_FORM_NAME, \
     OVERWRITE_PROMPT, SAVED, load_form, MultiseekResults
 from test_app import multiseek_registry
+from test_app.models import Author
 
 
 class Session(dict):
@@ -36,7 +37,7 @@ class RegistryMixin:
             StringQueryObject('foo'),
             StringQueryObject('bar'),
             ValueListQueryObject(field_name='baz', values=['a', 'b', 'c']),
-            AutocompleteQueryObject(field_name='quux', url='/LOL/')
+            AutocompleteQueryObject(field_name='quux', url='/LOL/', model=Author)
             )
 
         self.request = setup_anonymous_session(RequestFactory().get('/'))

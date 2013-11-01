@@ -134,7 +134,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'test_app',
     'multiseek',
-    'autocomplete_light',
     'django_nose',
 )
 

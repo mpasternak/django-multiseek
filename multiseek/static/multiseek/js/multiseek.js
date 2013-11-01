@@ -119,7 +119,7 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
                     $("<div/>")
                         .addClass("large-5 small-5 columns")
                         .append([
-                            $("<input type=text name=value_min size=4 />")]),
+                            $("<input type=text id=value_min size=4 />")]),
 
                     $("<div/>")
                         .addClass("large-1 small-1 columns")
@@ -128,22 +128,22 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
                     $("<div/>")
                         .addClass("large-5 small-5 columns")
                         .append([
-                            $("<input type=text name=value_min size=4 />")])
+                            $("<input type=text id=value_max size=4 />")])
                 ])
         );
     },
 
     getValue: function () {
-        var min = this.element.find("input[name=value_min]");
-        var max = this.element.find("input[name=value_max]");
+        var min = this.element.find("input#value_min").val();
+        var max = this.element.find("input#value_max").val();
         return JSON.stringify([parseInt(min), parseInt(max)]);
 
     },
 
-    setValue: function () {
+    setValue: function (value) {
         var value = $.parseJSON(value);
-        this.element.find("input[name=value_min]").val(value[0]);
-        this.element.find("input[name=value_max]").val(value[1]);
+        this.element.find("input#value_min").val(value[0]);
+        this.element.find("input#value_max").val(value[1]);
     }
 });
 
@@ -157,23 +157,25 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
                     $("<div/>")
                         .addClass("small-11 columns")
                         .append(
-                            $("<input data-type=search id='value' type='text' />").autocomplete({
-                                minLength: 0,
-                                source: this.options.url,
-                                change: $.proxy(function (evt, ui) {
-                                    if (ui.item == null) {
-                                        alert(gettext("Please select value from the dropdown."));
-                                        this.element.children().first().val('');
-                                        this.element.children().first().focus();
+                            $("<input data-type=search id='value' type='text' />")
+                                .prop("data-id", null)
+                                .autocomplete({
+                                    minLength: 0,
+                                    source: this.options.url,
+                                    change: $.proxy(function (evt, ui) {
+                                        if (ui.item == null) {
+                                            alert(gettext("Please select value from the dropdown."));
+                                            this.element.children().first().val('');
+                                            this.element.children().first().focus();
+                                        }
+
+                                        $(evt.target).attr("data-id", null);
+                                    }, this),
+                                    select: function (evt, ui) {
+
+                                        $(evt.target).prop("data-id", ui.item.id);
                                     }
-
-                                    $(evt.target).attr("data-id", null);
-                                }, this),
-                                select: function (evt, ui) {
-
-                                    $(evt.target).prop("data-id", ui.item.id);
-                                }
-                            })
+                                })
                         ),
                     $("<div/>")
                         .addClass("small-1 columns")
@@ -181,12 +183,16 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
                             $("<span/>")
                                 .addClass("postfix")
                                 .text("X")
-                                .click($.proxy(function(){
+                                .click($.proxy(function () {
                                     this.element.find("#value").first().val('').focus();
                                 }, this))
                         )
                 ])
         );
+
+        this.element.find("#value").focus(function (evt) {
+            $(evt.target).autocomplete("search");
+        });
     },
 
     getValue: function () {
@@ -235,14 +241,13 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
         value = $.parseJSON(value);
         this.element.find("input[name=value]").val(value[0]);
         if (value.length > 1)
-            this.element.find("input[name=value_max]").val(value[1]);
+            this.element.find("input#value_max").val(value[1]);
     },
 
     getValue: function () {
         var ret = [this.element.find("input[name=value]").val()];
-        this.element.find("input[name=value_max]").each(
+        this.element.find("input#value_max").each(
             function (no, elem) {
-                console.log(no, elem);
                 ret.push($(elem).val());
             }
         )
@@ -250,23 +255,23 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
     },
 
     update: function (value, idx) {
-        /// TODO: czy to dziala?
+
         if (idx > 5) {
             // range
             if (this.element.children().length == 1) {
                 // add extra field
                 this.element.append("-");
-                element = $('<input type="text" name="value_max" placeholder="' +
+                var element = $('<input type="text" id="value_max" placeholder="' +
                     gettext('today') + '" size="10" />');
                 element.datepicker($.datepicker.regional[djangoLanguageCode]);
-                w.append(element);
+                this.element.append(element);
             }
         } else {
             // single field
-            if (w.children().length > 1) {
+            if (this.element.children().length > 1) {
                 // remove extra field
-                w.contents()[1].remove();
-                w.contents()[1].remove();
+                this.element.contents()[1].remove();
+                this.element.contents()[1].remove();
             }
         }
     }
@@ -352,7 +357,6 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
 
     },
 
-
     initializeValueWidget: function () {
         /* initialize value widget, when the type is changed. */
 
@@ -380,10 +384,10 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
          * range fields, from-to - if for some operations you want to add
          * additional field, like for date field. */
 
-//        this.valueWidget()(
-//            'update',
-//            this.opSelect().val(),
-//            this.opSelect()[0].selectedIndex);
+
+        this.valueElement()[this.getWidgetType()]('update',
+            this.opSelect().val(),
+            this.opSelect()[0].selectedIndex);
 
 
     },
