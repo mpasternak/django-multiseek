@@ -175,8 +175,6 @@ class TestMultiseekRegistry(TestCase):
         input[2]['prev_op'] = OR
 
         res = self.registry.get_query_recursive(input)
-        import pprint
-        pprint.pprint(input)
         self.assertEquals(str(res), "(OR: ('foo', 'foo'), ('foo', 'bar'))")
 
     def test_get_query(self):
