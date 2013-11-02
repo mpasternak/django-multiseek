@@ -90,6 +90,7 @@ $.widget("multiseek.multiseekStringValue", $.multiseek.multiseekBaseValue, {
             $('<input/>')
                 .attr("type", "text")
                 .attr("name", "value")
+                .attr("id", "value")
                 .attr("size", "30")
         );
         console.log('string value create');
@@ -211,7 +212,11 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
 
 $.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
-        var element = $('<select class="values" name="value_list" />');
+        var element = $('<select/>')
+            .attr("class", "values")
+            .attr("name", "value_list")
+            .attr("id", "value");
+
         value_lists[this.options.fieldName].forEach(function (v) {
             element.append($('<option/>').val(v).html(v));
         });
@@ -229,10 +234,13 @@ $.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
 
 $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
-        var element = $('<input type="text" name="value" placeholder="' +
-            gettext('today') + '" size="10" />');
-        element.datepicker($.datepicker.regional[djangoLanguageCode]);
-
+        var element = $('<input/>')
+            .attr("type", "text")
+            .attr("name", "value")
+            .attr("id", "value")
+            .attr("placeholder", gettext("today"))
+            .attr("size", "10")
+            .datepicker($.datepicker.regional[djangoLanguageCode]);
 
         this.element.append(element);
     },
