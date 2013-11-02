@@ -105,6 +105,9 @@ class MultiseekWebPage(wd(Remote)):
                 element.find_element_by_id("value"),
                 element.find_element_by_id("value_max")]
 
+        elif inner_type == AUTOCOMPLETE:
+            ret['value_widget'] = element.find_element_by_id("value")
+
         else:
             raise NotImplementedError(inner_type)
 
@@ -260,7 +263,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
     def test_autocomplete_field(self):
         field = self.page.get_field(FIELD)
         Select(field['type']).select_by_visible_text(
-            multiseek_registry.AuthorQueryObject.label)
+            unicode(multiseek_registry.AuthorQueryObject.label))
 
         valueWidget = self.page.find_element_by_id("value")
         valueWidget.send_keys('smit')
@@ -278,12 +281,14 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
         self.assertEquals(got, expect)
 
     def test_set_join(self):
+        self.page.find_element_by_jquery("button#add_field").click()
+
         self.page.execute_script("""
-        $("#field-0").multiseekField('prevOperation').val('or');
+        $("#field-1").multiseekField('prevOperation').val('or');
         """)
 
         ret = self.page.execute_script("""
-        return $("#field-0").multiseekField('prevOperation').val();
+        return $("#field-1").multiseekField('prevOperation').val();
         """)
 
         self.assertEquals(ret, "or")
@@ -294,11 +299,11 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
                             '')
 
         self.page.execute_script("""
-        $("#field-1").multiseekField('prevOperation').val('or');
+        $("#field-2").multiseekField('prevOperation').val('or');
         """)
 
         ret = self.page.execute_script("""
-        return $("#field-1").multiseekField('prevOperation').val();
+        return $("#field-2").multiseekField('prevOperation').val();
         """)
 
         self.assertEquals(ret, "or")
@@ -395,11 +400,11 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         Select(
             field['type']).select_by_visible_text(
-            multiseek_registry.DateLastUpdatedQueryObject.label)
+            unicode(multiseek_registry.DateLastUpdatedQueryObject.label))
 
         Select(
             field['op']).select_by_visible_text(
-            multiseek_registry.DateLastUpdatedQueryObject.ops[6])
+            unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[6]))
 
         self.assertEquals(
             self.page.serialize(),
@@ -407,7 +412,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
                     u'value': u'["",""]', u'prev_op': None}])
 
         Select(field['op']).select_by_visible_text(
-            multiseek_registry.DateLastUpdatedQueryObject.ops[3])
+            unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[3]))
         self.assertEquals(
             self.page.serialize(),
             [None, {u'field': u'Last updated on',

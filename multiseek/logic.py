@@ -473,8 +473,6 @@ class MultiseekRegistry:
             else:
                 raise UnknownOperation("%s not expected" % elem.get('prev_op', None))
 
-        print "X" * 90
-        print ret
         return ret
 
     def get_query(self, data):
