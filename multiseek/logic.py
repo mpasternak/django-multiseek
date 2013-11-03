@@ -631,8 +631,9 @@ class MultiseekRegistry:
                 )
 
         ret = u";\n".join(result) + u";\n"
-        ret += u"\t\tif (window.Foundation) {\n" + u";\n".join(
-            foundation) + u"\n\t\t}\n"
+        if foundation:
+            ret += u"\t\tif (window.Foundation) {\n" + u";\n".join(
+                foundation) + u"\n\t\t}\n"
         return ret
 
 

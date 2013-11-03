@@ -215,14 +215,18 @@ $('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', 'and');
 $('#frame-1').multiseekFrame('addFrame', 'or');
 $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
 $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
-\t\t\t$($("select[name=order_1]").children()[1]).attr("selected", "");
-\t\t\t$("input[name=order_1_dir]").attr("checked", "");
-\t\t\t$($("select[name=_ms_report_type]").children()[1]).attr("selected", "");
-""" % dict(equal=EQUAL)
+\t\t$("select[name=order_1] option").eq(1).prop("selected", true);
+\t\t$("input[name=order_1_dir]").attr("checked", true);
+\t\t$("select[name=_ms_report_type] option").eq(1).prop("selected", true);
+\t\tif (window.Foundation) {
+\t\t\tFoundation.libs.forms.refresh_custom_select($("select[name=order_1]"), true);
+\t\t\t$("input[name=order_1_dir]").next().toggleClass("checked", true);
+\t\t\tFoundation.libs.forms.refresh_custom_select($("select[name=_ms_report_type]"), true)
+\t\t}\n""" % dict(equal=EQUAL)
 
         self.assertEquals(ex, res)
 
-    def test_create_registry(self):
+    def     test_create_registry(self):
         create_registry(None, StringQueryObject('foo'))
 
     def test_get_registry(self):
