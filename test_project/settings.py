@@ -135,6 +135,7 @@ INSTALLED_APPS = (
     'test_app',
     'multiseek',
     'django_nose',
+    'django_jenkins'
 )
 
 # A sample logging configuration. The only tangible logging

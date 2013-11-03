@@ -4,4 +4,4 @@ django-nose
 
 ludibrio
 django-whatever
-
+django-jenkins
