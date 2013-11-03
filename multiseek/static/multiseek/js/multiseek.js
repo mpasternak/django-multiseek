@@ -242,7 +242,15 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
             .attr("size", "10")
             .datepicker($.datepicker.regional[djangoLanguageCode]);
 
-        this.element.append(element);
+        this.element.append(
+            $("<div/>")
+                .attr("class", "row collapse")
+                .append([
+                    $("<div/>")
+                        .attr("class", "large-5 small-5 columns")
+                        .append([element])
+                ])
+        );
     },
 
     setValue: function (value) {
@@ -263,23 +271,36 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
     },
 
     update: function (value, idx) {
+        var row = this.element.children().eq(0);
 
         if (idx > 5) {
             // range
-            if (this.element.children().length == 1) {
+            if (row.children().length == 1) {
                 // add extra field
-                this.element.append("-");
-                var element = $('<input type="text" id="value_max" placeholder="' +
-                    gettext('today') + '" size="10" />');
-                element.datepicker($.datepicker.regional[djangoLanguageCode]);
-                this.element.append(element);
+                row.append([
+                    $("<div/>")
+                        .attr("class", "large-2 small-2 columns")
+                        .text("-"),
+                    $("<div/>")
+                        .attr("class", "large-5 small-5 columns")
+                        .append([
+
+                            $("<input/>")
+                                .attr("type", "text")
+                                .attr("id", "value_max")
+                                .attr("placeholder", gettext('today'))
+                                .attr("size", "10")
+                                .datepicker($.datepicker.regional[djangoLanguageCode])
+                        ])
+                    ]);
+
             }
         } else {
             // single field
-            if (this.element.children().length > 1) {
+            if (row.children().length > 1) {
                 // remove extra field
-                this.element.contents()[1].remove();
-                this.element.contents()[1].remove();
+                row.children().eq(1).remove();
+                row.children().eq(1).remove();
             }
         }
     }

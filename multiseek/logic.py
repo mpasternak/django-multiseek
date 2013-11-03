@@ -243,8 +243,9 @@ class DateQueryObject(QueryObject):
     ops = DATE_OPS
 
     def value_from_web(self, value):
-        if type(value) == unicode:
-            return parse(value)
+        value = json.loads(value)
+        if len(value) == 1:
+            return parse(value[0])
         return [parse(value[0]), parse(value[1])]
 
     def real_query(self, value, operation):
@@ -270,6 +271,7 @@ class DateQueryObject(QueryObject):
             return ~ret
 
         return ret
+
 
 class RangeQueryObject(QueryObject):
     type = RANGE
@@ -362,6 +364,7 @@ class _FrameInfo:
     def __init__(self, frame=-1, field=0):
         self.frame = frame
         self.field = field
+
 
 class MultiseekRegistry:
     """This is a base class for multiseek registry. A registry is a list
@@ -471,7 +474,8 @@ class MultiseekRegistry:
             elif prev_op == OR:
                 ret = ret | qobj
             else:
-                raise UnknownOperation("%s not expected" % elem.get('prev_op', None))
+                raise UnknownOperation(
+                    "%s not expected" % elem.get('prev_op', None))
 
         return ret
 
@@ -566,7 +570,8 @@ class MultiseekRegistry:
                 else:
                     prev_op = "'" + prev_op + "'"
                 s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', %s)"
-                value = self.get_field_by_name(elem['field']).value_to_web(elem['value'])
+                value = self.get_field_by_name(elem['field']).value_to_web(
+                    elem['value'])
 
                 result.append(s % (
                     info.frame, elem['field'], elem['operator'], value,
@@ -584,37 +589,51 @@ class MultiseekRegistry:
         :rtype: safestr
         """
 
-
         info = _FrameInfo()
 
         result = self.recreate_form_recursive(
             data['form_data'], info)
+        foundation = []
 
         if data.has_key("ordering"):
             for no, elem in enumerate(self.order_boxes):
                 key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
                 if data['ordering'].has_key(key):
                     result.append(
-                        '\t\t\t'
-                        '$($("select[name=%s]").children()[%s]).attr("selected", "")' % (
+                        '\t\t'
+                        '$("select[name=%s] option").eq(%s).prop("selected", true)' % (
                             key, data['ordering'][key]))
+                    foundation.append(
+                        '\t\t\t'
+                        'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % key
+                    )
                 key = key + "_dir"
                 if data['ordering'].has_key(key):
                     if data['ordering'][key] == "1":
                         result.append(
+                            '\t\t'
+                            '$("input[name=%s]").attr("checked", true)' % key)
+                        foundation.append(
                             '\t\t\t'
-                            '$("input[name=%s]").attr("checked", "")' % (
-                                key))
+                            '$("input[name=%s]").next().toggleClass("checked", true)' % key
+                        )
 
         if data.has_key('report_type'):
             if data['report_type']:
                 result.append(
-                    '\t\t\t'
-                    '$($("select[name=%s]").children()[%s]).attr("selected", "")'
+                    '\t\t'
+                    '$("select[name=%s] option").eq(%s).prop("selected", true)'
                     % (
                         MULTISEEK_REPORT_TYPE, data['report_type']))
+                foundation.append(
+                    '\t\t\t'
+                    'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % MULTISEEK_REPORT_TYPE
+                )
 
-        return u";\n".join(result) + u";\n"
+        ret = u";\n".join(result) + u";\n"
+        ret += u"\t\tif (window.Foundation) {\n" + u";\n".join(
+            foundation) + u"\n\t\t}\n"
+        return ret
 
 
 def create_registry(model, *args, **kw):
