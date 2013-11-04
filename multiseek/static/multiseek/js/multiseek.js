@@ -45,13 +45,14 @@ $.widget("multiseek.multiseekBase", {
     },
 
     prevOperation: function (action) {
-        if (action == "enable")
-            this.element.find("#prev-op-placeholder").first().append(
-                this.getPrevOperationDOM())
-        else if (action == "disable")
-            this.element.find("#prev-op-placeholder").first().remove()
+        var ph = this.element.find("#prev-op-placeholder");
+        if (action == "enable") {
+            if (ph.children().length == 0)
+                ph.first().append(this.getPrevOperationDOM());
+        } else if (action == "disable")
+            ph.first().remove()
         else
-            return this.element.find("#prev-op-placeholder").first().children("#prev-op");
+            return ph.first().children("#prev-op");
     },
 
     getPrevOperationValue: function () {

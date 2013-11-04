@@ -134,7 +134,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'test_app',
     'multiseek',
-    'django_nose',
+    #'django_nose',
     'django_jenkins'
 )
 
@@ -169,7 +169,7 @@ LOGGING = {
 
 MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 SELENIUM_DRIVER = "Remote"
 SELENIUM_CAPABILITIES = {"browser": "firefox"}

@@ -14,6 +14,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
+import sys
 
 from selenium_helpers import wd, SeleniumTestCase, SeleniumAdminTestCase
 from multiseek.logic import MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE, AND, DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST
@@ -31,23 +32,32 @@ FRAME = "frame-0"
 FIELD = 'field-0'
 from selenium.webdriver import Firefox, Remote
 
+if sys.platform == 'win32':
+    baseWebDriverClass = Firefox
+else:
+    baseWebDriverClass = Remote
 
-class MultiseekWebPage(wd(Remote)):
+class MultiseekWebPage(wd(baseWebDriverClass)):
     """Helper functions, that take care of the multiseek form web page
     """
 
     def __init__(self, registry, *args, **kw):
-        #profile = webdriver.FirefoxProfile()
-        #profile.add_extension(
-        #    os.path.join(
-        #        os.path.dirname(__file__),
-        #        'firebug-1.4.xpi'))
-        #
-        super(MultiseekWebPage, self).__init__(
-            #profile,
-            command_executor="http://linux-dev:4444/wd/hub",
-            desired_capabilities=DesiredCapabilities.FIREFOX,
-            *args, **kw)
+
+        if sys.platform == 'win32':
+
+            profile = webdriver.FirefoxProfile()
+            profile.add_extension(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    'firebug-1.4.xpi'))
+            super(MultiseekWebPage, self).__init__(profile, *args, **kw)
+
+        else:
+            super(MultiseekWebPage, self).__init__(
+                #profile,
+                command_executor="http://linux-dev:4444/wd/hub",
+                desired_capabilities=DesiredCapabilities.FIREFOX,
+                *args, **kw)
         self.registry = registry
 
     def get_frame(self, id):
@@ -133,6 +143,16 @@ class MultiseekWebPage(wd(Remote)):
         return self.execute_script("""
         return $("#%s").multiseekField("getValue");
         """ % field)
+
+    def add_frame(self, frame="frame-0", prev_op=None):
+        if not prev_op:
+            return self.execute_script(
+                """$("#%s").multiseekFrame('addFrame');""" % frame)
+
+        return self.execute_script("""
+            $("#%s").multiseekFrame('addFrame', '%s');
+        """ % (frame, prev_op))
+
 
     def add_field(self, frame, label, op, value):
         self.execute_script("""
@@ -419,7 +439,7 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
                     u'value': u'[""]', u'prev_op': None}])
 
 
-class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
+class TestFormSaveAndAnonymous(MultiseekPageMixin, SeleniumTestCase):
     def test_initial(self):
         # Without SearchForm objects, the formsSelector is invisible
         elem = self.page.find_element_by_jquery("#formsSelector")
@@ -435,6 +455,13 @@ class TestFormSaveAnonymous(MultiseekPageMixin, SeleniumTestCase):
         self.assertRaises(
             InvalidSelectorException,
             self.page.find_element_by_jquery, "#saveFormButton")
+
+    def test_bug(self):
+        self.page.find_element_by_jquery("#add_frame").send_keys(Keys.SPACE)
+        self.page.find_elements_by_jquery("button#add_field")[1].send_keys(Keys.SPACE)
+        self.page.get_field("field-1")['close-button'].send_keys(Keys.SPACE)
+        self.assertEquals(
+            len(self.page.find_elements_by_jquery("select#prev-op")), 1)
 
 
 class TestPublicReportTypes(MultiseekPageMixin, SeleniumTestCase):
