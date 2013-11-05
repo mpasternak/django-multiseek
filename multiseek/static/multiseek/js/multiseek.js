@@ -281,7 +281,7 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
                 row.append([
                     $("<div/>")
                         .attr("class", "large-2 small-2 columns")
-                        .text("-"),
+                        .append($("<center/>").text("—")),
                     $("<div/>")
                         .attr("class", "large-5 small-5 columns")
                         .append([
