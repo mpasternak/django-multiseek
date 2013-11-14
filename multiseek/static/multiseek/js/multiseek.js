@@ -23,6 +23,7 @@ multiseek = {
 
     widgetMapping: {
         'string': 'multiseekStringValue',
+        'integer': 'multiseekIntegerValue',
         'value-list': 'multiseekValueListValue',
         'date': 'multiseekDateValue',
         'autocomplete': 'multiseekAutocompleteValue',
@@ -81,7 +82,6 @@ $.widget("multiseek.multiseekBaseValue", {
 
     update: function (value, index) {
         // when operation was changed
-        console.log('mbs update');
     }
 });
 
@@ -94,7 +94,6 @@ $.widget("multiseek.multiseekStringValue", $.multiseek.multiseekBaseValue, {
                 .attr("id", "value")
                 .attr("size", "30")
         );
-        console.log('string value create');
     },
 
     getValue: function () {
@@ -107,6 +106,11 @@ $.widget("multiseek.multiseekStringValue", $.multiseek.multiseekBaseValue, {
 
 });
 
+$.widget("multiseek.multiseekIntegerValue", $.multiseek.multiseekStringValue, {
+    getValue: function () {
+        return parseInt(this.element.children().first().val());
+    }
+});
 
 $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
@@ -203,7 +207,6 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
 
     setValue: function (value) {
         value = $.parseJSON(value);
-        console.log(value);
         var elem = this.element.find("#value").first();
         elem.prop("data-id", value[0]);
         elem.val(value[1]);
@@ -222,6 +225,9 @@ $.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
             element.append($('<option/>').val(v).html(v));
         });
         this.element.append(element);
+        if (window.Foundation)
+            Foundation.libs.forms.assemble();
+
     },
 
     setValue: function (value) {
@@ -243,14 +249,14 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
             .attr("size", "10");
 
         if (element.fdatepicker)
-            /* Use Foundation 4 date picker if available */
+        /* Use Foundation 4 date picker if available */
             element.fdatepicker({
                 format: 'dd.mm.yyyy',
                 weekStart: 1,
                 language: djangoLanguageCode
             });
         else
-            /* Use JQuery datepicker if available */
+        /* Use JQuery datepicker if available */
             element.datepicker($.datepicker.regional[djangoLanguageCode]);
 
         this.element.append(
@@ -303,7 +309,7 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
                                 .attr("size", "10")
                                 .datepicker($.datepicker.regional[djangoLanguageCode])
                         ])
-                    ]);
+                ]);
 
             }
         } else {
@@ -383,6 +389,8 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
         ops[this.getFieldName()].forEach(function (value) {
             ops_select.append($('<option/>').val(value).html(value));
         });
+        if (window.Foundation)
+            Foundation.libs.forms.refresh_custom_select(ops_select, true);
         ops_select.change();
     },
 
@@ -401,6 +409,12 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
         /* initialize value widget, when the type is changed. */
 
         var p = this.element.find("#value-placeholder");
+        try {
+            p[this.getWidgetType()]("destroy"); // children().remove();
+        } catch (Error) {
+
+        };
+
         p.children().remove();
         var x = p.append("<span/>");
         p = $(p.children()[0]);
@@ -413,6 +427,7 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
 
             default:
                 p[this.getWidgetType()]({'fieldName': this.getFieldName()});
+                break;
 
         }
 
@@ -453,7 +468,6 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
     },
 
     serialize: function () {
-        console.log("in serialize");
         return {
             'field': this.getFieldName(),
             'operator': this.opSelect().val(),
@@ -501,7 +515,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                             .text(gettext("Add field"))
                             .click($.proxy(function (evt) {
                                 evt.preventDefault();
-                                this.addField();
+                                this.addFieldViaButton();
                             }, this)),
 
                         $("<button/>")
@@ -633,9 +647,13 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
             fld.multiseekField("setValue", type, operation, value, op);
         multiseek.field_counter++;
 
+    },
+
+    addFieldViaButton: function () {
+        this.addField();
+
         if (window['Foundation'])
             Foundation.libs.forms.assemble();
-
     },
 
     addFrame: function (prevOpValue) {
@@ -659,6 +677,9 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     addFrameViaButton: function () {
         var f = this.addFrame("and");
         f.multiseekFrame("addField");
+
+        if (window['Foundation'])
+            Foundation.libs.forms.assemble();
     },
 
     serialize: function () {
