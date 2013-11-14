@@ -240,8 +240,18 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
             .attr("name", "value")
             .attr("id", "value")
             .attr("placeholder", gettext("today"))
-            .attr("size", "10")
-            .datepicker($.datepicker.regional[djangoLanguageCode]);
+            .attr("size", "10");
+
+        if (element.fdatepicker)
+            /* Use Foundation 4 date picker if available */
+            element.fdatepicker({
+                format: 'dd.mm.yyyy',
+                weekStart: 1,
+                language: djangoLanguageCode
+            });
+        else
+            /* Use JQuery datepicker if available */
+            element.datepicker($.datepicker.regional[djangoLanguageCode]);
 
         this.element.append(
             $("<div/>")
