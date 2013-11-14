@@ -554,12 +554,15 @@ class MultiseekRegistry:
         result = []
         info.frame += 1
 
+        current_frame = info.frame
+
         for elem in element[1:]:
             if type(elem) == list:
                 result.append(
                     "$('#frame-%s').multiseekFrame('addFrame', '%s')" % (
-                        info.frame, elem[0]))
+                        current_frame, elem[0]))
                 result.extend(self.recreate_form_recursive(elem, info))
+
             else:
                 if elem.get("prev_op", None) not in [AND, OR, None]:
                     raise ParseError
@@ -574,7 +577,7 @@ class MultiseekRegistry:
                     elem['value'])
 
                 result.append(s % (
-                    info.frame, elem['field'], elem['operator'], value,
+                    current_frame, elem['field'], elem['operator'], value,
                     prev_op))
                 info.field += 1
 
