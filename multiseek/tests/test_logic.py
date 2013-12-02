@@ -30,7 +30,7 @@ class TestQueryObject(TestCase):
     def test_query_for(self):
         res = self.q.query_for("foobar", DIFFERENT)
         self.assertEquals(
-            """(AND: (NOT (AND: ('foo', 'foobar'))))""",
+            """(NOT (AND: ('foo', 'foobar')))""",
             str(res))
 
     def test_query_for_raises(self):
@@ -47,10 +47,10 @@ class TestStringQueryObject(TestCase):
 
     def test_query_for(self):
         args = [
-            (DIFFERENT, "(AND: (NOT (AND: ('foo', 'foobar'))))"),
-            (NOT_CONTAINS, "(AND: (NOT (AND: ('foo__icontains', 'foobar'))))"),
+            (DIFFERENT, "(NOT (AND: ('foo', 'foobar')))"),
+            (NOT_CONTAINS, "(NOT (AND: ('foo__icontains', 'foobar')))"),
             (NOT_STARTS_WITH,
-             "(AND: (NOT (AND: ('foo__startswith', 'foobar'))))")
+             "(NOT (AND: ('foo__startswith', 'foobar')))")
         ]
 
         for param, result in args:
@@ -90,7 +90,7 @@ class TestRangeQueryObject(TestCase):
 
         res = r.real_query([1, 2], RANGE_OPS[1])
         self.assertEquals(
-            str(res), "(AND: (NOT (AND: ('foo__gte', 1), ('foo__lte', 2))))")
+            str(res), "(NOT (AND: ('foo__gte', 1), ('foo__lte', 2)))")
 
 
 class TestIntegerQueryObject(TestCase):
@@ -196,8 +196,17 @@ class TestMultiseekRegistry(TestCase):
         fld_or = dict(field='foo', operator=op, value=u'foo', prev_op=OR)
         res = self.registry.recreate_form(
             {'form_data':
-                 [None, fld_noop, fld_or, [AND, fld_noop, fld_or], fld_and,
-                  [OR, fld_noop, fld_or]],
+                 [None,
+                  fld_noop,
+                  fld_or, [
+                     AND,
+                     fld_noop,
+                     fld_or],
+                  fld_and,
+                  [OR,
+                   fld_noop,
+                   fld_or]
+                 ],
              'ordering': {
                  '%s1' % MULTISEEK_ORDERING_PREFIX: "1",
                  '%s1_dir' % MULTISEEK_ORDERING_PREFIX: "1",
@@ -211,8 +220,8 @@ $('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
 $('#frame-0').multiseekFrame('addFrame', 'and');
 $('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
 $('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
-$('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', 'and');
-$('#frame-1').multiseekFrame('addFrame', 'or');
+$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'and');
+$('#frame-0').multiseekFrame('addFrame', 'or');
 $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
 $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
 \t\t$("select[name=order_1] option").eq(1).prop("selected", true);
