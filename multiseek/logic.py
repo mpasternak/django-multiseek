@@ -475,7 +475,7 @@ class MultiseekRegistry:
             elif prev_op == OR:
                 ret = ret | qobj
             elif prev_op == ANDNOT:
-                ret = ret & ~qobj;
+                ret = ret & ~Q(qobj);
             else:
                 raise UnknownOperation(
                     "%s not expected" % elem.get('prev_op', None))

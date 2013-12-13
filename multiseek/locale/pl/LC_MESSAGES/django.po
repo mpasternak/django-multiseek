@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-16 13:24+0100\n"
-"PO-Revision-Date: 2013-12-16 13:24+0100\n"
+"POT-Creation-Date: 2013-12-16 13:25+0100\n"
+"PO-Revision-Date: 2013-12-16 13:27+0100\n"
 "Last-Translator: Michał Pasternak <michal.dtz@gmail.com>\n"
 "Language-Team: Multiseek Translation Team ;-) <michal.dtz@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -168,12 +168,8 @@ msgid "The ability to remove the last field has been disabled."
 msgstr "Możliwość usunięcia ostatniego pola została wyłaczona."
 
 #: .\views.py:206
-msgid "ANDNOT"
+msgid "andnot"
 msgstr "i nie"
-
-#: .\views.py:221
-msgid "prev_op"
-msgstr ""
 
 #: .\templates\multiseek\index.html:11
 msgid "Multiseek"
@@ -226,14 +222,14 @@ msgstr "Zapytanie: "
 msgid "No elements"
 msgstr "Brak elementów"
 
+#~ msgid "ANDNOT"
+#~ msgstr "i nie"
+
 #~ msgid "Add field"
 #~ msgstr "Dodaj pole"
 
 #~ msgid "Add frame"
 #~ msgstr "Dodaj ramkę"
-
-#~ msgid "and"
-#~ msgstr "i"
 
 #~ msgid "or"
 #~ msgstr "lub"
