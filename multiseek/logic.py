@@ -138,6 +138,11 @@ class QueryObject(object):
         """
         return value
 
+    def value_for_description(self, value):
+        """Return value for description - readable for end-user, for placement
+        on web page."""
+        return self.value_from_web(value)
+
     def value_to_web(self, value):
         return value
 

@@ -225,7 +225,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                     value = d[cur]['value']
 
                     f = registry.get_field_by_name(d[cur]['field'])
-                    value = f.value_from_web(value)
+                    value = f.value_for_description(value)
 
                     ret += '%s %s %s' % (d[cur]['field'].lower(),
                                          d[cur]['operator'],
