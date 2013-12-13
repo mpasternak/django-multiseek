@@ -226,6 +226,11 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
             return ret
 
+        if data is None:
+            return u''
+
+        if not data['form_data']:
+            return u''
 
         return _recur(data['form_data'][1:])
 
