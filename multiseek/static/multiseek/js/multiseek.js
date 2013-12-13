@@ -40,7 +40,8 @@ $.widget("multiseek.multiseekBase", {
             .css("display", "inline")
             .append([
                 $("<option/>").html(gettext("and")).attr("value", "and"),
-                $("<option/>").html(gettext("or")).attr("value", "or")
+                $("<option/>").html(gettext("or")).attr("value", "or"),
+                $("<option/>").html(gettext("and not")).attr("value", "andnot")
             ])
 
     },

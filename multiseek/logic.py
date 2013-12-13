@@ -14,6 +14,7 @@ MULTISEEK_ORDERING_PREFIX = "order_"
 
 AND = "and"
 OR = "or"
+ANDNOT = "andnot"
 
 STRING = "string"
 INTEGER = "integer"
@@ -446,7 +447,7 @@ class MultiseekRegistry:
                 "Operation %r not valid for field %r" % (
                     field['operator'], field['field']))
 
-        if field.get('prev_op', None) not in [AND, OR, None]:
+        if field.get('prev_op', None) not in [AND, OR, ANDNOT, None]:
             raise UnknownOperation("%r" % field)
 
         return f.query_for(field['value'], field['operator'])
@@ -473,6 +474,8 @@ class MultiseekRegistry:
                 ret = ret & qobj
             elif prev_op == OR:
                 ret = ret | qobj
+            elif prev_op == ANDNOT:
+                ret = ret & ~qobj;
             else:
                 raise UnknownOperation(
                     "%s not expected" % elem.get('prev_op', None))
@@ -564,8 +567,8 @@ class MultiseekRegistry:
                 result.extend(self.recreate_form_recursive(elem, info))
 
             else:
-                if elem.get("prev_op", None) not in [AND, OR, None]:
-                    raise ParseError
+                if elem.get("prev_op", None) not in [AND, OR, ANDNOT, None]:
+                    raise ParseError("prev_op = %r" % elem.get("prev_op", None))
 
                 prev_op = elem.get('prev_op', None)
                 if prev_op == None or prev_op == 'None':

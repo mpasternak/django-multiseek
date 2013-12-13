@@ -2,7 +2,9 @@
 {% load i18n %}
 
 {% block content %}
-    {% trans "Query: " %}{{ description|safe }}
+    {% if description %}
+        {% trans "Query: " %}{{ description|safe }}
+    {% endif %}
 
     {% for element in object_list %}
         <li>{{ element }}</li>

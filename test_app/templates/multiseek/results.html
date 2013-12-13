@@ -10,12 +10,15 @@
 
 {% block content %}
 
-    <div id="description">
-        <h3>{% trans "Query description" %}</h3>
-        <div>
-            <p>{{ description|safe }}</p>
+    {% if description %}
+        <div id="description">
+            <h3>{% trans "Query description" %}</h3>
+
+            <div>
+                <p>{{ description|safe }}</p>
+            </div>
         </div>
-    </div>
+    {% endif %}
 
     <script type="text/javascript">
         $(function () {

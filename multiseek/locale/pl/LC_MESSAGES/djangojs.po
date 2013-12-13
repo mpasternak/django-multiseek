@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-28 01:39+0100\n"
-"PO-Revision-Date: 2013-10-29 13:28+0100\n"
+"POT-Creation-Date: 2013-12-16 13:18+0100\n"
+"PO-Revision-Date: 2013-12-16 13:19+0100\n"
 "Last-Translator: Michał Pasternak <michal.dtz@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -16,66 +16,72 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.5.7\n"
+"X-Generator: Poedit 1.6.2\n"
+"Language: pl\n"
 
-#: static/multiseek/js/multiseek.js:41
+#: .\static\multiseek\js\multiseek.js:42
 msgid "and"
 msgstr "i"
 
-#: static/multiseek/js/multiseek.js:42
+#: .\static\multiseek\js\multiseek.js:43
 msgid "or"
 msgstr "lub"
 
-#: static/multiseek/js/multiseek.js:117
+#: .\static\multiseek\js\multiseek.js:44
+msgid "and not"
+msgstr "i nie"
+
+#: .\static\multiseek\js\multiseek.js:124
 msgid "from"
 msgstr "od"
 
-#: static/multiseek/js/multiseek.js:126
+#: .\static\multiseek\js\multiseek.js:133
 msgid "to"
 msgstr "do"
 
-#: static/multiseek/js/multiseek.js:165
+#: .\static\multiseek\js\multiseek.js:174
 msgid "Please select value from the dropdown."
 msgstr "Proszę, wybierz wartość z rozwijanego menu."
 
-#: static/multiseek/js/multiseek.js:227 static/multiseek/js/multiseek.js:260
+#: .\static\multiseek\js\multiseek.js:249
+#: .\static\multiseek\js\multiseek.js:309
 msgid "today"
 msgstr "dzisiaj"
 
-#: static/multiseek/js/multiseek.js:457
+#: .\static\multiseek\js\multiseek.js:516
 msgid "Add field"
 msgstr "Dodaj pole"
 
-#: static/multiseek/js/multiseek.js:466
+#: .\static\multiseek\js\multiseek.js:525
 msgid "Add frame"
 msgstr "Dodaj ramkę"
 
-#: static/multiseek/js/multiseek.js:695
+#: .\static\multiseek\js\multiseek.js:761
 msgid "Form name?"
 msgstr "Nazwa formularza?"
 
-#: static/multiseek/js/multiseek.js:702
+#: .\static\multiseek\js\multiseek.js:768
 msgid "Form name must not be empty."
 msgstr "Nazwa formularza nie może być pusta."
 
-#: static/multiseek/js/multiseek.js:707
+#: .\static\multiseek\js\multiseek.js:773
 msgid "Should the form be available for every user of this website?"
 msgstr ""
 "Czy ten formularz powinien być dostępny dla wszystkich użytkowników tego "
 "serwisu?"
 
-#: static/multiseek/js/multiseek.js:710
+#: .\static\multiseek\js\multiseek.js:776
 msgid "There was a server-side error. The form was NOT saved."
 msgstr "Wystąpił błąd po stronie serwera. Formularz NIE został zapisany."
 
-#: static/multiseek/js/multiseek.js:711
+#: .\static\multiseek\js\multiseek.js:777
 msgid "Form was saved."
 msgstr "Formularz został zapisany."
 
-#: static/multiseek/js/multiseek.js:712
+#: .\static\multiseek\js\multiseek.js:778
 msgid "There is already a form with such name in the database. Overwrite?"
 msgstr "W bazie danych już znajduje się formularz o takiej nazwie. Nadpisać?"
 
-#: static/multiseek/js/multiseek.js:750
+#: .\static\multiseek\js\multiseek.js:816
 msgid "Are you sure you want to load selected form?"
 msgstr "Czy na pewno załadować wybrany formularz?"
