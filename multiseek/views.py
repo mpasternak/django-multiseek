@@ -1,22 +1,22 @@
 # -*- encoding: utf-8 -*-
+import json
+
 from django.db.models.query_utils import Q
 from django.http.response import HttpResponse, Http404
 from django.utils import simplejson
 from django.views.generic.base import View
-
-import json
-
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.views.generic import TemplateView, ListView
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_lazy
 
 from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
     UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 from multiseek.logic import MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
+
 
 SAVED = 'saved'
 OVERWRITE_PROMPT = 'overwrite-prompt'
@@ -197,15 +197,47 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                 self._json_cache = json.loads(_json)
         return self._json_cache
 
+    def describe_multiseek_data(self):
+        """Returns a string with a nicely-formatted query, so you can
+        display the query to the user, in a results window, for example.
+        """
+        data = self.get_multiseek_data()
+
+        def _recur(d):
+            cur = 0
+            ret = u''
+
+            while cur < len(d):
+
+                if type(d[cur]) == list:
+                    ret += u' <b>' + unicode(
+                        ugettext_lazy(d[cur][0])).upper() + u'</b> '
+                    ret += u'(' + _recur(d[cur][1:]) + u')'
+                else:
+                    if d[cur].has_key('prev_op'):
+                        ret += u' <b>' + unicode(
+                            ugettext_lazy(d[cur]['prev_op'])).upper() + u'</b> '
+
+                    ret += '%s %s %s' % (d[cur]['field'].lower(),
+                                         d[cur]['operator'],
+                                         d[cur]['value'])
+
+                cur += 1
+
+            return ret
+
+
+        return _recur(data['form_data'][1:])
+
     def get_context_data(self, **kwargs):
         public = self.request.user.is_anonymous()
-        report_type = get_registry(
-            self.registry).get_report_type(
-            self.get_multiseek_data(),
-            only_public=public)
+        report_type = get_registry(self.registry) \
+            .get_report_type(self.get_multiseek_data(),
+                             only_public=public)
+        description = self.describe_multiseek_data()
 
         return super(ListView, self).get_context_data(
-            report_type=report_type, **kwargs)
+            report_type=report_type, description=description, **kwargs)
 
     def get_queryset(self):
         # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to wówczas błąd podnoś i to samo w klasie MultiseekFormPage
@@ -215,6 +247,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
 class MultiseekModelRouter(View):
     registry = None
+
     def get(self, request, model, *args, **kw):
         registry = get_registry(self.registry)
         for field in registry.fields:

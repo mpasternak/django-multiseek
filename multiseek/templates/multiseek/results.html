@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block content %}
+    {% trans "Query: " %}{{ description|safe }}
 
     {% for element in object_list %}
         <li>{{ element }}</li>
