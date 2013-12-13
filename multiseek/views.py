@@ -203,6 +203,8 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         """
         data = self.get_multiseek_data()
 
+        ugettext_lazy("ANDNOT") # Leave this line.
+
         def _recur(d):
             cur = 0
             ret = u''
