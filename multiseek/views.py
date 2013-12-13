@@ -202,6 +202,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         display the query to the user, in a results window, for example.
         """
         data = self.get_multiseek_data()
+        registry = get_registry(self.registry)
 
         ugettext_lazy("andnot") # Leave this line.
 
@@ -212,17 +213,23 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             while cur < len(d):
 
                 if type(d[cur]) == list:
-                    ret += u' <b>' + unicode(
-                        ugettext_lazy(d[cur][0])).upper() + u'</b> '
+                    if d[cur][0] != None:
+                        ret += u' <b>' + unicode(
+                            ugettext_lazy(d[cur][0])).upper() + u'</b> '
                     ret += u'(' + _recur(d[cur][1:]) + u')'
                 else:
-                    if d[cur].has_key('prev_op'):
+                    if d[cur].has_key('prev_op') and d[cur]['prev_op'] != None:
                         ret += u' <b>' + unicode(
                             ugettext_lazy(d[cur]['prev_op'])).upper() + u'</b> '
 
+                    value = d[cur]['value']
+
+                    f = registry.get_field_by_name(d[cur]['field'])
+                    value = f.value_from_web(value)
+
                     ret += '%s %s %s' % (d[cur]['field'].lower(),
                                          d[cur]['operator'],
-                                         d[cur]['value'])
+                                         value)
 
                 cur += 1
 

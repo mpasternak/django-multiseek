@@ -24,6 +24,7 @@ multiseek = {
     widgetMapping: {
         'string': 'multiseekStringValue',
         'integer': 'multiseekIntegerValue',
+        'decimal': 'multiseekDecimalValue',
         'value-list': 'multiseekValueListValue',
         'date': 'multiseekDateValue',
         'autocomplete': 'multiseekAutocompleteValue',
@@ -110,6 +111,12 @@ $.widget("multiseek.multiseekStringValue", $.multiseek.multiseekBaseValue, {
 $.widget("multiseek.multiseekIntegerValue", $.multiseek.multiseekStringValue, {
     getValue: function () {
         return parseInt(this.element.children().first().val());
+    }
+});
+
+$.widget("multiseek.multiseekDecimalValue", $.multiseek.multiseekStringValue, {
+    getValue: function () {
+        return parseFloat(this.element.children().first().val()).toFixed(3);
     }
 });
 
@@ -233,6 +240,8 @@ $.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
 
     setValue: function (value) {
         this.element.find("select[name=value_list]").val(value);
+        if (window.Foundation)
+            Foundation.libs.forms.refresh_custom_select(this.element.children().first(), true);
     },
 
     getValue: function () {

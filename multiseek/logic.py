@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+from decimal import Decimal
+import decimal
 import importlib
 
 import json
@@ -18,6 +20,7 @@ ANDNOT = "andnot"
 
 STRING = "string"
 INTEGER = "integer"
+DECIMAL = "decimal"
 AUTOCOMPLETE = "autocomplete"
 RANGE = "range"
 DATE = "date"
@@ -311,15 +314,8 @@ class RangeQueryObject(QueryObject):
         return ret
 
 
-class IntegerQueryObject(QueryObject):
-    type = INTEGER
+class AbstractNumberQueryObject(QueryObject):
     ops = [EQUAL, DIFFERENT, GREATER, LESSER, GREATER_OR_EQUAL, LESSER_OR_EQUAL]
-
-    def value_from_web(self, value):
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return
 
     def real_query(self, value, operation):
         if operation in EQUALITY_OPS_ALL:
@@ -336,6 +332,27 @@ class IntegerQueryObject(QueryObject):
             return Q(**{self.field_name + "__lte": value})
         else:
             raise UnknownOperation(operation)
+
+
+class IntegerQueryObject(AbstractNumberQueryObject):
+    type = INTEGER
+
+    def value_from_web(self, value):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return
+
+
+class DecimalQueryObject(AbstractNumberQueryObject):
+    type = DECIMAL
+
+    def value_from_web(self, value):
+        try:
+            return Decimal(value)
+        except (TypeError, decimal.InvalidOperation):
+            return
+
 
 
 class ValueListQueryObject(QueryObject):
@@ -412,7 +429,8 @@ class MultiseekRegistry:
         self.field_by_name = dict([(f.label, f) for f in self.fields])
 
         # Check if every label is unique
-        assert (len(self.field_by_name.keys()) == len(self.fields))
+        assert (len(self.field_by_name.keys()) == len(self.fields)), \
+            "All fields must have unique names"
 
     def field_by_type(self, type, public=True):
         """Return a list of fields by type.
