@@ -46,10 +46,10 @@ class MultiseekWebPage(wd(baseWebDriverClass)):
         if sys.platform == 'win32':
 
             profile = webdriver.FirefoxProfile()
-            profile.add_extension(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    'firebug-1.4.xpi'))
+            # profile.add_extension(
+            #     os.path.join(
+            #         os.path.dirname(__file__),
+            #         'firebug-1.4.5.xpi'))
             super(MultiseekWebPage, self).__init__(profile, *args, **kw)
 
         else:
