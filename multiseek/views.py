@@ -292,4 +292,4 @@ class MultiseekModelAutocomplete(View):
                  'value': self.original.get_autocomplete_label(elem)})
 
         return HttpResponse(simplejson.dumps(ret),
-                            mimetype='application/json')
+                            content_type='application/json')
