@@ -7,7 +7,10 @@ import json
 import re
 from dateutil.parser import parse
 from django.db.models import Q
-from django.db.models.options import get_verbose_name
+try:
+    from django.db.models.options import get_verbose_name
+except ImportError:
+    from django.utils.text import camel_case_to_spaces as get_verbose_name
 from django.utils.translation import ugettext_lazy as _
 from collections import namedtuple
 

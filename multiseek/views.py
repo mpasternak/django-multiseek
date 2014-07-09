@@ -3,7 +3,7 @@ import json
 
 from django.db.models.query_utils import Q
 from django.http.response import HttpResponse, Http404
-from django.utils import simplejson
+import simplejson
 from django.views.generic.base import View
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
