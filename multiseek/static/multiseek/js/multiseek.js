@@ -1,7 +1,7 @@
 if (!window.Foundation) {
     document.write("<style>" +
         "div.columns { display: inline; position: relative; }" +
-        ".row { display: block;  width: 100%; }" +
+        ".row { display: inline;  width: 100%; }" +
         "</style>");
 }
 
