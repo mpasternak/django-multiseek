@@ -266,7 +266,8 @@ class MultiseekModelRouter(View):
         registry = get_registry(self.registry)
         for field in registry.fields:
             if field.type == AUTOCOMPLETE:
-                return MultiseekModelAutocomplete(original=field).get(request)
+                if model == field.model.__name__:
+                    return MultiseekModelAutocomplete(original=field).get(request)
         raise Http404
 
 
