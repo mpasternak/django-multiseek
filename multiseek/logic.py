@@ -206,6 +206,7 @@ class AutocompleteQueryObject(QueryObject):
     model = None
     url = None
 
+
     def __init__(
             self, field_name=None, label=None, model=None, url=None,
             public=None):
@@ -245,6 +246,32 @@ class AutocompleteQueryObject(QueryObject):
     def value_to_web(self, value):
         model = self.model.objects.get(pk=value)
         return json.dumps([value, self.get_label(model)])
+
+    def get_autocomplete_query(self, data):
+        """This function should return an iterable, like a QuerySet. This
+         iterable, in turn, will be used by JQuery UI widget on the web.
+
+        :param data: string passed from web request.
+        """
+
+        def args(fld, elem):
+            return {fld + "__icontains": elem}
+
+        if data:
+            # split by comma, space, etc.
+            data = data.split(" ")
+
+            ret = Q(**args(self.search_fields[0], data[0]))
+            for f, v in zip(self.search_fields[1:], data[1:]):
+                ret = ret & Q(**args(f, v))
+            return self.model.objects.filter(ret)
+
+        return self.model.objects.all()
+
+    def get_autocomplete_label(self, elem):
+        """This function returns a label for the elem, this label in turn
+        will be used by JQuery UI widget."""
+        return unicode(elem)
 
 
 class DateQueryObject(QueryObject):

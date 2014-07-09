@@ -266,8 +266,7 @@ class MultiseekModelRouter(View):
         registry = get_registry(self.registry)
         for field in registry.fields:
             if field.type == AUTOCOMPLETE:
-                if field.model.__name__ == model:
-                    return MultiseekModelAutocomplete(qobj=field).get(request)
+                return MultiseekModelAutocomplete(original=field).get(request)
         raise Http404
 
 
@@ -279,32 +278,17 @@ class MultiseekModelAutocomplete(View):
     def get_queryset(self, request):
         return self.qobj.model.objects.all()
 
-    def prepare_search_query(self, data):
-
-        def args(fld, elem):
-            return {fld + "__icontains": elem}
-
-        # split by comma, space, etc.
-        data = data.split(" ")
-
-        ret = Q(**args(self.qobj.search_fields[0], data[0]))
-        for f, v in zip(self.qobj.search_fields[1:], data[1:]):
-            ret = ret & Q(**args(f, v))
-        return ret
-
     def get(self, request, *args, **kwargs):
         q = request.GET.get('term', None)
 
-        qset = self.get_queryset(request)
-        if q:
-            qset = qset.filter(self.prepare_search_query(q))
+        qset = self.original.get_autocomplete_query(q)
 
         ret = []
         for elem in qset[:self.max_items]:
             ret.append(
                 {'id': elem.pk,
-                 'label': self.qobj.get_label(elem),
-                 'value': self.qobj.get_label(elem)})
+                 'label': self.original.get_autocomplete_label(elem),
+                 'value': self.original.get_autocomplete_label(elem)})
 
         return HttpResponse(simplejson.dumps(ret),
                             mimetype='application/json')
