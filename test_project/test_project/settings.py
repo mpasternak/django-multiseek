@@ -183,7 +183,9 @@ BOWER_INSTALLED_APPS = (
 
     # You don't need foundation for multiseek, only jquery.
     # Foundation is used in test_project only
-    'foundation'
+    'foundation',
+    'foundation-datepicker',
+    'font-awesome'
 )
 
 BOWER_COMPONENTS_ROOT = os.path.join(os.path.dirname(__file__), '..', 'components')
