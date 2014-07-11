@@ -1,9 +1,7 @@
 # -*- encoding: utf-8 -*-
 import json
 
-from django.db.models.query_utils import Q
 from django.http.response import HttpResponse, Http404
-import simplejson
 from django.views.generic.base import View
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
@@ -12,6 +10,7 @@ from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.views.generic import TemplateView, ListView
 from django.utils.translation import ugettext_lazy as _, ugettext_lazy
 
+import simplejson
 from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
     UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 from multiseek.logic import MULTISEEK_REPORT_TYPE

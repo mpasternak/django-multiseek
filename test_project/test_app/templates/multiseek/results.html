@@ -1,0 +1,66 @@
+{% extends "multiseek/base.html" %}
+
+{% load i18n %}
+
+{% block extrahead %}
+    {# because we need jquery and jquery ui for the query description accordion #}
+    {{ block.super }}
+    {% include "multiseek/multiseek_head.html" %}
+{% endblock %}
+
+{% block content %}
+
+    {% if description %}
+        <div id="description">
+            <h3>{% trans "Query description" %}</h3>
+
+            <div>
+                <p>{{ description|safe }}</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <script type="text/javascript">
+        $(function () {
+            $("#description").accordion({
+                collapsible: true,
+                active: false
+            });
+        });
+    </script>
+
+    {% if report_type == "list" %}
+        <ol>
+            {% for element in object_list %}
+                <li>{{ element }}</li>
+            {% empty %}
+                {% trans "No elements" %}
+            {% endfor %}
+        </ol>
+    {% endif %}
+
+    {% if report_type == "table" %}
+        <table border="1">
+            <tr>
+                <th>Elements</th>
+            </tr>
+            {% for element in object_list %}
+                <tr>
+                    <td>{{ element }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>{% trans "No elements" %}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    {% if report_type == "secret" %}
+        This report is so secret I can not disclose it. :-)
+        <br/>
+        Anyway, everything works as expected. Please see
+        templates/test_app/results.html.
+    {% endif %}
+
+{% endblock %}

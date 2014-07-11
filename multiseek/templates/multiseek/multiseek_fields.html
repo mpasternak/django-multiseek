@@ -23,8 +23,6 @@
         {% else %}
             {{ js_init|safe }}
         {% endif %}
-        if (window.Foundation)
-            Foundation.libs.forms.assemble();
         {% if saved_forms %}
             $("#formsSelector").show();
         {% else %}

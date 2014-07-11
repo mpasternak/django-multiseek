@@ -1,9 +1,4 @@
 django
 python-dateutil
 django-nose
-
-ludibrio
-django-whatever
-django-jenkins
-selenium
-git+https://github.com/mpasternak/django-selenium-helpers.git
+simplejson

@@ -1,5 +1,8 @@
-# For testing:
+# Development requirements for django-multiseek
+
 ludibrio
 selenium
 django-any
-django-selenium-helpers
+django-whatever
+git+https://github.com/mpasternak/django-selenium-helpers.git
+
