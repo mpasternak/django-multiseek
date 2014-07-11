@@ -1,9 +1,3 @@
-if (!window.Foundation) {
-    document.write("<style>" +
-        "div.columns { display: inline; position: relative; }" +
-        ".row { display: inline;  width: 100%; }" +
-        "</style>");
-}
 
 if (typeof String.prototype.startsWith != 'function') {
     // see below for better implementation!
@@ -233,15 +227,10 @@ $.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
             element.append($('<option/>').val(v).html(v));
         });
         this.element.append(element);
-        if (window.Foundation)
-            Foundation.libs.forms.assemble();
-
     },
 
     setValue: function (value) {
         this.element.find("select[name=value_list]").val(value);
-        if (window.Foundation)
-            Foundation.libs.forms.refresh_custom_select(this.element.children().first(), true);
     },
 
     getValue: function () {
@@ -399,8 +388,6 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
         ops[this.getFieldName()].forEach(function (value) {
             ops_select.append($('<option/>').val(value).html(value));
         });
-        if (window.Foundation)
-            Foundation.libs.forms.refresh_custom_select(ops_select, true);
         ops_select.change();
     },
 
@@ -527,12 +514,11 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                                 evt.preventDefault();
                                 this.addFieldViaButton();
                             }, this)),
-
+                        " ",
                         $("<button/>")
                             .attr("id", "add_frame")
                             .addClass("small")
                             .text(gettext("Add frame"))
-                            .css("padding-left", "10px")
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
                                     this.addFrameViaButton();
@@ -633,7 +619,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                         $("<button/>")
                             .text("X")
                             .attr("id", "close-button")
-                            .addClass('small')
+                            .addClass('small radius ')
                             .data("for-field", id)
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
@@ -662,8 +648,6 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     addFieldViaButton: function () {
         this.addField();
 
-        if (window['Foundation'])
-            Foundation.libs.forms.assemble();
     },
 
     addFrame: function (prevOpValue) {
@@ -688,8 +672,6 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         var f = this.addFrame("and");
         f.multiseekFrame("addField");
 
-        if (window['Foundation'])
-            Foundation.libs.forms.assemble();
     },
 
     serialize: function () {
