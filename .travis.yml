@@ -16,8 +16,8 @@ before_install:
 install:
   - pip install django==$DJANGO --quiet
   - pip install django-bower coveralls  --quiet
-  - pip install coveralls --quiet
   - pip install -r requirements.txt --quiet
+  - pip install -r requirements.dev --quiet
 
 script:
   - cd test_project && python manage.py test multiseek test_project
