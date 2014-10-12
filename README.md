@@ -1,6 +1,9 @@
 django-multiseek
 ================
 
+[![Build Status](https://travis-ci.org/mpasternak/django-multiseek.svg?branch=master)](https://travis-ci.org/mpasternak/django-multiseek)
+[![Coverage Status](https://coveralls.io/repos/mpasternak/django-multiseek/badge.png)](https://coveralls.io/r/mpasternak/django-multiseek)
+
 Graphical query builder for Django
 
 django-multiseek's purpose is to enable end-user of the web page to build a query form and query the database using multiple parameters.
