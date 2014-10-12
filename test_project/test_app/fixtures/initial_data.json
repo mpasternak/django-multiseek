@@ -1,6 +1,6 @@
 [
     {
-        "pk": null,
+        "pk": "1",
         "model": "test_app.language",
         "fields": {
             "name": "english",
@@ -8,7 +8,7 @@
         }
     },
     {
-        "pk": null,
+        "pk": "2",
         "model": "test_app.language",
         "fields": {
             "name": "polish",
@@ -17,7 +17,7 @@
     },
 
     {
-        "pk": null,
+        "pk": "1",
         "model": "test_app.author",
         "fields": {
             "last_name": "Smith",
@@ -26,7 +26,7 @@
     },
 
     {
-        "pk": null,
+        "pk": "2",
         "model": "test_app.author",
         "fields": {
             "last_name": "Kovalsky",
