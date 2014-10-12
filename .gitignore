@@ -47,3 +47,5 @@ static/
 selenium-server.log
 venv/
 test_project/components/
+
+wheelhouse
