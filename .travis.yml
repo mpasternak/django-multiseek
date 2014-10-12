@@ -1,0 +1,27 @@
+language:
+  python
+
+python:
+  - "2.7"
+#  - "3.3"
+
+env:
+  - DJANGO=1.6
+  - DJANGO=1.7
+
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+
+install:
+  - pip install django==$DJANGO --quiet
+  - pip install django-bower coveralls  --quiet
+  - pip install coveralls --quiet
+  - pip install -r requirements.txt --quiet
+
+script:
+  - cd test_project && python manage.py test multiseek test_project
+  - coverage run --source=filtered_contenttypes test_project\manage.py test multiseek test_project
+
+after_success:
+  coveralls
