@@ -21,7 +21,7 @@ install:
 
 script:
   - cd test_project && python manage.py test multiseek test_project
-  - coverage run --source=filtered_contenttypes manage.py test multiseek test_project
+  - coverage run --source=multiseek manage.py test multiseek test_project
 
 after_success:
   coveralls
