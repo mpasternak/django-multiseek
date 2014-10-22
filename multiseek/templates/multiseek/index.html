@@ -12,6 +12,12 @@
 {% endblock %}
 
 {% block content %}
+    <h1 id="jq-error" style="color: red;">PLEASE INSTALL JQUERY</h1>
+        <script>
+            $(document).ready(function(){
+                $("#jq-error").hide();
+            });
+        </script>
     {% include "multiseek/multiseek_fields.html" %}
     {% include "multiseek/multiseek_report_types.html" %}
     {% include "multiseek/multiseek_ordering.html" %}
