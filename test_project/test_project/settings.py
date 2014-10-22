@@ -185,7 +185,10 @@ BOWER_INSTALLED_APPS = (
     # Foundation is used in test_project only
     'foundation',
     'foundation-datepicker',
-    'font-awesome'
+    'font-awesome',
+
+    # For nice calendar
+    'https://raw.githubusercontent.com/taitems/Aristo-jQuery-UI-Theme/master/css/Aristo/Aristo.css'
 )
 
 BOWER_COMPONENTS_ROOT = os.path.join(os.path.dirname(__file__), '..', 'components')
