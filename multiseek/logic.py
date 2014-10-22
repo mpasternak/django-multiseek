@@ -247,7 +247,10 @@ class AutocompleteQueryObject(QueryObject):
         return value
 
     def value_to_web(self, value):
-        model = self.model.objects.get(pk=value)
+        try:
+            model = self.model.objects.get(pk=value)
+        except self.model.DoesNotExist:
+            return
         return json.dumps([value, self.get_label(model)])
 
     def get_autocomplete_query(self, data):

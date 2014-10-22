@@ -300,6 +300,19 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
 
         self.assertEquals(got, expect)
 
+    def test_autocomplete_field_bug(self):
+        """We fill autocomplete field with NOTHING, then we submit the form,
+        then we reload the homepage, and by the time of writing, we see
+        HTTP error 500, which is not what we need..."""
+
+        field = self.page.get_field(FIELD)
+        Select(field['type']).select_by_visible_text(
+            unicode(multiseek_registry.AuthorQueryObject.label))
+
+        self.page.find_element_by_id("sendQueryButton").click()
+        self.reload()
+        self.assertNotIn("Server Error (500)", self.page.page_source)
+
     def test_set_join(self):
         self.page.find_element_by_jquery("button#add_field").click()
 

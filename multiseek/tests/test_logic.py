@@ -10,6 +10,7 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     NOT_CONTAINS, NOT_STARTS_WITH, MultiseekRegistry, STRING, ParseError, \
     UnknownField, EQUALITY_OPS_ALL, OR, AND, create_registry, get_registry, \
     EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
+from multiseek.models import SearchForm
 from multiseek.util import make_field
 
 test_json = json.dumps({'form_data': [None,
@@ -75,6 +76,17 @@ class TestAutocompleteQueryObject(TestCase):
         self.assertEquals(q.value_from_web('foo'), None)
         self.assertEquals(q.value_from_web(1), True)
 
+    def test_value_to_web(self):
+        q = AutocompleteQueryObject('foo')
+        with Mock() as model:
+            model.objects.get(pk=1) >> True
+        q.model = model
+
+        self.assertEquals(q.value_to_web(1), '[1, "True"]')
+
+    def test_value_to_web_bug(self):
+        q = AutocompleteQueryObject('fo', model=SearchForm)
+        self.assertEquals(q.value_to_web(1), None)
 
 class TestRangeQueryObject(TestCase):
     def test_value_from_web(self):
