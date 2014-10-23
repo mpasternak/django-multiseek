@@ -52,6 +52,9 @@ msgstr "dzisiaj"
 msgid "Add field"
 msgstr "Dodaj pole"
 
+msgid "differs"
+msgstr "różne od"
+
 #: .\static\multiseek\js\multiseek.js:525
 msgid "Add frame"
 msgstr "Dodaj ramkę"
