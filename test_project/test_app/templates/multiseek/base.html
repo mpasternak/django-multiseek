@@ -12,6 +12,10 @@
     <script src="{% static 'jqueryui/jquery-ui.min.js' %}" type="text/javascript"></script>
     <script src="{% static 'datetimepicker/jquery.datetimepicker.js' %}"></script>
 
+    {# I'm unsure how to parametryze this for LANGUAGE_CODE with default #}
+    {# Django templating engine, in Jinja2 I'd use {% set ...  %} #}
+    <script src="{% static 'jquery.ui.datepicker-pl/index.js' %}"></script>
+
     {% if request.GET.foundation == "1" %}
         <script src="{% static 'foundation/js/vendor/modernizr.js' %}"></script>
         <script src="{% static 'foundation/js/vendor/fastclick.js' %}"></script>

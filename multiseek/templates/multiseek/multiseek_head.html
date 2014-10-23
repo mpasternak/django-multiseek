@@ -3,5 +3,11 @@
 <script>
     /* multiseek.js needs that to be set before */
     djangoLanguageCode = '{{ LANGUAGE_CODE }}';
+
+    // currently hard-coded, but could be parametrized in the future, those
+    // settings are used for Foundation datepicker, to enforce date format.
+    multiseekDateFormat = 'yyyy-mm-dd';
+    multiseekDateWeekStart = 1;
+
 </script>
 <script src="{{ STATIC_URL }}multiseek/js/multiseek.js" type="text/javascript"></script>

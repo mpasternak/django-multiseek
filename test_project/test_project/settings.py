@@ -187,8 +187,11 @@ BOWER_INSTALLED_APPS = (
     'foundation-datepicker',
     'font-awesome',
 
-    # For nice calendar
-    'https://raw.githubusercontent.com/taitems/Aristo-jQuery-UI-Theme/master/css/Aristo/Aristo.css'
+    # For nice jQuery calendar
+    'https://raw.githubusercontent.com/taitems/Aristo-jQuery-UI-Theme/master/css/Aristo/Aristo.css',
+
+    # for translated jQuery calendar
+    'https://jquery-ui.googlecode.com/svn-history/r3243/trunk/ui/i18n/jquery.ui.datepicker-pl.js'
 )
 
 BOWER_COMPONENTS_ROOT = os.path.join(os.path.dirname(__file__), '..', 'components')

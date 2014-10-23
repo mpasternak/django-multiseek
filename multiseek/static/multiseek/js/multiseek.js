@@ -250,8 +250,8 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
         if (element.fdatepicker)
         /* Use Foundation 4 date picker if available */
             element.fdatepicker({
-                format: 'dd.mm.yyyy',
-                weekStart: 1,
+                format: multiseekDateFormat,
+                weekStart: multiseekDateWeekStart,
                 language: djangoLanguageCode
             });
         else
