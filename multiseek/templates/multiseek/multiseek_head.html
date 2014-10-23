@@ -1,3 +1,4 @@
+{% load staticfiles %}
 {# Please include jquery, jquery-ui and jqueryui-datepicker before #}
 <script type="text/javascript" src="{% url "multiseek:js_i18n" %}"></script>
 <script>
@@ -10,4 +11,4 @@
     multiseekDateWeekStart = 1;
 
 </script>
-<script src="{{ STATIC_URL }}multiseek/js/multiseek.js" type="text/javascript"></script>
+<script src="{% static "multiseek/js/multiseek.js" %}" type="text/javascript"></script>
