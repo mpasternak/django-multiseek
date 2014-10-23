@@ -5,6 +5,7 @@ import importlib
 
 import json
 import re
+from datetime import timedelta
 from dateutil.parser import parse
 from django.db.models import Q
 try:
@@ -287,17 +288,17 @@ class DateQueryObject(QueryObject):
     def value_from_web(self, value):
         value = json.loads(value)
         if len(value) == 1:
-            return parse(value[0])
-        return [parse(value[0]), parse(value[1])]
+            return parse(value[0]).date()
+        return [parse(value[0]).date(), parse(value[1]).date()]
 
     def real_query(self, value, operation):
         if operation in RANGE_OPS:
             ret = Q(**{self.field_name + '__gte': value[0],
                        self.field_name + '__lte': value[1]})
         elif operation in EQUALITY_OPS_ALL:
-            return Q(**{self.field_name: value})
+            return Q(**{self.field_name + "__range": (value, value + timedelta(days=1))})
         elif operation in DIFFERENT_ALL:
-            return ~Q(**{self.field_name: value})
+            return ~Q(**{self.field_name + "__range": (value, value + timedelta(days=1))})
         elif operation in GREATER_OPS_ALL:
             return Q(**{self.field_name + "__gt": value})
         elif operation in LESSER_OPS_ALL:
@@ -665,10 +666,10 @@ class MultiseekRegistry:
                         '\t\t'
                         '$("select[name=%s] option").eq(%s).prop("selected", true)' % (
                             key, data['ordering'][key]))
-                    foundation.append(
-                        '\t\t\t'
-                        'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % key
-                    )
+                    # foundation.append(
+                    #     '\t\t\t'
+                    #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % key
+                    # )
                 key = key + "_dir"
                 if data['ordering'].has_key(key):
                     if data['ordering'][key] == "1":
@@ -687,10 +688,10 @@ class MultiseekRegistry:
                     '$("select[name=%s] option").eq(%s).prop("selected", true)'
                     % (
                         MULTISEEK_REPORT_TYPE, data['report_type']))
-                foundation.append(
-                    '\t\t\t'
-                    'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % MULTISEEK_REPORT_TYPE
-                )
+                # foundation.append(
+                #     '\t\t\t'
+                #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % MULTISEEK_REPORT_TYPE
+                # )
 
         ret = u";\n".join(result) + u";\n"
         if foundation:
