@@ -250,7 +250,7 @@ class AutocompleteQueryObject(QueryObject):
         try:
             model = self.model.objects.get(pk=value)
         except self.model.DoesNotExist:
-            return
+            return json.dumps([None, ''])
         return json.dumps([value, self.get_label(model)])
 
     def get_autocomplete_query(self, data):
