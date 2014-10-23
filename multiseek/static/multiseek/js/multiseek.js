@@ -26,6 +26,21 @@ multiseek = {
     }
 };
 
+function installDatePicker(element) {
+      if (element.fdatepicker) {
+          /* Use foundation date picker if available */
+          element.fdatepicker({
+              format: multiseekDateFormat,
+              weekStart: multiseekDateWeekStart,
+              language: djangoLanguageCode
+          });
+      } else {
+          /* Use JQuery datepicker if available */
+          element.datepicker($.datepicker.regional[djangoLanguageCode]);
+      }
+}
+
+
 $.widget("multiseek.multiseekBase", {
     // Both field and frame widgets share common elements
 
@@ -247,16 +262,7 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
             .attr("placeholder", gettext("today"))
             .attr("size", "10");
 
-        if (element.fdatepicker)
-        /* Use Foundation 4 date picker if available */
-            element.fdatepicker({
-                format: multiseekDateFormat,
-                weekStart: multiseekDateWeekStart,
-                language: djangoLanguageCode
-            });
-        else
-        /* Use JQuery datepicker if available */
-            element.datepicker($.datepicker.regional[djangoLanguageCode]);
+        installDatePicker(element);
 
         this.element.append(
             $("<div/>")
@@ -293,21 +299,21 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
             // range
             if (row.children().length == 1) {
                 // add extra field
+
+                var element = $("<input/>")
+                                .attr("type", "text")
+                                .attr("id", "value_max")
+                                .attr("placeholder", gettext('today'))
+                                .attr("size", "10");
+
+                installDatePicker(element);
                 row.append([
                     $("<div/>")
                         .attr("class", "large-2 small-2 columns")
                         .append($("<center/>").text("—")),
                     $("<div/>")
                         .attr("class", "large-5 small-5 columns")
-                        .append([
-
-                            $("<input/>")
-                                .attr("type", "text")
-                                .attr("id", "value_max")
-                                .attr("placeholder", gettext('today'))
-                                .attr("size", "10")
-                                .datepicker($.datepicker.regional[djangoLanguageCode])
-                        ])
+                        .append([element])
                 ]);
 
             }
