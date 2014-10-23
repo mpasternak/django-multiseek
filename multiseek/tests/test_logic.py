@@ -86,7 +86,7 @@ class TestAutocompleteQueryObject(TestCase):
 
     def test_value_to_web_bug(self):
         q = AutocompleteQueryObject('fo', model=SearchForm)
-        self.assertEquals(q.value_to_web(1), None)
+        self.assertEquals(q.value_to_web(1), '[null, ""]')
 
 class TestRangeQueryObject(TestCase):
     def test_value_from_web(self):
