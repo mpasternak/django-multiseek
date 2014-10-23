@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+﻿# -*- encoding: utf-8 -*-
 
 import os
 import sys
@@ -65,7 +65,7 @@ else:
 
 setup(
     name='django-multiseek',
-    version='0.9.8.4',
+    version='0.9.8.5',
     description='Seek records using multiple parameters',
     author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
