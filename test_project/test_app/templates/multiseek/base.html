@@ -14,7 +14,7 @@
 
     {# I'm unsure how to parametryze this for LANGUAGE_CODE with default #}
     {# Django templating engine, in Jinja2 I'd use {% set ...  %} #}
-    <script src="{% static 'jquery.ui.datepicker-pl/index.js' %}"></script>
+    <script src="{% static '' %}"></script>
 
     {% if request.GET.foundation == "1" %}
         <script src="{% static 'foundation/js/vendor/modernizr.js' %}"></script>
@@ -42,5 +42,10 @@
         $(document).foundation();
     </script>
 {% endif %}
+
+    {% with 'jquery.ui.datepicker-'|add:LANGUAGE_CODE|add:'/index.js' as datepicker_url %}
+    <script src="{% static datepicker_url %}" type="text/javascript"></script>
+    {% endwith %}
+
 </body>
 </html>
