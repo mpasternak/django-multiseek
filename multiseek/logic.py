@@ -8,6 +8,7 @@ import re
 from datetime import timedelta
 from dateutil.parser import parse
 from django.db.models import Q
+from django.utils import html
 try:
     from django.db.models.options import get_verbose_name
 except ImportError:
@@ -213,7 +214,7 @@ class StringQueryObject(QueryObject):
         value = super(StringQueryObject, self).value_for_description(value)
         if not value:
             return self.empty_value_description
-        return u'"%s"' % value
+        return u'"%s"' % html.escape(value)
 
     def real_query(self, value, operation):
         ret = QueryObject.real_query(
