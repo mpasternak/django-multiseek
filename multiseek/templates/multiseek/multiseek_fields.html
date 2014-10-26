@@ -18,9 +18,10 @@
      /* ------------------------------------------------------ */
     $(document).ready(function () {
         $("#frame-0").multiseekFrame();
-        {% if not js_init %}
+        {% if initialize_empty_form %}
             $("#frame-0").multiseekFrame("addField");
-        {% else %}
+        {% endif %}
+        {% if js_init %}
             {{ js_init|safe }}
         {% endif %}
         {% if saved_forms %}

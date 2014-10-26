@@ -54,6 +54,7 @@ registry = create_registry(
         Ordering("authors", _("author")),
         Ordering("year", _("year")),
     ],
+    default_ordering=['-title', 'authors', 'year'],
     report_types=[
         ReportType("list", _("list")),
         ReportType("table", _("table")),

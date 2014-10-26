@@ -462,6 +462,10 @@ class _FrameInfo:
         self.frame = frame
         self.field = field
 
+def get_ordering_key_name(no):
+    key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
+    key_dir = key + "_dir"
+    return key, key_dir
 
 class MultiseekRegistry:
     """This is a base class for multiseek registry. A registry is a list
@@ -477,11 +481,34 @@ class MultiseekRegistry:
     # to queryset.order_by
     ordering = None
     order_boxes = [_("Sort by:"), _("then by"), _("then by")]
-    report_types = []
+
+    report_types = None
+    default_ordering = None
 
     def __init__(self):
         self.fields = []
         self.field_by_name = {}
+        self.default_ordering = {}
+        self.report_types = []
+
+    def set_default_ordering(self, *args):
+        self.default_ordering = {}
+        ordering_dict = dict(
+            (x.field, no) for no, x in enumerate(self.ordering))
+
+        for no, elem in enumerate(args):
+            key, key_dir = get_ordering_key_name(no)
+
+            desc = False
+            if elem.startswith("-"):
+                desc = True
+                elem = elem[1:]
+
+            self.default_ordering[key] = ordering_dict[elem]
+            if desc is True:
+                self.default_ordering[key_dir] = "1"
+
+        print self.default_ordering
 
     def get_fields(self, public=True):
         """Returns a list of fields, by default returning only public fields.
@@ -622,14 +649,14 @@ class MultiseekRegistry:
         query = self.get_query(data['form_data'])
         retval = self.model.objects.filter(query)
         sb = []
-        if data.has_key('ordering'):
-            for no, element in enumerate(self.order_boxes):
-                key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
-                key_dir = key + "_dir"
 
-                if data['ordering'].has_key(key):
+        ordering  = data.get("ordering")
+        if ordering:
+            for no, element in enumerate(self.order_boxes):
+                key, key_dir = get_ordering_key_name(no)
+                if ordering.has_key(key):
                     try:
-                        sort_idx = int(data['ordering'][key])
+                        sort_idx = int(ordering[key])
                     except (TypeError, ValueError):
                         continue
 
@@ -641,14 +668,14 @@ class MultiseekRegistry:
                     if not srt:
                         continue
 
-                    if data['ordering'].has_key(key_dir) and \
-                                    data['ordering'][key_dir] == "1":
+                    if ordering.has_key(key_dir) and ordering[key_dir] == "1":
                         srt = "-" + srt
 
                     sb.append(srt)
 
             if sb:
                 retval = retval.order_by(*sb)
+
         return retval
 
     def recreate_form_recursive(self, element, info):
@@ -694,26 +721,31 @@ class MultiseekRegistry:
         """
 
         info = _FrameInfo()
-
-        result = self.recreate_form_recursive(
-            data['form_data'], info)
+        result = []
+        if data.has_key('form_data'):
+            result = self.recreate_form_recursive(data['form_data'], info)
         foundation = []
 
-        if data.has_key("ordering"):
+        ordering = data.get("ordering")
+        if ordering is None:
+            if self.default_ordering:
+                ordering = self.default_ordering
+
+        if ordering:
             for no, elem in enumerate(self.order_boxes):
                 key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
-                if data['ordering'].has_key(key):
+                if ordering.has_key(key):
                     result.append(
                         '\t\t'
                         '$("select[name=%s] option").eq(%s).prop("selected", true)' % (
-                            key, data['ordering'][key]))
+                            key, ordering[key]))
                     # foundation.append(
                     #     '\t\t\t'
                     #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % key
                     # )
                 key = key + "_dir"
-                if data['ordering'].has_key(key):
-                    if data['ordering'][key] == "1":
+                if ordering.has_key(key):
+                    if ordering[key] == "1":
                         result.append(
                             '\t\t'
                             '$("input[name=%s]").attr("checked", true)' % key)
@@ -747,11 +779,13 @@ def create_registry(model, *args, **kw):
     for field in args:
         r.add_field(field)
 
-    known_kwargs =['ordering', 'report_types', 'default_ordering']
+    known_kwargs =['ordering', 'report_types']
     for arg in known_kwargs:
         if arg in kw:
             setattr(r, arg, kw.pop(arg))
 
+    if 'default_ordering' in kw:
+        r.set_default_ordering(*kw.pop("default_ordering"))
     if kw.keys():
         raise Exception("Unknown kwargs passed")
     return r

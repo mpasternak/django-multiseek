@@ -76,10 +76,11 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
                 (unicode(field.label), [unicode(x) for x in field.values])
                 for field in registry.field_by_type(VALUE_LIST, public)]))
 
-        js_init = None
-        if self.request.session.get(MULTISEEK_SESSION_KEY):
-            js_init = registry.recreate_form(json.loads(
-                self.request.session.get(MULTISEEK_SESSION_KEY)))
+        initialize_empty_form = True
+        form_data = self.request.session.get(MULTISEEK_SESSION_KEY, {})
+        if form_data:
+           initialize_empty_form = False
+        js_init = registry.recreate_form(form_data)
 
         return dict(
             js_fields=js_fields, js_ops=js_ops, js_types=js_types,
@@ -88,6 +89,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             js_remove_message=LAST_FIELD_REMOVE_MESSAGE,
             user_allowed_to_save_forms=user_allowed_to_save_forms(
                 self.request.user),
+            initialize_empty_form=initialize_empty_form,
             order_boxes=registry.order_boxes,
             ordering=registry.ordering,
             report_types=registry.get_report_types(only_public=public),
