@@ -79,7 +79,8 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         initialize_empty_form = True
         form_data = self.request.session.get(MULTISEEK_SESSION_KEY, {})
         if form_data:
-           initialize_empty_form = False
+            form_data = json.loads(form_data)
+            initialize_empty_form = False
         js_init = registry.recreate_form(form_data)
 
         return dict(

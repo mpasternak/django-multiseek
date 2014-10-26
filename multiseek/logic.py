@@ -722,6 +722,9 @@ class MultiseekRegistry:
 
         info = _FrameInfo()
         result = []
+        if type(data) != dict:
+            raise ParseError
+
         if data.has_key('form_data'):
             result = self.recreate_form_recursive(data['form_data'], info)
         foundation = []
