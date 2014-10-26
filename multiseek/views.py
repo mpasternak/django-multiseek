@@ -240,8 +240,9 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                     if impacts_query:
 
                         if d[cur].has_key('prev_op') and d[cur]['prev_op'] != None:
+                            tmp = d[cur]['prev_op'] 
                             ret += u' <b>' + unicode(
-                                ugettext_lazy(d[cur]['prev_op'])).upper() + u'</b> '
+                                ugettext_lazy(tmp)).upper() + u'</b> '
 
 
                         ret += '%s %s %s' % (d[cur]['field'].lower(),

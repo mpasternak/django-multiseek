@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-23 08:32+0200\n"
-"PO-Revision-Date: 2013-12-16 13:27+0100\n"
+"POT-Creation-Date: 2014-10-26 13:22+0100\n"
+"PO-Revision-Date: 2014-10-26 13:22+0100\n"
 "Last-Translator: Michał Pasternak <michal.dtz@gmail.com>\n"
 "Language-Team: Multiseek Translation Team ;-) <michal.dtz@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -17,117 +17,121 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.6.2\n"
+"X-Generator: Poedit 1.6.10\n"
 
-#: .\logic.py:32
+#: .\logic.py:33
 msgid "equals"
 msgstr "równy"
 
-#: .\logic.py:33
+#: .\logic.py:34
 msgid "equals (female geder)"
 msgstr "równa"
 
-#: .\logic.py:34
+#: .\logic.py:35
 msgid "equals (no gender)"
 msgstr "równe"
 
-#: .\logic.py:35
+#: .\logic.py:36
 msgid "equals (both genders)"
 msgstr "równy/a"
 
-#: .\logic.py:37
+#: .\logic.py:38
 msgid "greater, than"
 msgstr "większy, niż"
 
-#: .\logic.py:38
+#: .\logic.py:39
 msgid "greater, than (female gender)"
 msgstr "większa, niż"
 
-#: .\logic.py:39
+#: .\logic.py:40
 msgid "greater, than (no gender)"
 msgstr "większe, niż"
 
-#: .\logic.py:42
+#: .\logic.py:43
 msgid "lesser, than"
 msgstr "mniejszy, niż"
 
-#: .\logic.py:43
+#: .\logic.py:44
 msgid "lesser, than (female gender)"
 msgstr "mniejsza, niż"
 
-#: .\logic.py:44
+#: .\logic.py:45
 msgid "lesser, than (no gender)"
 msgstr "mniejsze, niż"
 
-#: .\logic.py:47
+#: .\logic.py:48
 msgid "greater or equal to"
 msgstr "większy lub równy"
 
-#: .\logic.py:48
+#: .\logic.py:49
 msgid "greater or equal to(female gender)"
 msgstr "większa lub równa"
 
-#: .\logic.py:49
+#: .\logic.py:50
 msgid "greater or equal to (no gender)"
 msgstr "większe lub równe"
 
-#: .\logic.py:53
+#: .\logic.py:54
 msgid "lesser or equal to"
 msgstr "mniejszy lub równy"
 
-#: .\logic.py:54
+#: .\logic.py:55
 msgid "lesser or equal to (female gender)"
 msgstr "mniejsza lub równa"
 
-#: .\logic.py:55
+#: .\logic.py:56
 msgid "lesser or equal to (no gender)"
 msgstr "większe lub równe"
 
-#: .\logic.py:59
+#: .\logic.py:60
 msgid "differs"
 msgstr "różny"
 
-#: .\logic.py:60
+#: .\logic.py:61
 msgid "differs (female gender)"
 msgstr "różna"
 
-#: .\logic.py:61
+#: .\logic.py:62
 msgid "differs (no gender)"
 msgstr "różne"
 
-#: .\logic.py:62
+#: .\logic.py:63
 msgid "differs (both gender)"
 msgstr "różny/a"
 
-#: .\logic.py:64
+#: .\logic.py:65
 msgid "contains"
 msgstr "zawiera"
 
-#: .\logic.py:65
+#: .\logic.py:66
 msgid "not contains"
 msgstr "nie zawiera"
 
-#: .\logic.py:66
+#: .\logic.py:67
 msgid "starts with"
 msgstr "zaczyna się od"
 
-#: .\logic.py:67
+#: .\logic.py:68
 msgid "not starts with"
 msgstr "nie zaczyna się od"
 
-#: .\logic.py:69
+#: .\logic.py:70
 msgid "in range"
 msgstr "w zakresie"
 
-#: .\logic.py:70
+#: .\logic.py:71
 msgid "outside range"
 msgstr "poza zakresem"
 
-#: .\logic.py:438
+#: .\logic.py:204
+msgid "(empty)"
+msgstr "(brak wartości)"
+
+#: .\logic.py:483
 msgid "Sort by:"
 msgstr "Sortuj według:"
 
-#: .\logic.py:438
+#: .\logic.py:483
 msgid "then by"
 msgstr "a następnie"
 
@@ -214,22 +218,16 @@ msgstr "Błąd podczas analizowania danych formularza."
 msgid "No form data provided"
 msgstr "Nie dostarczono danych formularza."
 
-#: .\views.py:38
+#: .\views.py:39
 msgid "The ability to remove the last field has been disabled."
 msgstr "Możliwość usunięcia ostatniego pola została wyłaczona."
 
-#: .\views.py:206
+#: .\views.py:219
 msgid "andnot"
 msgstr "i nie"
 
-#: .\views.py:222
-msgid "prev_op"
-msgstr ""
-
-
-msgid "click here for query description"
-msgstr "kliknij, aby zobaczyć opis zapytania"
-
+#~ msgid "click here for query description"
+#~ msgstr "kliknij, aby zobaczyć opis zapytania"
 
 #~ msgid "ANDNOT"
 #~ msgstr "i nie"
