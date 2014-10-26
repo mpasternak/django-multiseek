@@ -48,7 +48,11 @@ urlpatterns = patterns(
         views.remove_from_removed_by_hand,
         name="remove_from_removed_results"),
 
-    url(r'^load_form/(?P<search_form_pk>\d+)',
+    url(r'^reenable-removed-ids/$',
+        views.reenable_removed_by_hand,
+        name="reenable_removed_ids"),
+
+   url(r'^load_form/(?P<search_form_pk>\d+)',
         load_form,
         name="load_form"),
 

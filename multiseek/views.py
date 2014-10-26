@@ -1,7 +1,8 @@
 # -*- encoding: utf-8 -*-
 import json
 
-from django.http.response import HttpResponse, Http404, HttpResponseServerError
+from django.http.response import HttpResponse, Http404, HttpResponseServerError, \
+    HttpResponseRedirect
 from django.views.generic.base import View
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
@@ -253,18 +254,14 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
             return ret
 
-        removed_ids = self.get_removed_records()
-        removed_ids_desc = u''
-        if removed_ids:
-            removed_ids_desc = u'%i record(s) has been removed manually from the results' % len(removed_ids)
+
 
         if data is None:
-            return u'' + removed_ids_desc
-
+            return u''
         if not data.get('form_data'):
-            return u'' + removed_ids_desc
+            return u''
 
-        return ". ".join([x for x in [_recur(data['form_data'][1:]), removed_ids_desc] if x])
+        return _recur(data['form_data'][1:])
 
     def get_context_data(self, **kwargs):
         public = self.request.user.is_anonymous()
@@ -272,9 +269,11 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             .get_report_type(self.get_multiseek_data(),
                              only_public=public)
         description = self.describe_multiseek_data()
+        removed_ids = self.get_removed_records()
 
         return super(ListView, self).get_context_data(
-            report_type=report_type, description=description, **kwargs)
+            report_type=report_type, description=description,
+            removed_ids=removed_ids, **kwargs)
 
     def get_queryset(self):
         # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to wówczas błąd podnoś i to samo w klasie MultiseekFormPage
@@ -356,3 +355,7 @@ def remove_by_hand(request, pk):
 def remove_from_removed_by_hand(request, pk):
     """Cancel manual record removal."""
     return manually_add_or_remove(request, pk, add=False)
+
+def reenable_removed_by_hand(request):
+    request.session[MULTISEEK_SESSION_KEY_REMOVED] = []
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER') or '..')

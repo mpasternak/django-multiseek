@@ -11,31 +11,26 @@
 {% block content %}
 
     {% if description %}
-        <div id="description">
-            <h3>{% trans "click here for query description" %}</h3>
-
-            <div>
-                <p>{{ description|safe }}</p>
-            </div>
+        <div>
+            <strong>{% blocktrans %}Query
+                description:{% endblocktrans %}</strong>
+            {{ description|safe }}
         </div>
     {% endif %}
 
-    <script type="text/javascript">
-        $(function () {
-            $("#description").accordion({
-                collapsible: true,
-                active: false
-            });
-        });
-    </script>
+    {% if removed_ids %}
+        <p>{{ removed_ids|length }} {% trans "record(s) has been removed manually from the search results. " %}
+        <a href="../reenable-removed-ids/">{% trans "Click here to add those records again." %}</a></p>
+    {% endif %}
+
+
     <h1>{% trans "Results" %}</h1>
     {% if report_type == "list" %}
         <ol>
             {% for element in object_list %}
                 <li class="multiseek-row" id="multiseek-row-{{ element.pk }}">
                     <span class="multiseek-element">{{ element }}</span>
-                <a href="#"
-                   onclick="multiseek.removeFromResults('{{ element.pk }}');"
+                <a onclick="multiseek.removeFromResults('{{ element.pk }}');"
                    class="multiseek-remove-from-results">
                     {% trans "remove from results" %}</a>
                 </li>
