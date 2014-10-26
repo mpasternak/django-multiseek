@@ -8,6 +8,10 @@
     text-weight: bold;
 }
 
+.multiseek-remove-from-results a {
+    color: red;
+}
+
 .multiseek-row:hover .multiseek-remove-from-results {
     display: inline;
 }
