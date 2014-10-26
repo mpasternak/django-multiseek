@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 import json
 
-from django.http.response import HttpResponse, Http404
+from django.http.response import HttpResponse, Http404, HttpResponseServerError
 from django.views.generic.base import View
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
@@ -240,7 +240,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                     if impacts_query:
 
                         if d[cur].has_key('prev_op') and d[cur]['prev_op'] != None:
-                            tmp = d[cur]['prev_op'] 
+                            tmp = d[cur]['prev_op']
                             ret += u' <b>' + unicode(
                                 ugettext_lazy(tmp)).upper() + u'</b> '
 
@@ -319,20 +319,29 @@ class MultiseekModelAutocomplete(View):
                             content_type='application/json')
 
 
+JSON_OK = HttpResponse(simplejson.dumps({'status':"OK"}), content_type='application/json')
+
 def manually_add_or_remove(request, pk, add=True):
     data = request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
     data = set(data)
 
     if add:
-        data.add(pk)
+        if len(data) < 2048:
+            data.add(pk)
+        else:
+            # Prevent DOS OOM attack
+            return HttpResponseForbidden()
+
     else:
         try:
             data.remove(pk)
         except KeyError:
             pass
+
     request.session[MULTISEEK_SESSION_KEY_REMOVED] = list(data)
 
-JSON_OK = HttpResponse(simplejson.dumps({'status':"OK"}), content_type='application/json')
+    return JSON_OK
+
 
 def remove_by_hand(request, pk):
     """Add a record's PK to a list of manually removed records.
@@ -342,10 +351,8 @@ def remove_by_hand(request, pk):
     from the search results in the query function. The list of those
     records is cleaned when there is a form reset.
     """
-    manually_add_or_remove(request, pk)
-    return JSON_OK
+    return manually_add_or_remove(request, pk)
 
 def remove_from_removed_by_hand(request, pk):
     """Cancel manual record removal."""
-    manually_add_or_remove(request, pk, add=False)
-    return JSON_OK
+    return manually_add_or_remove(request, pk, add=False)
