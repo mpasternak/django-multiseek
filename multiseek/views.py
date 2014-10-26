@@ -217,18 +217,23 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                             ugettext_lazy(d[cur][0])).upper() + u'</b> '
                     ret += u'(' + _recur(d[cur][1:]) + u')'
                 else:
-                    if d[cur].has_key('prev_op') and d[cur]['prev_op'] != None:
-                        ret += u' <b>' + unicode(
-                            ugettext_lazy(d[cur]['prev_op'])).upper() + u'</b> '
-
-                    value = d[cur]['value']
-
                     f = registry.get_field_by_name(d[cur]['field'])
-                    value = f.value_for_description(value)
 
-                    ret += '%s %s %s' % (d[cur]['field'].lower(),
-                                         d[cur]['operator'],
-                                         value)
+                    impacts_query = f.impacts_query(
+                        d[cur]['operator'], d[cur]['value'])
+
+                    value = f.value_for_description(d[cur]['value'])
+
+                    if impacts_query:
+
+                        if d[cur].has_key('prev_op') and d[cur]['prev_op'] != None:
+                            ret += u' <b>' + unicode(
+                                ugettext_lazy(d[cur]['prev_op'])).upper() + u'</b> '
+
+
+                        ret += '%s %s %s' % (d[cur]['field'].lower(),
+                                             d[cur]['operator'],
+                                             value)
 
                 cur += 1
 

@@ -142,6 +142,26 @@ class QueryObject(object):
         """
         return value
 
+    def impacts_query(self, operator, value):
+        """Returns True or False, depending on the operator and value.
+
+        For some fields, combination of operator and value does not
+        change the results. For example, if you have a string field,
+        you have an empty value and you use operator EQUALS - this
+        will find you every empty field in the database, which is
+        OK. But, if you use operator CONTAINS, this query will not
+        have any impact on the results, as looking doing
+        SELECT ... WHERE field LIKE '%%' will not do anything.
+
+        So, if given operator, value pair can impact query results,
+        return True here.
+
+        """
+
+        # By default we return True here, feel free to override this
+        # in subclasses.
+        return True
+
     def value_for_description(self, value):
         """Return value for description - readable for end-user, for placement
         on web page."""
@@ -181,6 +201,19 @@ class QueryObject(object):
 class StringQueryObject(QueryObject):
     type = STRING
     ops = STRING_OPS
+    empty_value_description = _("(empty)")
+
+    def impacts_query(self, operator, value):
+        if operator in [CONTAINS, NOT_CONTAINS, STARTS_WITH, NOT_STARTS_WITH] \
+                and not value:
+            return False
+        return True
+
+    def value_for_description(self, value):
+        value = super(StringQueryObject, self).value_for_description(value)
+        if not value:
+            return self.empty_value_description
+        return u'"%s"' % value
 
     def real_query(self, value, operation):
         ret = QueryObject.real_query(
@@ -209,7 +242,6 @@ class AutocompleteQueryObject(QueryObject):
     ops = EQUALITY_OPS_MALE
     model = None
     url = None
-
 
     def __init__(
             self, field_name=None, label=None, model=None, url=None,
@@ -354,7 +386,15 @@ class RangeQueryObject(QueryObject):
 
 
 class AbstractNumberQueryObject(QueryObject):
-    ops = [EQUAL, DIFFERENT, GREATER, LESSER, GREATER_OR_EQUAL, LESSER_OR_EQUAL]
+    ops = [EQUAL, DIFFERENT, GREATER, LESSER,
+           GREATER_OR_EQUAL, LESSER_OR_EQUAL]
+
+    def impacts_query(self, operator, value):
+        if value is None and operator in [GREATER, LESSER,
+                                          GREATER_OR_EQUAL,
+                                          LESSER_OR_EQUAL]:
+            return False
+        return True
 
     def real_query(self, value, operation):
         if operation in EQUALITY_OPS_ALL:
@@ -507,7 +547,8 @@ class MultiseekRegistry:
         if field.get('prev_op', None) not in [AND, OR, ANDNOT, None]:
             raise UnknownOperation("%r" % field)
 
-        return f.query_for(field['value'], field['operator'])
+        if f.impacts_query(field['value'], field['operator']):
+            return f.query_for(field['value'], field['operator'])
 
     def get_query_recursive(self, data):
         """Recursivley get query, basing on a list of elements.
@@ -705,10 +746,12 @@ def create_registry(model, *args, **kw):
     r.model = model
     for field in args:
         r.add_field(field)
-    if 'ordering' in kw:
-        r.ordering = kw.pop('ordering')
-    if 'report_types' in kw:
-        r.report_types = kw.pop('report_types')
+
+    known_kwargs =['ordering', 'report_types', 'default_ordering']
+    for arg in known_kwargs:
+        if arg in kw:
+            setattr(r, arg, kw.pop(arg))
+
     if kw.keys():
         raise Exception("Unknown kwargs passed")
     return r
