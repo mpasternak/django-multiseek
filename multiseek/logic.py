@@ -508,8 +508,6 @@ class MultiseekRegistry:
             if desc is True:
                 self.default_ordering[key_dir] = "1"
 
-        print self.default_ordering
-
     def get_fields(self, public=True):
         """Returns a list of fields, by default returning only public fields.
         """
