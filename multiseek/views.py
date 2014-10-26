@@ -197,6 +197,10 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             _json = self.request.session.get(MULTISEEK_SESSION_KEY)
             if _json is not None:
                 self._json_cache = json.loads(_json)
+            if self._json_cache is None:
+                self._json_cache = {}
+            if self._json_cache.get("ordering") is None:
+                self._json_cache['ordering'] = get_registry(self.registry).default_ordering
         return self._json_cache
 
     def describe_multiseek_data(self):
@@ -245,7 +249,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         if data is None:
             return u''
 
-        if not data['form_data']:
+        if not data.get('form_data'):
             return u''
 
         return _recur(data['form_data'][1:])

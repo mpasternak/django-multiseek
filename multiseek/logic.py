@@ -646,8 +646,12 @@ class MultiseekRegistry:
         if type(data) != dict:
             data = {'form_data': data}
 
-        query = self.get_query(data['form_data'])
-        retval = self.model.objects.filter(query)
+        if data.has_key("form_data"):
+            query = self.get_query(data['form_data'])
+            retval = self.model.objects.filter(query)
+        else:
+            retval = self.model.objects.all()
+
         sb = []
 
         ordering  = data.get("ordering")
