@@ -129,7 +129,7 @@ msgstr "Sortuj według:"
 
 #: .\logic.py:438
 msgid "then by"
-msgstr "następnie"
+msgstr "a następnie"
 
 #: .\models.py:17
 msgid "Name"
@@ -225,6 +225,11 @@ msgstr "i nie"
 #: .\views.py:222
 msgid "prev_op"
 msgstr ""
+
+
+msgid "click here for query description"
+msgstr "kliknij, aby zobaczyć opis zapytania"
+
 
 #~ msgid "ANDNOT"
 #~ msgstr "i nie"
