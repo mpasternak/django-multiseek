@@ -472,6 +472,30 @@ class TestMultiseekSelenium(MultiseekPageMixin, SeleniumTestCase):
                     u'operator': u'greater or equal to(female gender)',
                     u'value': u'[""]', u'prev_op': None}])
 
+    def test_removed_records(self):
+        """Try to remove a record by hand and check if that fact is properly
+        recorded."""
+
+        self.open('/multiseek/results')
+        self.assertIn("A book with", self.page.page_source)
+        self.assertIn("Second book", self.page.page_source)
+        self.page.execute_script('''$("a:contains('remove from results')").first().click()''')
+        time.sleep(2)
+
+        self.open('/multiseek/results')
+        self.assertNotIn("Second book", self.page.page_source)
+        self.assertIn("A book with", self.page.page_source)
+        self.assertIn("1 record(s) has been removed manually", self.page.page_source)
+
+        self.page.execute_script('''$("a:contains('remove from results')").first().click()''')
+        time.sleep(2)
+        self.page.execute_script('''$("a:contains('remove from results')").first().click()''')
+        time.sleep(2)
+        self.open('/multiseek/results')
+        self.assertNotIn("Second book", self.page.page_source)
+        self.assertIn("A book with", self.page.page_source)
+        self.assertIn("1 record(s) has been removed manually", self.page.page_source)
+
 
 class TestFormSaveAndAnonymous(MultiseekPageMixin, SeleniumTestCase):
     def test_initial(self):
@@ -727,3 +751,4 @@ class TestFormSaveLoggedIn(MultiseekPageMixin, SeleniumAdminTestCase):
         self.assertEquals(
             len(self.page.find_elements_by_jquery(elem + ":selected")),
             1)
+

@@ -12,6 +12,7 @@
     var value_lists = {{ js_value_lists|safe }};
     var autocompletes = {{ js_autocompletes|safe }};
     var last_field_remove_message = '{{ js_remove_message }}';
+    var removed = [{{ js_removed|safe }}];
 
     /* ------------------------------------------------------ */
     /* After loading the document, we initialize first frame

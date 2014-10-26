@@ -26,6 +26,7 @@ ERR_PARSING_DATA = _("Error while parsing form data")
 ERR_NO_FORM_DATA = _("No form data provided")
 
 MULTISEEK_SESSION_KEY = 'multiseek_json'
+MULTISEEK_SESSION_KEY_REMOVED = 'multiseek_json_removed'
 
 
 def reverse_or_just_url(s):
@@ -83,11 +84,14 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             initialize_empty_form = False
         js_init = registry.recreate_form(form_data)
 
+        js_removed = ",".join('"%s"' %x for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
+
         return dict(
             js_fields=js_fields, js_ops=js_ops, js_types=js_types,
             js_autocompletes=js_autocompletes, js_value_lists=js_value_lists,
             js_and=AND, js_or=OR, js_init=js_init,
             js_remove_message=LAST_FIELD_REMOVE_MESSAGE,
+            js_removed=js_removed,
             user_allowed_to_save_forms=user_allowed_to_save_forms(
                 self.request.user),
             initialize_empty_form=initialize_empty_form,
@@ -100,10 +104,9 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
 
 
 def reset_form(request):
-    try:
-        del request.session[MULTISEEK_SESSION_KEY]
-    except KeyError:
-        pass
+    for key in [MULTISEEK_SESSION_KEY, MULTISEEK_SESSION_KEY_REMOVED]:
+        if request.session.has_key(key):
+            del request.session[key]
     return shortcuts.redirect("..")
 
 
@@ -203,6 +206,9 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                 self._json_cache['ordering'] = get_registry(self.registry).default_ordering
         return self._json_cache
 
+    def get_removed_records(self):
+        return self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
+
     def describe_multiseek_data(self):
         """Returns a string with a nicely-formatted query, so you can
         display the query to the user, in a results window, for example.
@@ -246,13 +252,18 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
             return ret
 
+        removed_ids = self.get_removed_records()
+        removed_ids_desc = u''
+        if removed_ids:
+            removed_ids_desc = u'%i record(s) has been removed manually from the results' % len(removed_ids)
+
         if data is None:
-            return u''
+            return u'' + removed_ids_desc
 
         if not data.get('form_data'):
-            return u''
+            return u'' + removed_ids_desc
 
-        return _recur(data['form_data'][1:])
+        return ". ".join([x for x in [_recur(data['form_data'][1:]), removed_ids_desc] if x])
 
     def get_context_data(self, **kwargs):
         public = self.request.user.is_anonymous()
@@ -267,7 +278,8 @@ class MultiseekResults(MultiseekPageMixin, ListView):
     def get_queryset(self):
         # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to wówczas błąd podnoś i to samo w klasie MultiseekFormPage
         return get_registry(self.registry).get_query_for_model(
-            self.get_multiseek_data())
+            self.get_multiseek_data(),
+            self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
 
 
 class MultiseekModelRouter(View):
@@ -304,3 +316,35 @@ class MultiseekModelAutocomplete(View):
 
         return HttpResponse(simplejson.dumps(ret),
                             content_type='application/json')
+
+
+def manually_add_or_remove(request, pk, add=True):
+    data = request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
+    data = set(data)
+
+    if add:
+        data.add(pk)
+    else:
+        try:
+            data.remove(pk)
+        except KeyError:
+            pass
+    request.session[MULTISEEK_SESSION_KEY_REMOVED] = list(data)
+
+JSON_OK = HttpResponse(simplejson.dumps({'status':"OK"}), content_type='application/json')
+
+def remove_by_hand(request, pk):
+    """Add a record's PK to a list of manually removed records.
+
+    User, via the web ui, can add or remove a record to a list of records
+    removed "by hand". Those records will be explictly removed
+    from the search results in the query function. The list of those
+    records is cleaned when there is a form reset.
+    """
+    manually_add_or_remove(request, pk)
+    return JSON_OK
+
+def remove_from_removed_by_hand(request, pk):
+    """Cancel manual record removal."""
+    manually_add_or_remove(request, pk, add=False)
+    return JSON_OK

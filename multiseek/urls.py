@@ -40,6 +40,14 @@ urlpatterns = patterns(
         csrf_exempt(views.reset_form),
         name="reset"),
 
+    url(r'^remove-from-results/(?P<pk>\d+)$',
+        views.remove_by_hand,
+        name="remove_from_results"),
+
+    url(r'^remove-from-removed-results/(?P<pk>\d+)$',
+        views.remove_from_removed_by_hand,
+        name="remove_from_removed_results"),
+
     url(r'^load_form/(?P<search_form_pk>\d+)',
         load_form,
         name="load_form"),

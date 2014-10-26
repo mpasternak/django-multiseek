@@ -636,7 +636,7 @@ class MultiseekRegistry:
         except IndexError:
             return default_retval
 
-    def get_query_for_model(self, data):
+    def get_query_for_model(self, data, removed_manually=None):
         if data is None:
             return self.model.objects.all()
 
@@ -649,6 +649,9 @@ class MultiseekRegistry:
             retval = self.model.objects.filter(query)
         else:
             retval = self.model.objects.all()
+
+        if removed_manually:
+            retval = retval.exclude(pk__in=removed_manually)
 
         sb = []
 
@@ -776,6 +779,7 @@ class MultiseekRegistry:
             ret += u"\t\tif (window.Foundation) {\n" + u";\n".join(
                 foundation) + u"\n\t\t}\n"
         return ret
+
 
 
 def create_registry(model, *args, **kw):

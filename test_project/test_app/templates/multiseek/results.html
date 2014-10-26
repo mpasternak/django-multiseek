@@ -32,7 +32,13 @@
     {% if report_type == "list" %}
         <ol>
             {% for element in object_list %}
-                <li>{{ element }}</li>
+                <li class="multiseek-row" id="multiseek-row-{{ element.pk }}">
+                    <span class="multiseek-element">{{ element }}</span>
+                <a href="#"
+                   onclick="multiseek.removeFromResults('{{ element.pk }}');"
+                   class="multiseek-remove-from-results">
+                    {% trans "remove from results" %}</a>
+                </li>
             {% empty %}
                 {% trans "No elements" %}
             {% endfor %}

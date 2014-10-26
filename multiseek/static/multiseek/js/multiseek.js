@@ -814,3 +814,20 @@ function loadForm(select) {
         location.href = multiseek.LOAD_FORM_URL + $(select).val();
     $(select).val('');
 }
+
+window.multiseek.removeFromResults = function(id){
+    var elem = $("#multiseek-row-" + id).children(".multiseek-element");
+    var deco =  elem.css("text-decoration");
+
+    var css_after = 'line-through';
+    var url = '../remove-from-results/' + id
+
+    if (deco.startsWith("line-through")) {
+        css_after = 'none';
+        url = '../remove-from-removed-results/' + id;
+    }
+
+    $.get(url, function(data){
+        elem.css("text-decoration", css_after);
+    });
+}
