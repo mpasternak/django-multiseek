@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
-from logic import BooleanQueryObject
 
-from multiseek.logic import Ordering, ReportType, DateQueryObject
-from multiseek.logic import AutocompleteQueryObject, StringQueryObject, \
-    RangeQueryObject, create_registry, ValueListQueryObject, IntegerQueryObject
+from multiseek.logic import Ordering, ReportType, DateQueryObject, \
+    AutocompleteQueryObject, StringQueryObject, RangeQueryObject, \
+    create_registry, ValueListQueryObject, IntegerQueryObject, \
+    BooleanQueryObject
 from test_app.models import Author, Book, Language
 
 
