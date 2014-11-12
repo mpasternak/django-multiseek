@@ -42,7 +42,8 @@
             "year": 2013,
             "language": 1,
             "no_editors": 5,
-            "last_updated": "2013-10-22"
+            "last_updated": "2013-10-22",
+            "available": true
         }
     },
 
@@ -54,7 +55,8 @@
             "year": 2000,
             "language": 1,
             "no_editors": 5,
-            "last_updated": "2013-09-22"
+            "last_updated": "2013-09-22",
+            "available": false
         }
     },
 

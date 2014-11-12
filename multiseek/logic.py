@@ -446,6 +446,27 @@ class ValueListQueryObject(QueryObject):
         if values is not None:
             self.values = values
 
+BOOLEAN_TRUE_LABEL = _("yes")
+BOOLEAN_FALSE_LABEL = _("no")
+
+class BooleanQueryObject(QueryObject):
+    type = VALUE_LIST
+    ops = [EQUAL, DIFFERENT]
+
+    true_label = BOOLEAN_TRUE_LABEL
+    false_label = BOOLEAN_FALSE_LABEL
+
+    values = [true_label, false_label]
+
+    def value_from_web(self, value):
+        if value == self.true_label:
+            return True
+        if value == self.false_label:
+            return False
+        return None
+
+    def value_for_description(self, value):
+        return value
 
 Ordering = namedtuple("Ordering", ["field", "label"])
 

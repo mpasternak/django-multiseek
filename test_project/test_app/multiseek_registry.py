@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
+from logic import BooleanQueryObject
 
 from multiseek.logic import Ordering, ReportType, DateQueryObject
 from multiseek.logic import AutocompleteQueryObject, StringQueryObject, \
@@ -40,6 +41,10 @@ class DateLastUpdatedQueryObject(DateQueryObject):
     label = _("Last updated on")
 
 
+class AvailableQueryObject(BooleanQueryObject):
+    field_name = "available"
+    label = _("Available")
+
 registry = create_registry(
     Book,
     TitleQueryObject(),
@@ -48,6 +53,7 @@ registry = create_registry(
     LanguageQueryObject(),
     CostQueryObject(),
     DateLastUpdatedQueryObject(),
+    AvailableQueryObject(),
     ordering=[
         Ordering("", _("(nothing)")),
         Ordering("title", _("title")),

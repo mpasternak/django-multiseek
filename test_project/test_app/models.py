@@ -23,6 +23,7 @@ class Book(models.Model):
     authors = models.ManyToManyField(Author)
     no_editors = models.IntegerField()
     last_updated = models.DateField(auto_now=True)
+    available = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u"%s by %s" % (self.title, u", ".join(
