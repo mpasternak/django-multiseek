@@ -136,7 +136,7 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
                 .addClass("row collapse")
                 .append([
                     $("<div/>")
-                        .addClass("large-1 small-1 columns")
+                        .addClass("large-1 small-1 columns multiseek-range-field-label")
                         .text(gettext("from")),
 
                     $("<div/>")
@@ -145,7 +145,7 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
                             $("<input type=text id=value_min size=4 />")]),
 
                     $("<div/>")
-                        .addClass("large-1 small-1 columns")
+                        .addClass("large-1 small-1 columns multiseek-range-field-label")
                         .text(gettext("to")),
 
                     $("<div/>")
