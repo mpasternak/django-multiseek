@@ -4,8 +4,8 @@ import json
 from django.contrib.auth.models import AnonymousUser, User
 from django.test import TestCase
 from django.test.client import RequestFactory
-from django_any import any_model
-from ludibrio import Dummy
+from mock import MagicMock
+from model_mommy import mommy
 
 from multiseek.logic import create_registry, StringQueryObject, \
     ValueListQueryObject, AutocompleteQueryObject, EQUALITY_OPS_ALL, EQUAL
@@ -136,14 +136,14 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
             self.msp.get_context_data(),
             dict(result=unicode(ERR_FORM_NAME)))
 
-        sf = any_model(SearchForm, name='foo')
+        sf = mommy.make(SearchForm, name='foo')
         self.request.POST['name'] = 'foo'
         self.assertEquals(
             self.msp.get_context_data(),
             dict(result=OVERWRITE_PROMPT))
 
         self.request.POST['overwrite'] = 'true'
-        self.request.user = any_model(User)
+        self.request.user = mommy.make(User)
         self.assertEquals(
             self.msp.get_context_data(),
             dict(result=SAVED, pk=1))
@@ -196,7 +196,7 @@ class TestMultiseekResults(RegistryMixin, TestCase):
 
     def setUp(self):
         RegistryMixin.setUp(self)
-        self.registry.model = Dummy()
+        self.registry.model = MagicMock()
         self.mr = MultiseekResults(registry=self.registry)
         self.mr.request = self.request
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(

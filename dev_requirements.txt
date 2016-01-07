@@ -1,0 +1,10 @@
+-r requirements.txt
+selenium
+model-mommy
+splinter
+pytest
+pytest-splinter
+pytest-django
+ipdb
+ipython
+django-bower

@@ -1,7 +1,7 @@
-from django.conf.urls import patterns, include, url
+from django.conf import settings
+from django.conf.urls import patterns, include, url, static
 
 from django.contrib import admin
-
 admin.autodiscover()
 
 js_info_dict = {
@@ -21,3 +21,6 @@ urlpatterns = patterns(
         js_info_dict,
         name="js_i18n_catalog")
 )
+
+#  + static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT, show_indexes=True)
+
