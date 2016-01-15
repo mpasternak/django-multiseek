@@ -3,7 +3,7 @@
 import json
 from unittest import TestCase
 
-from ludibrio import Mock, Dummy
+from mock import MagicMock
 
 from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     RangeQueryObject, RANGE_OPS, StringQueryObject, QueryObject, DIFFERENT, \
@@ -68,19 +68,16 @@ class TestAutocompleteQueryObject(TestCase):
     def test_value_from_web(self):
         q = AutocompleteQueryObject('foo')
 
-        with Mock() as model:
-            model.objects.get(pk=1) >> True
-
-        q.model = model
+        q.model = MagicMock()
+        q.model.objects.get.return_value = True
         self.assertEquals(q.value_from_web(None), None)
         self.assertEquals(q.value_from_web('foo'), None)
         self.assertEquals(q.value_from_web(1), True)
 
     def test_value_to_web(self):
         q = AutocompleteQueryObject('foo')
-        with Mock() as model:
-            model.objects.get(pk=1) >> True
-        q.model = model
+        q.model = MagicMock()
+        q.model.objects.get.return_value = True
 
         self.assertEquals(q.value_to_web(1), '[1, "True"]')
 
@@ -197,7 +194,7 @@ class TestMultiseekRegistry(TestCase):
             "(AND: ('foo', u'foo'))")
 
     def test_get_query_for_model(self):
-        self.registry.model = Dummy()
+        self.registry.model = MagicMock()
         self.registry.get_query_for_model(json.loads(test_json))
         self.registry.get_query_for_model(None)
 

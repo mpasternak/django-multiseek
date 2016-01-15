@@ -35,7 +35,7 @@
     },
 
     {
-        "pk": null,
+        "pk": 1,
         "model": "test_app.book",
         "fields": {
             "title": "A book with a title",
@@ -48,7 +48,7 @@
     },
 
     {
-        "pk": null,
+        "pk": 2,
         "model": "test_app.book",
         "fields": {
             "title": "Second book",

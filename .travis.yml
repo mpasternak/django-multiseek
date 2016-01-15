@@ -8,7 +8,7 @@ python:
 env:
   - DJANGO=1.6
   - DJANGO=1.7.8
-#  - DJANGO=1.8.2
+  - DJANGO=1.8.7
 
 before_install:
   - export DISPLAY=:99.0
@@ -16,9 +16,7 @@ before_install:
 
 install:
   - pip install django==$DJANGO --quiet
-  - pip install django-bower coveralls  --quiet
-  - pip install -r requirements.txt --quiet
-  - pip install -r requirements.dev --quiet
+  - pip install -r dev_requirements.dev --quiet
 
 script:
   - cd test_project && python manage.py test multiseek test_project

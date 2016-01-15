@@ -51,3 +51,7 @@ test_project/bower_components
 
 wheelhouse
 
+.cache
+node_modules
+test_project.test_app.tests
+test_app.tests

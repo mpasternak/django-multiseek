@@ -144,7 +144,7 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
 
     post = get
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def get_context_data(self):
         _json = self.request.POST.get('json')
         name = self.request.POST.get("name")
