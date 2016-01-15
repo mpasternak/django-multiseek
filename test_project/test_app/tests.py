@@ -333,10 +333,10 @@ def test_form_save_anon_form_save_anonymous(multiseek_page):
 
 
 def test_form_save_anon_bug(multiseek_page):
-    multiseek_page.browser.find_by_id("add_frame").type(Keys.SPACE)
-    multiseek_page.browser.find_by_id("add_field")[1].type(Keys.SPACE)
+    multiseek_page.browser.find_by_id("add_frame").click()
+    multiseek_page.browser.find_by_id("add_field").click()
     multiseek_page.get_field("field-1")['close-button'].type(Keys.SPACE)
-    assert len([x for x in multiseek_page.find_by_tag("select") if x['id'] == 'prev-op']) == 1
+    assert len([x for x in multiseek_page.browser.find_by_tag("select") if x['id'] == 'prev-op']) == 1
 
 
 def test_public_report_types_secret_report_invisible(multiseek_page):
@@ -350,7 +350,7 @@ def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user):
 
 
 def test_save_form_logged_in(multiseek_admin_page):
-    assert multiseek_admin_page.find_by_id("saveFormButton").visible == True
+    assert multiseek_admin_page.browser.find_by_id("saveFormButton").visible == True
 
 
 def test_save_form_server_error(multiseek_admin_page):
