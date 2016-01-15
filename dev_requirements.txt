@@ -4,8 +4,11 @@ model-mommy
 splinter
 pytest
 pytest-splinter
+pytest-cache
+pytest-instafail
 pytest-django
 ipdb
 ipython
 django-bower
 coveralls
+mock

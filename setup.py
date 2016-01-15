@@ -50,7 +50,7 @@ if 'sdist' in sys.argv:
 
         if 'django.mo' in filenames:
             os.unlink(os.path.join(dirpath, 'django.mo'))
-            print 'unlink', os.path.join(dirpath, 'django.mo')
+
 else:
     # if django is there, compile the po files to mo,
     try:
@@ -78,7 +78,7 @@ setup(
         'templates/multiseek/*.html']},
     include_package_data=True,
     zip_safe=False,
-    long_description=read('README.md'),
+    long_description=read("README.md"),
     license='MIT',
     keywords='django multiseek',
     cmdclass={'test': RunTests},

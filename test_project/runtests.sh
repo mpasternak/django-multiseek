@@ -24,12 +24,12 @@ do
     shift
 done
 
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput > /dev/null
 
 if [ "$NO_DJANGO" == "0" ]; then
-    python manage.py test multiseek -v 3
+    python manage.py test multiseek
 fi
 
 if [ "$NO_PYTEST" == "0" ]; then
-    py.test test_app/tests.py -v
+    py.test test_app/tests.py
 fi
