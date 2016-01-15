@@ -350,7 +350,6 @@ def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user):
 
 
 def test_save_form_logged_in(multiseek_admin_page):
-    multiseek_admin_page.browser.wait_for_selector("#saveFormButton")
     assert multiseek_admin_page.find_by_id("saveFormButton").visible == True
 
 
@@ -358,7 +357,7 @@ def test_save_form_server_error(multiseek_admin_page):
     NAME = 'testowy formularz'
     multiseek_admin_page.browser.execute_script("multiseek.SAVE_FORM_URL='/unexistent';")
     # Zapiszmy formularz
-    multiseek_admin_page.save_form_as(multiseek_admin_page, NAME)
+    multiseek_admin_page.save_form_as(NAME)
     # ... pytanie, czy ma być publiczny:
     multiseek_admin_page.browser.get_alert().accept()
     # ... po chwili informacja, że BŁĄD!
