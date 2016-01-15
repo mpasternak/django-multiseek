@@ -2,15 +2,25 @@
 import json
 
 import pytest
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from selenium.webdriver.support.select import Select
-from django.conf import settings
 from splinter.exceptions import ElementDoesNotExist
 
 from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, get_registry
 
 
-class MultiseekWebPage:
+class SplinterLoginMixin:
+    def login(self, username="admin", password="password"):
+        url = self.browser.url
+        self.browser.visit(self.live_server + reverse("admin:login"))
+        self.browser.fill('username', username)
+        self.browser.fill('password', password)
+        self.browser.find_by_css("input[type=submit]").click()
+        self.browser.visit(url)
+
+
+class MultiseekWebPage(SplinterLoginMixin):
     """Helper functions, that take care of the multiseek form web page
     """
 
@@ -24,13 +34,12 @@ class MultiseekWebPage:
         """
         frame = self.browser.find_by_id(id)
         ret = dict()
-        ret['frame'] = frame
-        ret['add_field'] = frame.children('fieldset')[0].children(
-                "button#add_field")[0]
-        ret['add_frame'] = frame.children('fieldset')[0].children(
-                "button#add_frame")[0]
-        ret['fields'] = frame.children('fieldset')[0].children(
-                "div#field-list")[0].children()
+        ret['frame'] = frame[0]
+        fieldset = frame.find_by_tag('fieldset')
+        ret['add_field'] = fieldset.find_by_id("add_field")[0]
+        ret['add_frame'] = fieldset.find_by_id("add_frame")[0]
+        ret['fields'] = fieldset.find_by_id("field-list")[0]
+
         return ret
 
     def extract_field_data(self, element):
@@ -59,33 +68,33 @@ class MultiseekWebPage:
 
             ret[elem] = e
 
-        selected = Select(ret['type']).first_selected_option
-        ret['selected'] = selected.text()
+        selected = ret['type'].value
+        ret['selected'] = selected
 
-        inner_type = self.registry.field_by_name.get(selected.text()).type
+        inner_type = self.registry.field_by_name.get(selected).type
         ret['inner_type'] = inner_type
 
         if inner_type in [STRING, VALUE_LIST]:
-            ret['value_widget'] = element.find_element_by_id("value")
+            ret['value_widget'] = element.find_by_id("value")
 
         elif inner_type == RANGE:
             ret['value_widget'] = [
-                element.find_element_by_id("value_min"),
-                element.find_element_by_id("value_max")]
+                element.find_by_id("value_min"),
+                element.find_by_id("value_max")]
 
         elif inner_type == DATE:
             ret['value_widget'] = [
-                element.find_element_by_id("value"),
-                element.find_element_by_id("value_max")]
+                element.find_by_id("value"),
+                element.find_by_id("value_max")]
 
         elif inner_type == AUTOCOMPLETE:
-            ret['value_widget'] = element.find_element_by_id("value")
+            ret['value_widget'] = element.find_by_id("value")
 
         else:
             raise NotImplementedError(inner_type)
 
-        ret['value'] = self.browser.execute_script("""
-            return $(arguments[0]).multiseekField('getValue');""", element)
+        code = '$("#%s").multiseekField("getValue")' % element['id']
+        ret['value'] = self.browser.evaluate_script(code)
 
         if ret['inner_type'] in (DATE, AUTOCOMPLETE, RANGE):
             if ret['value']:
@@ -101,13 +110,10 @@ class MultiseekWebPage:
     def serialize(self):
         """Zwraca wartość funkcji serialize() dla formularza, w postaci
         listy -- czyli obiekt JSON"""
-        return self.execute_script(
-                '''return $('#frame-0').multiseekFrame('serialize');''')
+        return self.browser.evaluate_script("$('#frame-0').multiseekFrame('serialize')")
 
     def get_field_value(self, field):
-        return self.execute_script("""
-        return $("#%s").multiseekField("getValue");
-        """ % field)
+        return self.browser.evaluate_script('$("#%s").multiseekField("getValue")' % field)
 
     def add_frame(self, frame="frame-0", prev_op=None):
         if not prev_op:
@@ -119,23 +125,55 @@ class MultiseekWebPage:
         """ % (frame, prev_op))
 
     def add_field(self, frame, label, op, value):
-        self.execute_script("""
-
+        code = """
         $("#%(frame)s").multiseekFrame("addField", "%(label)s", "%(op)s", %(value)s);
         """ % dict(frame=frame,
                    label=unicode(label),
                    op=unicode(op),
-                   value=json.dumps(value)))
+                   value=json.dumps(value))
+
+        self.browser.execute_script(code)
 
     def load_form_by_name(self, name):
-        self.refresh()
-        select = Select(self.find_element_by_jquery("#formsSelector"))
-        select.select_by_visible_text(name)
-        self.switch_to_alert().accept()
-        self.refresh()
+        self.browser.reload()
+        select = self.browser.find_by_id("formsSelector")
+        for elem in select.find_by_tag('option'):
+            if elem.text == name:
+                elem.click()
+                break
+        self.accept_alert()
+        self.browser.reload()
 
     def reset_form(self):
-        self.find_element_by_id("resetFormButton").click()
+        self.browser.find_by_id("resetFormButton").click()
+
+    def click_save_button(self):
+        button = self.browser.find_by_id("saveFormButton").first
+        button.type("\n")  # Keys.ENTER)
+
+    def save_form_as(self, name):
+        self.click_save_button()
+        with self.browser.get_alert() as alert:
+            alert.fill_with(name)
+            alert.accept()
+
+    def count_elements_in_form_selector(self, name):
+        select = self.browser.find_by_id("formsSelector")
+        assert select.visible == True
+        passed = 0
+        for option in select.find_by_tag("option"):
+            if option.text == name:
+                passed += 1
+        return passed
+
+    def accept_alert(self):
+        with self.browser.get_alert() as alert:
+            alert.accept()
+
+    def dismiss_alert(self):
+        with self.browser.get_alert() as alert:
+            alert.dismiss()
+
 
 @pytest.fixture
 def multiseek_page(browser, live_server):
@@ -143,10 +181,17 @@ def multiseek_page(browser, live_server):
     registry = get_registry(settings.MULTISEEK_REGISTRY)
     return MultiseekWebPage(browser=browser, registry=registry, live_server=live_server)
 
-@pytest.fixture
-def multiseek_admin_page(browser, live_server):
-    # XXX zaloguj browser jako administratora
 
-    browser.visit(live_server + reverse('multiseek:index'))
-    registry = get_registry(settings.MULTISEEK_REGISTRY)
-    return MultiseekWebPage(browser=browser, registry=registry, live_server=live_server)
+@pytest.fixture
+def multiseek_admin_page(multiseek_page, admin_user):
+    multiseek_page.login("admin", "password")
+    return multiseek_page
+
+
+@pytest.fixture(scope='session')
+def splinter_firefox_profile_preferences():
+    return {
+        "browser.startup.homepage": "about:blank",
+        "startup.homepage_welcome_url": "about:blank",
+        "startup.homepage_welcome_url.additional": "about:blank"
+    }
