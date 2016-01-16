@@ -19,5 +19,4 @@ install:
   - cd test_project && python manage.py bower_install && cd ..
 
 script:
-  - cd test_project && ./runtests.sh
-
+  - cd test_project && PYTEST_OPTIONS=--splinter-webdriver=firefox ./runtests.sh
