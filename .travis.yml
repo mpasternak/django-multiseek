@@ -16,7 +16,7 @@ install:
   - npm install -g bower
   - pip install django==$DJANGO --quiet
   - pip install -r dev_requirements.txt --quiet
-  - cd test_project && python manage.py bower_install
+  - cd test_project && python manage.py bower_install && cd ..
 
 script:
   - cd test_project && ./runtests.sh
