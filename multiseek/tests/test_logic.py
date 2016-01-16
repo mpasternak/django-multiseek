@@ -98,8 +98,9 @@ class TestRangeQueryObject(TestCase):
             UnknownOperation, r.real_query, [1, 2], 'foo')
 
         res = r.real_query([1, 2], RANGE_OPS[1])
-        self.assertEquals(
-            str(res), "(NOT (AND: ('foo__gte', 1), ('foo__lte', 2)))")
+        maybe_this = str(res) == "(NOT (AND: ('foo__gte', 1), ('foo__lte', 2)))"
+        maybe_that = str(res) == "(NOT (AND: ('foo__lte', 2), ('foo__gte', 1)))"
+        self.assert_(maybe_that or maybe_this)
 
 
 class TestIntegerQueryObject(TestCase):
