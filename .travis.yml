@@ -13,7 +13,7 @@ before_install:
   - sh -e /etc/init.d/xvfb start
 
 install:
-  - npm install bower
+  - npm install -g bower
   - pip install django==$DJANGO --quiet
   - pip install -r dev_requirements.txt --quiet
   - cd test_project && python manage.py bower_install
