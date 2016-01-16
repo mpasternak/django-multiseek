@@ -14,7 +14,7 @@ before_install:
 
 install:
   - pip install django==$DJANGO --quiet
-  - pip install -r dev_requirements.dev --quiet
+  - pip install -r dev_requirements.txt --quiet
 
 script:
   - cd test_project && ./runtests.sh
