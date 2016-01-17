@@ -1,8 +1,9 @@
 # -*- encoding: utf-8 -*-
+import json
 import time
 
 from django.contrib.auth.models import User
-import json
+from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from model_mommy import mommy
 from selenium.webdriver.common.keys import Keys
@@ -20,6 +21,9 @@ from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
 FRAME = "frame-0"
 FIELD = 'field-0'
 
+if six.PY3:
+    unicode = str
+
 
 def test_multiseek(multiseek_page):
     field = multiseek_page.get_field(FIELD)
@@ -29,19 +33,18 @@ def test_multiseek(multiseek_page):
 
 def test_change_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
-    field['type'].find_by_value(multiseek_registry.YearQueryObject.label).click()
+    field['type'].find_by_value(unicode(multiseek_registry.YearQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.RANGE
-    # import pytest; pytest.set_trace()
     assert len(field['value']) == 2
 
-    field['type'].find_by_value(multiseek_registry.LanguageQueryObject.label).click()
+    field['type'].find_by_value(unicode(multiseek_registry.LanguageQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.VALUE_LIST
 
-    field['type'].find_by_value(multiseek_registry.AuthorQueryObject.label).click()
+    field['type'].find_by_value(unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.AUTOCOMPLETE
@@ -61,7 +64,7 @@ def test_serialize_form(multiseek_page):
         field['value_widget'].type('aaapud!')
 
     field = multiseek_page.get_field('field-0')
-    field['type'].find_by_value(multiseek_registry.YearQueryObject.label).click()
+    field['type'].find_by_value(unicode(multiseek_registry.YearQueryObject.label)).click()
 
     field = multiseek_page.get_field('field-0')
     field['value_widget'][0].type('1999')
@@ -69,7 +72,7 @@ def test_serialize_form(multiseek_page):
 
     field = multiseek_page.get_field('field-1')
     field['prev-op'].find_by_value("or").click()
-    field['type'].find_by_value(multiseek_registry.LanguageQueryObject.label).click()
+    field['type'].find_by_value(unicode(multiseek_registry.LanguageQueryObject.label)).click()
 
     field = multiseek_page.get_field('field-1')
     field['value_widget'].find_by_value(unicode(_(u'english'))).click()
@@ -425,20 +428,21 @@ def test_save_form_save(multiseek_admin_page):
     # ... i jest to już NIE-publiczny:
     assert SearchForm.objects.all()[0].public == False
 
+
 def test_load_form(multiseek_admin_page):
     fld = make_field(
-        multiseek_admin_page.registry.fields[2],
-        multiseek_admin_page.registry.fields[2].ops[1],
-        json.dumps([2000, 2010]))
+            multiseek_admin_page.registry.fields[2],
+            multiseek_admin_page.registry.fields[2].ops[1],
+            json.dumps([2000, 2010]))
     SearchForm.objects.create(
-        name="lol",
-        owner=User.objects.create(username='foo', password='bar'),
-        public=True,
-        data=json.dumps({"form_data": [None, fld]}))
+            name="lol",
+            owner=User.objects.create(username='foo', password='bar'),
+            public=True,
+            data=json.dumps({"form_data": [None, fld]}))
     multiseek_admin_page.load_form_by_name('lol')
 
     field = multiseek_admin_page.extract_field_data(
-        multiseek_admin_page.browser.find_by_id("field-0"))
+            multiseek_admin_page.browser.find_by_id("field-0"))
 
     assert field['selected'] == unicode(multiseek_admin_page.registry.fields[2].label)
     assert field['value'][0] == 2000
@@ -452,6 +456,7 @@ def test_load_form(multiseek_admin_page):
     elem = multiseek_admin_page.browser.find_by_id("formsSelector").find_by_tag("option")
     assert elem[0].selected == True
 
+
 def test_bug_2(multiseek_admin_page):
     f = multiseek_admin_page.registry.fields[0]
     v = multiseek_admin_page.registry.fields[0].ops[0]
@@ -462,23 +467,24 @@ def test_bug_2(multiseek_admin_page):
     form = [None, field,
             [OR, field, field, field],
             [OR, field, field, field]
-    ]
+            ]
 
     data = json.dumps({"form_data": form})
 
     user = User.objects.create(
-        username='foo', password='bar')
+            username='foo', password='bar')
 
     SearchForm.objects.create(
-        name="bug-2",
-        owner=user,
-        public=True,
-        data=data)
+            name="bug-2",
+            owner=user,
+            public=True,
+            data=data)
     multiseek_admin_page.load_form_by_name('bug-2')
     elements = multiseek_admin_page.browser.find_by_css('[name=prev-op]:visible')
     for elem in elements:
         if elem.css("visibility") != 'hidden':
             assert elem.value == logic.OR
+
 
 def test_save_ordering_direction(multiseek_admin_page):
     elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
@@ -492,6 +498,7 @@ def test_save_ordering_direction(multiseek_admin_page):
     multiseek_admin_page.reset_form()
     multiseek_admin_page.load_form_by_name("foobar")
     assert len(multiseek_admin_page.browser.find_by_css("%s:checked" % elem)) == 1
+
 
 def test_save_ordering_box(multiseek_admin_page):
     elem = "select[name=%s0]" % MULTISEEK_ORDERING_PREFIX
@@ -510,6 +517,7 @@ def test_save_ordering_box(multiseek_admin_page):
     option = select.find_by_css('option[value="2"]')
     assert option.selected == True
 
+
 def test_save_report_type(multiseek_admin_page):
     elem = "select[name=%s]" % MULTISEEK_REPORT_TYPE
     select = multiseek_admin_page.browser.find_by_css(elem).first
@@ -526,4 +534,3 @@ def test_save_report_type(multiseek_admin_page):
     select = multiseek_admin_page.browser.find_by_css(elem).first
     option = select.find_by_css('option[value="1"]')
     assert option.selected == True
-
