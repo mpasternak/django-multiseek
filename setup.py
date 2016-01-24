@@ -52,21 +52,17 @@ if 'sdist' in sys.argv:
             os.unlink(os.path.join(dirpath, 'django.mo'))
 
 else:
-    # if django is there, compile the po files to mo,
-    try:
-        import django
-    except ImportError:
-        pass
-    else:
-        dir = os.getcwd()
-        os.chdir(os.path.join(dir, 'multiseek'))
-        os.system('django-admin.py compilemessages')
-        os.chdir(dir)
+    # Always try to build messages, fail if django not present
+    # (I hate incomplete releases)
+    dir = os.getcwd()
+    os.chdir(os.path.join(dir, 'multiseek'))
+    os.system('django-admin.py compilemessages')
+    os.chdir(dir)
 
 setup(
     name='django-multiseek',
-    version='0.9.15',
-    description='Seek records using multiple parameters',
+    version='0.9.15.3',
+    description='Build a form to seek records using multiple parameters',
     author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
     url='http://TODO',

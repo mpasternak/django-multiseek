@@ -57,3 +57,5 @@ test_project.test_app.tests
 test_app.tests
 *.bak
 \#*
+
+*.mo
