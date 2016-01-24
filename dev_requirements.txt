@@ -1,6 +1,6 @@
 -r requirements.txt
 selenium
-model-mommy
+model-mommy>=1.2.6
 splinter
 pytest
 pytest-splinter
