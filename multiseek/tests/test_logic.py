@@ -192,7 +192,7 @@ class TestMultiseekRegistry(TestCase):
             str(
                 self.registry.get_query(
                     json.loads(test_json)['form_data'])),
-            "(AND: ('foo', u'foo'))")
+            "(AND: ('foo', 'foo'))")
 
     def test_get_query_for_model(self):
         self.registry.model = MagicMock()
