@@ -210,6 +210,9 @@ class StringQueryObject(QueryObject):
             return False
         return True
 
+    def value_from_web(self, value):
+        return value.encode('utf-8')
+
     def value_for_description(self, value):
         value = super(StringQueryObject, self).value_for_description(value)
         if not value:

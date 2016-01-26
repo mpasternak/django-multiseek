@@ -303,7 +303,7 @@ class MultiseekModelAutocomplete(View):
         return self.qobj.model.objects.all()
 
     def get(self, request, *args, **kwargs):
-        q = request.GET.get('term', None)
+        q = request.GET.get('term', '').encode('utf-8')
 
         qset = self.original.get_autocomplete_query(q)
 
