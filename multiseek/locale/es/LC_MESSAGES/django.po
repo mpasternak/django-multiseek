@@ -1,0 +1,257 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-12-05 15:00+0100\n"
+"PO-Revision-Date: 2016-12-05 13:08+0100\n"
+"Last-Translator: Antonio Gutierrez <agutierrez@dapda.com>\n"
+"Language-Team: Dapda <sistemas@dapda.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.8.9\n"
+
+#: .\logic.py:34
+msgid "equals"
+msgstr "es igual a"
+
+#: .\logic.py:35
+msgid "equals (female geder)"
+msgstr "es igual a"
+
+#: .\logic.py:36
+msgid "equals (no gender)"
+msgstr "es igual a"
+
+#: .\logic.py:37
+msgid "equals (both genders)"
+msgstr "es igual a"
+
+#: .\logic.py:39
+msgid "greater, than"
+msgstr "es mayor que"
+
+#: .\logic.py:40
+msgid "greater, than (female gender)"
+msgstr "es mayor que"
+
+#: .\logic.py:41
+msgid "greater, than (no gender)"
+msgstr "es mayor que"
+
+#: .\logic.py:44
+msgid "lesser, than"
+msgstr "es menor que"
+
+#: .\logic.py:45
+msgid "lesser, than (female gender)"
+msgstr "es menor que"
+
+#: .\logic.py:46
+msgid "lesser, than (no gender)"
+msgstr "es menor que"
+
+#: .\logic.py:49
+msgid "greater or equal to"
+msgstr "es mayor o igual que"
+
+#: .\logic.py:50
+msgid "greater or equal to(female gender)"
+msgstr "es mayor o igual que"
+
+#: .\logic.py:51
+msgid "greater or equal to (no gender)"
+msgstr "es mayor o igual que"
+
+#: .\logic.py:55
+msgid "lesser or equal to"
+msgstr "es menor o igual que"
+
+#: .\logic.py:56
+msgid "lesser or equal to (female gender)"
+msgstr "es menor o igual que"
+
+#: .\logic.py:57
+msgid "lesser or equal to (no gender)"
+msgstr "es menor o igual que"
+
+#: .\logic.py:61
+msgid "differs"
+msgstr "es distinto de"
+
+#: .\logic.py:62
+msgid "differs (female gender)"
+msgstr "es distinto de"
+
+#: .\logic.py:63
+msgid "differs (no gender)"
+msgstr "es distinto de"
+
+#: .\logic.py:64
+msgid "differs (both gender)"
+msgstr "es distinto de"
+
+#: .\logic.py:66
+msgid "contains"
+msgstr "contiene"
+
+#: .\logic.py:67
+msgid "not contains"
+msgstr "no contiene"
+
+#: .\logic.py:68
+msgid "starts with"
+msgstr "comienza con"
+
+#: .\logic.py:69
+msgid "not starts with"
+msgstr "no comienza con"
+
+#: .\logic.py:71
+msgid "in range"
+msgstr "comprendido entre"
+
+#: .\logic.py:72
+msgid "outside range"
+msgstr "no comprendido entre"
+
+#: .\logic.py:205
+msgid "(empty)"
+msgstr "(vacío)"
+
+#: .\logic.py:449
+msgid "yes"
+msgstr "si"
+
+#: .\logic.py:450
+msgid "no"
+msgstr "no"
+
+#: .\logic.py:505
+msgid "Sort by:"
+msgstr "Ordenar por:"
+
+#: .\logic.py:505
+msgid "then by"
+msgstr "después por"
+
+#: .\models.py:17
+msgid "Name"
+msgstr "Nombre"
+
+#: .\models.py:20
+msgid "Public"
+msgstr "Público"
+
+#: .\models.py:22
+msgid "Make this search publicly available?"
+msgstr "¿Hacer la búsqueda pública?"
+
+#: .\models.py:23
+msgid "Form data (JSON)"
+msgstr "Datos del formulario (JSON)"
+
+#: .\templates\multiseek\index.html:11
+msgid "Multiseek"
+msgstr "Multiseek"
+
+#: .\templates\multiseek\multiseek_buttons.html:5
+msgid "Send query"
+msgstr "Realizar consulta"
+
+#: .\templates\multiseek\multiseek_buttons.html:9
+msgid "Reset form"
+msgstr "Resetear"
+
+#: .\templates\multiseek\multiseek_buttons.html:14
+msgid "Save form"
+msgstr "Guardar"
+
+#: .\templates\multiseek\multiseek_buttons.html:19
+#, python-format
+msgid ""
+"\n"
+"            Please go to <a href=\"%(admin_index)s\">admin page</a>\n"
+"            to log in, then come back. You will be able to save created\n"
+"            forms.\n"
+"        "
+msgstr ""
+"\n"
+"Diríjase al <a href=\"%(admin_index)s\">panel de administración</a>\n"
+"e identifíquese para poder guardar su búsqueda.\n"
+"            "
+
+#: .\templates\multiseek\multiseek_buttons.html:27
+msgid "choose form..."
+msgstr "elegir formulario..."
+
+#: .\templates\multiseek\multiseek_ordering.html:34
+msgid "descending"
+msgstr "descendiente"
+
+#: .\templates\multiseek\multiseek_report_types.html:8
+msgid "Report type: "
+msgstr "Tipo de informe:"
+
+#: .\templates\multiseek\results.html:6
+msgid "Query: "
+msgstr "Consulta:"
+
+#: .\templates\multiseek\results.html:12
+msgid "No elements"
+msgstr "Sin elementos"
+
+#: .\views.py:24
+msgid "Form name must not be empty"
+msgstr "El nombre del formulario no puede estar vacío"
+
+#: .\views.py:25
+msgid "Error while loading form data"
+msgstr "Error mientra se cargaban los datos"
+
+#: .\views.py:26
+msgid "Error while parsing form data"
+msgstr "Error mientras se procesaban los datos"
+
+#: .\views.py:27
+msgid "No form data provided"
+msgstr "No se ha proporcionado un origen de datos"
+
+#: .\views.py:40
+msgid "The ability to remove the last field has been disabled."
+msgstr "La habilidad de eliminar el último campo ha sido deshabilitada."
+
+#: .\views.py:220
+msgid "andnot"
+msgstr "y no"
+
+#~ msgid "click here for query description"
+#~ msgstr "kliknij, aby zobaczyć opis zapytania"
+
+#~ msgid "ANDNOT"
+#~ msgstr "i nie"
+
+#~ msgid "Add field"
+#~ msgstr "Dodaj pole"
+
+#~ msgid "Add frame"
+#~ msgstr "Dodaj ramkę"
+
+#~ msgid "or"
+#~ msgstr "lub"
+
+#~ msgid "Remove this choice"
+#~ msgstr "Usuń ten wybór"
+
+#~ msgid "in"
+#~ msgstr "w zakresie"
+
+#~ msgid "not in"
+#~ msgstr "poza zakresem"
