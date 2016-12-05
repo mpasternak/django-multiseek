@@ -1,0 +1,88 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-12-16 13:18+0100\n"
+"PO-Revision-Date: 2016-12-05 13:08+0100\n"
+"Last-Translator: Antonio Gutiérrez <agutierrez@dapda.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.8.9\n"
+"Language: es\n"
+"Language-Team: Dapda <sistemas@dapda.com>\n"
+
+#: .\static\multiseek\js\multiseek.js:42
+msgid "and"
+msgstr "y"
+
+#: .\static\multiseek\js\multiseek.js:43
+msgid "or"
+msgstr "o"
+
+#: .\static\multiseek\js\multiseek.js:44
+msgid "and not"
+msgstr "y no"
+
+#: .\static\multiseek\js\multiseek.js:124
+msgid "from"
+msgstr "desde"
+
+#: .\static\multiseek\js\multiseek.js:133
+msgid "to"
+msgstr "hasta"
+
+#: .\static\multiseek\js\multiseek.js:174
+msgid "Please select value from the dropdown."
+msgstr "Seleccione un valor."
+
+#: .\static\multiseek\js\multiseek.js:249
+#: .\static\multiseek\js\multiseek.js:309
+msgid "today"
+msgstr "hoy"
+
+#: .\static\multiseek\js\multiseek.js:516
+msgid "Add field"
+msgstr "Agregar campo"
+
+msgid "differs"
+msgstr "difiere"
+
+#: .\static\multiseek\js\multiseek.js:525
+msgid "Add frame"
+msgstr "Agregar grupo"
+
+#: .\static\multiseek\js\multiseek.js:761
+msgid "Form name?"
+msgstr "¿Nombre del formulario?"
+
+#: .\static\multiseek\js\multiseek.js:768
+msgid "Form name must not be empty."
+msgstr "El nombre del formulario no puede estar vacio"
+
+#: .\static\multiseek\js\multiseek.js:773
+msgid "Should the form be available for every user of this website?"
+msgstr ""
+"¿Debe de estar el formulario disponible para cualquier usuario del sitio web?"
+
+#: .\static\multiseek\js\multiseek.js:776
+msgid "There was a server-side error. The form was NOT saved."
+msgstr "Ocurrió un error en el servidor. El formulario no se ha guardado."
+
+#: .\static\multiseek\js\multiseek.js:777
+msgid "Form was saved."
+msgstr "El formulario se ha guardado."
+
+#: .\static\multiseek\js\multiseek.js:778
+msgid "There is already a form with such name in the database. Overwrite?"
+msgstr "Ya hay un formulario con ese nombre, ¿Lo sobrescribo?"
+
+#: .\static\multiseek\js\multiseek.js:816
+msgid "Are you sure you want to load selected form?"
+msgstr "¿Estas seguro de que quieres cargar el formulario seleccionado?"
