@@ -1,3 +1,8 @@
+addons:
+  apt:
+    packages:
+      - xvfb
+
 language:
   python
 
@@ -10,7 +15,7 @@ env:
 
 before_install:
   - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+  - Xvfb $DISPLAY &
 
 install:
   - npm install -g bower
