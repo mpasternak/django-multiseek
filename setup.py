@@ -48,8 +48,9 @@ if 'sdist' in sys.argv:
         if not filenames:
             continue
 
-        if 'django.mo' in filenames:
-            os.unlink(os.path.join(dirpath, 'django.mo'))
+        for fn in ['django.mo', 'djangojs.mo']:
+            if fn in filenames:
+                os.unlink(os.path.join(dirpath, fn))
 
 else:
     # Always try to build messages, fail if django not present
@@ -61,7 +62,7 @@ else:
 
 setup(
     name='django-multiseek',
-    version='0.9.15.4',
+    version='0.9.15',
     description='Build a form to seek records using multiple parameters',
     author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
