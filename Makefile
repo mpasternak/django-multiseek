@@ -20,20 +20,12 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-install-wheels:
-	pip2 install --no-index --find-links=dist -rrequirements_dev.txt
-	pip3 install --no-index --find-links=dist -rrequirements_dev.txt
-
-wheels:
-	pip wheel -w dist -rrequirements_dev.txt
-
-docker: wheels
+tests: clean
 	docker-compose build test
+	docker-compose run --rm test
 
-# cel: setup-lo0
-# Konfiguruje alias IP dla interfejsu lo0 aby kontener Dockera 'selenium'
-# miał dostęp do live-serwera uruchamianego na komputerze hosta. Użyteczne
-# pod Mac OS X
+# target: setup-lo0
+# Configures loopback interafce so the Selenium Docker container can access
+# Django's LiveServer. Used on macOS. 
 setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
-
