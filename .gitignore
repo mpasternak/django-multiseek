@@ -59,3 +59,4 @@ test_app.tests
 \#*
 
 *.mo
+test_project/geckodriver.log
