@@ -1,0 +1,17 @@
+version: '2'
+services:
+
+  test:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on: 
+      - selenium
+    ports: 
+      - "9015:9015"
+
+  selenium:
+    image: selenium/standalone-firefox-debug
+    ports:
+      - "4444:4444"
+      - "5900:5900"
