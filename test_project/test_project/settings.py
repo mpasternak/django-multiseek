@@ -87,7 +87,8 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'djangobower.finders.BowerFinder',
+    'test_project.finders.YarnFinder',
+
     #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -134,8 +135,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'test_app',
     'multiseek',
-    #'django_nose',
-    'djangobower'
 )
 
 # A sample logging configuration. The only tangible logging
@@ -173,24 +172,3 @@ MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
 
 SELENIUM_DRIVER = "Remote"
 SELENIUM_CAPABILITIES = {"browser": "firefox"}
-
-# django-multiseek needs jquery, jquery-ui
-BOWER_INSTALLED_APPS = (
-    'jquery',
-    'jqueryui',
-    'datetimepicker',
-
-    # You don't need foundation for multiseek, only jquery.
-    # Foundation is used in test_project only
-    'foundation',
-    'foundation-datepicker',
-    'font-awesome',
-
-    # For nice jQuery calendar
-    'https://raw.githubusercontent.com/taitems/Aristo-jQuery-UI-Theme/master/css/Aristo/Aristo.css',
-
-    # for translated jQuery calendar
-    'https://jquery-ui.googlecode.com/svn-history/r3243/trunk/ui/i18n/jquery.ui.datepicker-pl.js'
-)
-
-BOWER_COMPONENTS_ROOT = os.path.join(os.path.dirname(__file__), '..', 'components')

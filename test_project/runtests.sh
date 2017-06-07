@@ -24,7 +24,9 @@ do
     shift
 done
 
-python manage.py collectstatic --noinput > /dev/null
+yarn install
+
+python manage.py collectstatic --noinput -v0
 
 if [ "$NO_DJANGO" == "0" ]; then
     python manage.py test multiseek
@@ -33,3 +35,4 @@ fi
 if [ "$NO_PYTEST" == "0" ]; then
     py.test $PYTEST_OPTIONS test_app/tests.py
 fi
+
