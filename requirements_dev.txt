@@ -1,0 +1,6 @@
+python-dateutil
+simplejson
+pytest-django
+pytest-splinter
+mock
+model_mommy
