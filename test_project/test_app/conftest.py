@@ -60,7 +60,7 @@ class MultiseekWebPage(SplinterLoginMixin):
         for elem in ['type', 'op', 'prev-op', 'close-button']:
             try:
                 e = element.find_by_id(elem)[0]
-            except ElementDoesNotExist, x:
+            except ElementDoesNotExist as x:
                 # prev-op may be None
                 if elem != 'prev-op':
                     raise x
