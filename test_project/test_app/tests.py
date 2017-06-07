@@ -8,8 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 from model_mommy import mommy
 from selenium.webdriver.common.keys import Keys
 
-import multiseek_registry
-from models import Author
+from test_app import multiseek_registry
+from test_app.models import Author
 from multiseek import logic
 from multiseek.logic import AND, MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE
 from multiseek.logic import OR
