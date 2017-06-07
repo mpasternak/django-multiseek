@@ -3,15 +3,22 @@ addons:
     packages:
       - xvfb
 
+NPM SUPPORT
+
 language:
   python
 
 python:
   - "2.7"
+  - "3.5"
+  - "3.6"
 
 env:
-  - DJANGO=1.7.11
-  - DJANGO=1.8.8
+  - DJANGO=17
+  - DJANGO=18
+  - DJANGO=19
+  - DJANGO=110
+  - DJANGO=111
 
 before_install:
   - export DISPLAY=:99.0
@@ -19,9 +26,7 @@ before_install:
 
 install:
   - npm install -g bower
-  - pip install django==$DJANGO --quiet
-  - pip install -r dev_requirements.txt --quiet
-  - cd test_project && python manage.py bower_install && cd ..
+  - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}
 
 script:
-  - cd test_project && PYTEST_OPTIONS="--splinter-webdriver=firefox --liveserver=localhost:8000-9000" ./runtests.sh
+  - tox
