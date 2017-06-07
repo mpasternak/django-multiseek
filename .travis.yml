@@ -10,8 +10,6 @@ cache:
     - node_modules
     - $HOME/.yarn-cache
 
-NPM SUPPORT
-
 language:
   python
 
