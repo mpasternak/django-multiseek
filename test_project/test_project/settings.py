@@ -69,27 +69,24 @@ MEDIA_URL = ''
 # Example: "/var/www/example.com/static/"
 STATIC_ROOT = os.path.abspath(
     os.path.join(
-        os.path.dirname(__file__), "../", "static"))
+        os.path.dirname(__file__), "../", "static", "."))
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = ()
 # Additional locations of static files
-STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-)
 
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
+    #'django.contrib.staticfiles.finders.DefaultStorageFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'test_project.finders.YarnFinder',
+    'compressor.finders.CompressorFinder',
 
-    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -133,6 +130,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'compressor',
     'test_app',
     'multiseek',
 )

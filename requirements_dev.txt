@@ -4,3 +4,7 @@ pytest-django
 pytest-splinter
 mock
 model_mommy
+
+# compressor IS needed for liveserver testing. without compressor,
+# it won't find files in YarnFinders
+django-compressor==1.6
