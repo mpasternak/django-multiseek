@@ -23,10 +23,11 @@ env:
 before_install:
   - export DISPLAY=:99.0
   - Xvfb $DISPLAY &
+  - docker-compose build
 
 install:
   - npm install -g bower
   - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}
 
 script:
-  - tox
+  - docker-compose run --rm test -e ${TOXENV}
