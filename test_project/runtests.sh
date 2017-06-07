@@ -33,6 +33,6 @@ if [ "$NO_DJANGO" == "0" ]; then
 fi
 
 if [ "$NO_PYTEST" == "0" ]; then
-    py.test $PYTEST_OPTIONS test_app/tests.py
+    py.test -v test_app/tests.py
 fi
 
