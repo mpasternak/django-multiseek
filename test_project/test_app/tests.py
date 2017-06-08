@@ -348,7 +348,8 @@ def test_public_report_types_secret_report_invisible(multiseek_page):
 
 
 def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user):
-    elem = multiseek_admin_page.browser.find_by_name("_ms_report_type").first.find_by_tag("option")
+    elem = multiseek_admin_page.browser.find_by_name("_ms_report_type")
+    elem = elem.first.find_by_tag("option")
     assert len(elem) == 3
 
 

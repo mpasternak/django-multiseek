@@ -4,20 +4,39 @@ import json
 import pytest
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.expected_conditions import staleness_of
+from selenium.webdriver.support.ui import WebDriverWait
 from splinter.exceptions import ElementDoesNotExist
 
-from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, get_registry
+from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, \
+    get_registry
+
+
+class wait_for_page_load(object):
+    def __init__(self, browser):
+        self.browser = browser
+
+    def __enter__(self):
+        self.old_page = self.browser.find_by_tag('html')[0]._element
+
+    def __exit__(self, *_):
+        WebDriverWait(self.browser, 10).until(
+            staleness_of(self.old_page)
+        )
 
 
 class SplinterLoginMixin:
     def login(self, username="admin", password="password"):
         url = self.browser.url
-        self.browser.visit(self.live_server + reverse("admin:login"))
+        with wait_for_page_load(self.browser):
+            self.browser.visit(self.live_server + reverse("admin:login"))
+            
         self.browser.fill('username', username)
         self.browser.fill('password', password)
         self.browser.find_by_css("input[type=submit]").click()
-        self.browser.visit(url)
+        
+        with wait_for_page_load(self.browser):
+            self.browser.visit(url)
 
 
 class MultiseekWebPage(SplinterLoginMixin):
@@ -110,15 +129,17 @@ class MultiseekWebPage(SplinterLoginMixin):
     def serialize(self):
         """Zwraca wartość funkcji serialize() dla formularza, w postaci
         listy -- czyli obiekt JSON"""
-        return self.browser.evaluate_script("$('#frame-0').multiseekFrame('serialize')")
+        return self.browser.evaluate_script(
+            "$('#frame-0').multiseekFrame('serialize')")
 
     def get_field_value(self, field):
-        return self.browser.evaluate_script('$("#%s").multiseekField("getValue")' % field)
+        return self.browser.evaluate_script(
+            '$("#%s").multiseekField("getValue")' % field)
 
     def add_frame(self, frame="frame-0", prev_op=None):
         if not prev_op:
             return self.execute_script(
-                    """$("#%s").multiseekFrame('addFrame');""" % frame)
+                """$("#%s").multiseekFrame('addFrame');""" % frame)
 
         return self.execute_script("""
             $("#%s").multiseekFrame('addFrame', '%s');
@@ -179,12 +200,13 @@ class MultiseekWebPage(SplinterLoginMixin):
 def multiseek_page(browser, live_server):
     browser.visit(live_server + reverse('multiseek:index'))
     registry = get_registry(settings.MULTISEEK_REGISTRY)
-    return MultiseekWebPage(browser=browser, registry=registry, live_server=live_server)
+    return MultiseekWebPage(browser=browser, registry=registry,
+                            live_server=live_server)
 
 
 @pytest.fixture
 def multiseek_admin_page(multiseek_page, admin_user):
-    multiseek_page.login("admin", "password")
+    multiseek_page.login(admin_user.username, "password")
     return multiseek_page
 
 
