@@ -105,6 +105,15 @@ TEMPLATES = [
     },
 ]
 
+import django
+if django.VERSION > (1,8):
+    TEMPLATES[0]['OPTIONS']['context_processors'] = [
+        'django.template.context_processors.request',
+        'django.template.context_processors.static',
+        'django.contrib.auth.context_processors.auth',
+        'django.template.context_processors.i18n'
+    ]
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
