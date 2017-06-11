@@ -34,7 +34,8 @@ class SplinterLoginMixin:
 
         self.browser.fill('username', username)
         self.browser.fill('password', password)
-        self.browser.find_by_css("input[type=submit]").click()
+        with wait_for_page_load(self.browser):
+            self.browser.find_by_css("input[type=submit]").click()
 
         with wait_for_page_load(self.browser):
             self.browser.visit(url)
@@ -212,7 +213,8 @@ def multiseek_page(browser, live_server):
 
 @pytest.fixture
 def multiseek_admin_page(multiseek_page, admin_user):
-    multiseek_page.login(admin_user.username, "password")
+    while "log in, then come back" in multiseek_page.browser.html:
+        multiseek_page.login(admin_user.username, "password")
     return multiseek_page
 
 
