@@ -1,15 +1,10 @@
 # Django settings for test_project project.
 
-import os, sys
+import os
+import sys
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-TEMPLATE_CONTEXT_PROCESSORS = (
-      'django.core.context_processors.request',
-      'django.core.context_processors.static',
-      'django.contrib.auth.context_processors.auth',
-      'django.core.context_processors.i18n'
-)
 
 ADMINS = (
     ('Your Name', 'root@localhost'),
@@ -81,7 +76,7 @@ STATICFILES_DIRS = ()
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
-    #'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'test_project.finders.YarnFinder',
@@ -92,11 +87,23 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '(_163dr0#ijuk2=13)wlkc#cqdnj&f^uy@vuo)$@&tz%d1jand'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            # insert your TEMPLATE_DIRS here
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.core.context_processors.request',
+                'django.core.context_processors.static',
+                'django.contrib.auth.context_processors.auth',
+                'django.core.context_processors.i18n'
+            ],
+        },
+    },
+]
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -115,12 +122,6 @@ ROOT_URLCONF = 'test_project.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'test_project.wsgi.application'
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -166,7 +167,7 @@ LOGGING = {
 
 MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
 
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 SELENIUM_DRIVER = "Remote"
 SELENIUM_CAPABILITIES = {"browser": "firefox"}

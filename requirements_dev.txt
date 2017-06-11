@@ -7,4 +7,4 @@ model_mommy
 
 # compressor IS needed for liveserver testing. without compressor,
 # it won't find files in YarnFinders
-django-compressor==1.6
+django-compressor==2.1
