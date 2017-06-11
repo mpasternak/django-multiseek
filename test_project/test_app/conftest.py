@@ -4,7 +4,8 @@ import json
 import pytest
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from selenium.webdriver.support.expected_conditions import staleness_of
+from selenium.webdriver.support.expected_conditions import staleness_of, \
+    alert_is_present
 from selenium.webdriver.support.ui import WebDriverWait
 from splinter.exceptions import ElementDoesNotExist
 
@@ -30,11 +31,11 @@ class SplinterLoginMixin:
         url = self.browser.url
         with wait_for_page_load(self.browser):
             self.browser.visit(self.live_server + reverse("admin:login"))
-            
+
         self.browser.fill('username', username)
         self.browser.fill('password', password)
         self.browser.find_by_css("input[type=submit]").click()
-        
+
         with wait_for_page_load(self.browser):
             self.browser.visit(url)
 
@@ -170,13 +171,15 @@ class MultiseekWebPage(SplinterLoginMixin):
 
     def click_save_button(self):
         button = self.browser.find_by_id("saveFormButton").first
-        button.type("\n")  # Keys.ENTER)
+        button.click()  # type("\n")  # Keys.ENTER)
 
     def save_form_as(self, name):
         self.click_save_button()
+        WebDriverWait(self.browser, 10).until(alert_is_present())
         with self.browser.get_alert() as alert:
             alert.fill_with(name)
             alert.accept()
+        WebDriverWait(self.browser, 10).until_not(alert_is_present())
 
     def count_elements_in_form_selector(self, name):
         select = self.browser.find_by_id("formsSelector")

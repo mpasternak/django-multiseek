@@ -6,17 +6,41 @@ from django.contrib.auth.models import User
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from model_mommy import mommy
+from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver.common.keys import Keys
-
+from selenium.webdriver.support.expected_conditions import alert_is_present
+from selenium.webdriver.support.wait import WebDriverWait
 from test_app import multiseek_registry
 from test_app.models import Author
+
 from multiseek import logic
-from multiseek.logic import AND, MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE
+from multiseek.logic import AND, MULTISEEK_ORDERING_PREFIX, \
+    MULTISEEK_REPORT_TYPE
 from multiseek.logic import OR
 from multiseek.logic import RANGE_OPS, EQUAL, CONTAINS
 from multiseek.models import SearchForm
 from multiseek.util import make_field
 from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
+
+
+class wait_for_alert(object):
+    method_name = 'until'
+
+    def __init__(self, browser):
+        self.browser = browser
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *_):
+        wait = WebDriverWait(self.browser, 10)
+        method = getattr(wait, self.method_name)
+        method(alert_is_present())
+
+
+class wait_until_no_alert(wait_for_alert):
+    method_name = 'until_not'
+
 
 FRAME = "frame-0"
 FIELD = 'field-0'
@@ -33,18 +57,21 @@ def test_multiseek(multiseek_page):
 
 def test_change_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
-    field['type'].find_by_value(unicode(multiseek_registry.YearQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.YearQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.RANGE
     assert len(field['value']) == 2
 
-    field['type'].find_by_value(unicode(multiseek_registry.LanguageQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.LanguageQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.VALUE_LIST
 
-    field['type'].find_by_value(unicode(multiseek_registry.AuthorQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.AUTOCOMPLETE
@@ -64,7 +91,8 @@ def test_serialize_form(multiseek_page):
         field['value_widget'].type('aaapud!')
 
     field = multiseek_page.get_field('field-0')
-    field['type'].find_by_value(unicode(multiseek_registry.YearQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.YearQueryObject.label)).click()
 
     field = multiseek_page.get_field('field-0')
     field['value_widget'][0].type('1999')
@@ -72,7 +100,8 @@ def test_serialize_form(multiseek_page):
 
     field = multiseek_page.get_field('field-1')
     field['prev-op'].find_by_value("or").click()
-    field['type'].find_by_value(unicode(multiseek_registry.LanguageQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.LanguageQueryObject.label)).click()
 
     field = multiseek_page.get_field('field-1')
     field['value_widget'].find_by_value(unicode(_(u'english'))).click()
@@ -114,7 +143,8 @@ def test_remove_last_field(multiseek_page):
 
 def test_autocomplete_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
-    field['type'].find_by_value(unicode(multiseek_registry.AuthorQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     valueWidget = multiseek_page.browser.find_by_id("value")
     valueWidget.type('smit')
@@ -124,10 +154,10 @@ def test_autocomplete_field(multiseek_page):
     got = multiseek_page.serialize()
     expect = [None,
               make_field(
-                      multiseek_registry.AuthorQueryObject,
-                      unicode(EQUAL),
-                      Author.objects.filter(last_name='Smith')[0].pk,
-                      prev_op=None)]
+                  multiseek_registry.AuthorQueryObject,
+                  unicode(EQUAL),
+                  Author.objects.filter(last_name='Smith')[0].pk,
+                  prev_op=None)]
 
     assert got == expect
 
@@ -139,7 +169,8 @@ def test_autocomplete_field_bug(multiseek_page):
     HTTP error 500, which is not what we need..."""
 
     field = multiseek_page.get_field(FIELD)
-    field['type'].find_by_value(unicode(multiseek_registry.AuthorQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     multiseek_page.browser.find_by_id("sendQueryButton").click()
     time.sleep(2)
@@ -154,7 +185,8 @@ def test_autocomplete_field_bug_2(multiseek_page):
     time of writing, we get a javascript error."""
 
     field = multiseek_page.get_field(FIELD)
-    field['type'].find_by_value(unicode(multiseek_registry.AuthorQueryObject.label)).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     multiseek_page.browser.find_by_id("sendQueryButton").click()
     time.sleep(2)
@@ -162,16 +194,19 @@ def test_autocomplete_field_bug_2(multiseek_page):
     time.sleep(2)
     multiseek_page.browser.find_by_id("add_field").click()
     time.sleep(2)
-    selects = [tag for tag in multiseek_page.browser.find_by_tag("select") if tag['id'] == 'type']
+    selects = [tag for tag in multiseek_page.browser.find_by_tag("select") if
+               tag['id'] == 'type']
     assert len(selects[0].find_by_tag("option")) != 0
     assert len(selects[1].find_by_tag("option")) != 0
 
 
 def test_set_join(multiseek_page):
     multiseek_page.browser.find_by_id("add_field").click()
-    multiseek_page.browser.execute_script("$('#field-1').multiseekField('prevOperation').val('or')")
+    multiseek_page.browser.execute_script(
+        "$('#field-1').multiseekField('prevOperation').val('or')")
 
-    ret = multiseek_page.browser.evaluate_script("$('#field-1').multiseekField('prevOperation').val()")
+    ret = multiseek_page.browser.evaluate_script(
+        "$('#field-1').multiseekField('prevOperation').val()")
 
     assert ret == "or"
 
@@ -180,9 +215,11 @@ def test_set_join(multiseek_page):
                              unicode(multiseek_page.registry.fields[0].ops[0]),
                              '')
 
-    multiseek_page.browser.execute_script("$('#field-2').multiseekField('prevOperation').val('or')")
+    multiseek_page.browser.execute_script(
+        "$('#field-2').multiseekField('prevOperation').val('or')")
 
-    ret = multiseek_page.browser.evaluate_script("$('#field-2').multiseekField('prevOperation').val()")
+    ret = multiseek_page.browser.evaluate_script(
+        "$('#field-2').multiseekField('prevOperation').val()")
 
     assert ret == "or"
 
@@ -193,30 +230,33 @@ def test_set_frame_join(multiseek_page):
     $("#frame-0").multiseekFrame('addFrame', 'or');
     """)
 
-    ret = multiseek_page.browser.evaluate_script("$('#frame-2').multiseekFrame('getPrevOperationValue')")
+    ret = multiseek_page.browser.evaluate_script(
+        "$('#frame-2').multiseekFrame('getPrevOperationValue')")
 
     assert ret == "or"
 
 
 def test_add_field_value_list(multiseek_page):
     multiseek_page.add_field(
-            FRAME,
-            multiseek_registry.LanguageQueryObject.label,
-            multiseek_registry.LanguageQueryObject.ops[1],
-            unicode(_(u'polish')))
+        FRAME,
+        multiseek_registry.LanguageQueryObject.label,
+        multiseek_registry.LanguageQueryObject.ops[1],
+        unicode(_(u'polish')))
 
     field = multiseek_page.get_field("field-1")
-    assert field['type'].value == unicode(multiseek_registry.LanguageQueryObject.label)
-    assert field['op'].value == unicode(multiseek_registry.LanguageQueryObject.ops[1])
+    assert field['type'].value == unicode(
+        multiseek_registry.LanguageQueryObject.label)
+    assert field['op'].value == unicode(
+        multiseek_registry.LanguageQueryObject.ops[1])
     assert field['value'] == unicode(_(u'polish'))
 
 
 def test_add_field_autocomplete(multiseek_page):
     multiseek_page.add_field(
-            FRAME,
-            multiseek_registry.AuthorQueryObject.label,
-            multiseek_registry.AuthorQueryObject.ops[1],
-            '[1,"John Smith"]')
+        FRAME,
+        multiseek_registry.AuthorQueryObject.label,
+        multiseek_registry.AuthorQueryObject.ops[1],
+        '[1,"John Smith"]')
 
     value = multiseek_page.get_field_value("field-1")
     assert value == 1
@@ -224,10 +264,10 @@ def test_add_field_autocomplete(multiseek_page):
 
 def test_add_field_string(multiseek_page):
     multiseek_page.add_field(
-            FRAME,
-            multiseek_registry.TitleQueryObject.label,
-            multiseek_registry.TitleQueryObject.ops[0],
-            "aaapud!")
+        FRAME,
+        multiseek_registry.TitleQueryObject.label,
+        multiseek_registry.TitleQueryObject.ops[0],
+        "aaapud!")
 
     field = multiseek_page.get_field_value("field-1")
     assert field == 'aaapud!'
@@ -235,10 +275,10 @@ def test_add_field_string(multiseek_page):
 
 def test_add_field_range(multiseek_page):
     multiseek_page.add_field(
-            FRAME,
-            multiseek_registry.YearQueryObject.label,
-            multiseek_registry.YearQueryObject.ops[0],
-            "[1000, 2000]")
+        FRAME,
+        multiseek_registry.YearQueryObject.label,
+        multiseek_registry.YearQueryObject.ops[0],
+        "[1000, 2000]")
 
     field = multiseek_page.get_field_value("field-1")
     assert field == "[1000,2000]"
@@ -278,14 +318,17 @@ def test_frame_bug(multiseek_page):
 def test_date_field(multiseek_page):
     field = multiseek_page.get_field("field-0")
 
-    field['type'].find_by_value(unicode(multiseek_registry.DateLastUpdatedQueryObject.label)).click()
-    field['op'].find_by_value(unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[6])).click()
+    field['type'].find_by_value(
+        unicode(multiseek_registry.DateLastUpdatedQueryObject.label)).click()
+    field['op'].find_by_value(
+        unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[6])).click()
 
     expected = [None, {u'field': u'Last updated on', u'operator': u'in range',
                        u'value': u'["",""]', u'prev_op': None}]
     assert multiseek_page.serialize() == expected
 
-    field['op'].find_by_value(unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[3])).click()
+    field['op'].find_by_value(
+        unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[3])).click()
     expected = [None, {u'field': u'Last updated on',
                        u'operator': u'greater or equal to(female gender)',
                        u'value': u'[""]', u'prev_op': None}]
@@ -299,7 +342,8 @@ def test_removed_records(multiseek_page, live_server):
     multiseek_page.browser.visit(live_server + '/multiseek/results')
     assert "A book with" in multiseek_page.browser.html
     assert "Second book" in multiseek_page.browser.html
-    multiseek_page.browser.execute_script('''$("a:contains('remove from results')").first().click()''')
+    multiseek_page.browser.execute_script(
+        '''$("a:contains('remove from results')").first().click()''')
     time.sleep(2)
 
     multiseek_page.browser.visit(live_server + '/multiseek/results')
@@ -307,9 +351,11 @@ def test_removed_records(multiseek_page, live_server):
     assert "Second book" not in multiseek_page.browser.html
     assert "1 record(s) has been removed manually" in multiseek_page.browser.html
 
-    multiseek_page.browser.execute_script('''$("a:contains('remove from results')").first().click()''')
+    multiseek_page.browser.execute_script(
+        '''$("a:contains('remove from results')").first().click()''')
     time.sleep(2)
-    multiseek_page.browser.execute_script('''$("a:contains('remove from results')").first().click()''')
+    multiseek_page.browser.execute_script(
+        '''$("a:contains('remove from results')").first().click()''')
     time.sleep(2)
     multiseek_page.browser.visit(live_server + '/multiseek/results')
     assert "A book with" in multiseek_page.browser.html
@@ -339,11 +385,13 @@ def test_form_save_anon_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
     multiseek_page.browser.find_by_id("add_field").click()
     multiseek_page.get_field("field-1")['close-button'].type(Keys.SPACE)
-    assert len([x for x in multiseek_page.browser.find_by_tag("select") if x['id'] == 'prev-op']) == 1
+    assert len([x for x in multiseek_page.browser.find_by_tag("select") if
+                x['id'] == 'prev-op']) == 1
 
 
 def test_public_report_types_secret_report_invisible(multiseek_page):
-    elem = multiseek_page.browser.find_by_name("_ms_report_type").find_by_tag("option")
+    elem = multiseek_page.browser.find_by_name("_ms_report_type").find_by_tag(
+        "option")
     assert len(elem) == 2
 
 
@@ -354,29 +402,46 @@ def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user):
 
 
 def test_save_form_logged_in(multiseek_admin_page):
-    assert multiseek_admin_page.browser.find_by_id("saveFormButton").visible == True
+    assert multiseek_admin_page.browser.find_by_id(
+        "saveFormButton").visible == True
 
 
 def test_save_form_server_error(multiseek_admin_page):
     NAME = 'testowy formularz'
-    multiseek_admin_page.browser.execute_script("multiseek.SAVE_FORM_URL='/unexistent';")
+    multiseek_admin_page.browser.execute_script(
+        "multiseek.SAVE_FORM_URL='/unexistent';")
+    browser = multiseek_admin_page.browser
+
     # Zapiszmy formularz
     multiseek_admin_page.save_form_as(NAME)
+
     # ... pytanie, czy ma być publiczny:
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.browser.get_alert().accept()
+    time.sleep(1)
+
     # ... po chwili informacja, że BŁĄD!
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.browser.get_alert().accept()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
+
     # ... i selector się NIE pojawia:
-    assert multiseek_admin_page.browser.find_by_id('formsSelector').visible == False
+    assert multiseek_admin_page.browser.find_by_id(
+        'formsSelector').visible == False
     # ... i w bazie też PUSTKA:
     assert SearchForm.objects.all().count() == 0
 
 
 def test_save_form_save(multiseek_admin_page):
+    browser = multiseek_admin_page.browser
+
     assert SearchForm.objects.all().count() == 0
-    multiseek_admin_page.browser.reload()
-    multiseek_admin_page.click_save_button()
-    multiseek_admin_page.dismiss_alert()
+
+    # multiseek_admin_page.browser.reload()
+    with wait_for_alert(browser):
+        multiseek_admin_page.click_save_button()
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.dismiss_alert()
     # Anulowanie nie powinno wyświetlić następnego formularza
 
     NAME = 'testowy formularz'
@@ -384,9 +449,15 @@ def test_save_form_save(multiseek_admin_page):
     # Zapiszmy formularz
     multiseek_admin_page.save_form_as(NAME)
     # ... pytanie, czy ma być publiczny:
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... po chwili informacja, że zapisano
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... i nazwa pojawia się w selectorze
     assert multiseek_admin_page.count_elements_in_form_selector(NAME) == 1
     # ... i w bazie:
@@ -394,12 +465,21 @@ def test_save_form_save(multiseek_admin_page):
 
     # Zapiszmy formularz pod TĄ SAMĄ NAZWĄ
     multiseek_admin_page.save_form_as(NAME)
+
     # ... pytanie, czy ma być publiczny:
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... po chwili informacja, że jest już taki w bazie i czy nadpisać?
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
     # ... po chwili informacja, że zapisano:
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... i nazwa pojawia się w selectorze
     assert multiseek_admin_page.count_elements_in_form_selector(NAME) == 1
     # ... i w bazie jest nadal jeden
@@ -407,12 +487,22 @@ def test_save_form_save(multiseek_admin_page):
 
     # Zapiszmy formularz pod TĄ SAMĄ NAZWĄ ale już NIE nadpisujemy
     multiseek_admin_page.save_form_as(NAME)
+
     # ... pytanie, czy ma być publiczny:
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... po chwili informacja, że jest już taki w bazie i czy nadpisać?
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... po chwili informacja, że ZAPISANY
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... i w bazie jest nadal jeden
     assert SearchForm.objects.all().count() == 1
     # Sprawdźmy, czy jest publiczny
@@ -420,32 +510,42 @@ def test_save_form_save(multiseek_admin_page):
 
     # Nadpiszmy formularz jako nie-publiczny
     multiseek_admin_page.save_form_as(NAME)
+
     # ... pytanie, czy ma być publiczny:
-    multiseek_admin_page.dismiss_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.dismiss_alert()
+
     # ... po chwili informacja, że jest już taki w bazie i czy nadpisać?
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
+
     # ... po chwili informacja, że zapisano:
-    multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until(alert_is_present())
+    with wait_until_no_alert(browser):
+        multiseek_admin_page.accept_alert()
     # ... i jest to już NIE-publiczny:
     assert SearchForm.objects.all()[0].public == False
 
 
 def test_load_form(multiseek_admin_page):
     fld = make_field(
-            multiseek_admin_page.registry.fields[2],
-            multiseek_admin_page.registry.fields[2].ops[1],
-            json.dumps([2000, 2010]))
+        multiseek_admin_page.registry.fields[2],
+        multiseek_admin_page.registry.fields[2].ops[1],
+        json.dumps([2000, 2010]))
     SearchForm.objects.create(
-            name="lol",
-            owner=User.objects.create(username='foo', password='bar'),
-            public=True,
-            data=json.dumps({"form_data": [None, fld]}))
+        name="lol",
+        owner=User.objects.create(username='foo', password='bar'),
+        public=True,
+        data=json.dumps({"form_data": [None, fld]}))
     multiseek_admin_page.load_form_by_name('lol')
 
     field = multiseek_admin_page.extract_field_data(
-            multiseek_admin_page.browser.find_by_id("field-0"))
+        multiseek_admin_page.browser.find_by_id("field-0"))
 
-    assert field['selected'] == unicode(multiseek_admin_page.registry.fields[2].label)
+    assert field['selected'] == unicode(
+        multiseek_admin_page.registry.fields[2].label)
     assert field['value'][0] == 2000
     assert field['value'][1] == 2010
 
@@ -454,7 +554,8 @@ def test_load_form(multiseek_admin_page):
     elem.find_by_text('lol').click()
     multiseek_admin_page.dismiss_alert()
 
-    elem = multiseek_admin_page.browser.find_by_id("formsSelector").find_by_tag("option")
+    elem = multiseek_admin_page.browser.find_by_id(
+        "formsSelector").find_by_tag("option")
     assert elem[0].selected == True
 
 
@@ -473,15 +574,16 @@ def test_bug_2(multiseek_admin_page):
     data = json.dumps({"form_data": form})
 
     user = User.objects.create(
-            username='foo', password='bar')
+        username='foo', password='bar')
 
     SearchForm.objects.create(
-            name="bug-2",
-            owner=user,
-            public=True,
-            data=data)
+        name="bug-2",
+        owner=user,
+        public=True,
+        data=data)
     multiseek_admin_page.load_form_by_name('bug-2')
-    elements = multiseek_admin_page.browser.find_by_css('[name=prev-op]:visible')
+    elements = multiseek_admin_page.browser.find_by_css(
+        '[name=prev-op]:visible')
     for elem in elements:
         if elem.css("visibility") != 'hidden':
             assert elem.value == logic.OR
@@ -489,28 +591,43 @@ def test_bug_2(multiseek_admin_page):
 
 def test_save_ordering_direction(multiseek_admin_page):
     elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
-    multiseek_admin_page.browser.find_by_css(elem).type(Keys.SPACE)
+    browser = multiseek_admin_page.browser
+
+    browser.find_by_css(elem).type(Keys.SPACE)
     multiseek_admin_page.save_form_as("foobar")
     # Should the dialog be public?
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
+
     # Form saved success
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
 
     multiseek_admin_page.reset_form()
     multiseek_admin_page.load_form_by_name("foobar")
-    assert len(multiseek_admin_page.browser.find_by_css("%s:checked" % elem)) == 1
+    assert len(
+        multiseek_admin_page.browser.find_by_css("%s:checked" % elem)) == 1
 
 
 def test_save_ordering_box(multiseek_admin_page):
     elem = "select[name=%s0]" % MULTISEEK_ORDERING_PREFIX
-    select = multiseek_admin_page.browser.find_by_css(elem)
+    browser = multiseek_admin_page.browser
+    select = browser.find_by_css(elem)
     option = select.find_by_css('option[value="2"]')
     assert option.selected == False
 
     option.click()
     multiseek_admin_page.save_form_as("foobar")
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
+
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
+
     multiseek_admin_page.reset_form()
     multiseek_admin_page.load_form_by_name("foobar")
 
@@ -527,9 +644,15 @@ def test_save_report_type(multiseek_admin_page):
 
     option.click()
     multiseek_admin_page.save_form_as("foobar")
+    browser = multiseek_admin_page.browser
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
+    WebDriverWait(browser, 10).until(alert_is_present())
     multiseek_admin_page.accept_alert()
+    WebDriverWait(browser, 10).until_not(alert_is_present())
     multiseek_admin_page.reset_form()
+    time.sleep(1)
     multiseek_admin_page.load_form_by_name("foobar")
 
     select = multiseek_admin_page.browser.find_by_css(elem).first
