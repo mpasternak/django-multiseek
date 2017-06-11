@@ -145,8 +145,8 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
         self.request.POST['overwrite'] = 'true'
         self.request.user = mommy.make(User)
         self.assertEquals(
-            self.msp.get_context_data(),
-            dict(result=SAVED, pk=1))
+            self.msp.get_context_data()['result'],
+            'saved') # dict(result=SAVED, pk=1))
 
         self.assertEquals(SearchForm.objects.all().count(), 1)
         self.assertEquals(SearchForm.objects.all()[0].public, False)

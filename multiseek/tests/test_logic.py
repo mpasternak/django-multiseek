@@ -3,6 +3,7 @@
 import json
 from unittest import TestCase
 
+import pytest
 from mock import MagicMock
 
 from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
@@ -81,6 +82,7 @@ class TestAutocompleteQueryObject(TestCase):
 
         self.assertEquals(q.value_to_web(1), '[1, "True"]')
 
+    @pytest.mark.django_db
     def test_value_to_web_bug(self):
         q = AutocompleteQueryObject('fo', model=SearchForm)
         self.assertEquals(q.value_to_web(1), '[null, ""]')
