@@ -804,7 +804,7 @@ function saveForm(button) {
             } else
                 alert(err);
         }
-    ).error(function () {
+    ).fail(function () {
             alert(error);
         });
 }
