@@ -157,13 +157,16 @@ class MultiseekWebPage(SplinterLoginMixin):
         self.browser.execute_script(code)
 
     def load_form_by_name(self, name):
-        self.browser.reload()
+        with wait_for_page_load(self.browser):
+            self.browser.reload()
         select = self.browser.find_by_id("formsSelector")
         for elem in select.find_by_tag('option'):
             if elem.text == name:
                 elem.click()
                 break
+        WebDriverWait(self.browser, 10).until(alert_is_present())
         self.accept_alert()
+        WebDriverWait(self.browser, 10).until_not(alert_is_present())
         self.browser.reload()
 
     def reset_form(self):
