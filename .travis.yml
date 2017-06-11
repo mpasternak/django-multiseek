@@ -15,15 +15,11 @@ language:
 
 python:
   - "2.7"
-#  - "3.5"
-#  - "3.6"
+  - "3.6"
 
 env:
-  - DJANGO=17
   - DJANGO=18
-#  - DJANGO=19
-#  - DJANGO=110
-#  - DJANGO=111
+  - DJANGO=110
 
 before_install:
   # Repo for newer Node.js versions
