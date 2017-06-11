@@ -15,7 +15,6 @@ language:
 
 python:
   - "2.7"
-  - "3.6"
 
 env:
   - DJANGO=18
