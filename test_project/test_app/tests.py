@@ -50,16 +50,14 @@ FIELD = 'field-0'
 if six.PY3:
     unicode = str
 
-
 def test_multiseek(multiseek_page):
-    # Because of some 1.10 bugs...
-    assert Language.objects.all().count() > 0
+
     field = multiseek_page.get_field(FIELD)
     # On init, the first field will be selected
     assert field['selected'] == multiseek_page.registry.fields[0].label
 
-
 def test_change_field(multiseek_page):
+
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
         unicode(multiseek_registry.YearQueryObject.label)).click()
@@ -80,8 +78,11 @@ def test_change_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.AUTOCOMPLETE
 
-@pytest.mark.django_db
 def test_serialize_form(multiseek_page):
+
+    with wait_for_page_load(multiseek_page.browser):
+        multiseek_page.browser.reload()
+
     frame = multiseek_page.get_frame('frame-0')
     frame['add_field'].click()
     frame['add_field'].click()
@@ -137,6 +138,8 @@ def test_serialize_form(multiseek_page):
 
 
 def test_remove_last_field(multiseek_page):
+    assert Language.objects.count()
+
     field = multiseek_page.get_field('field-0')
     field['close-button'].click()
 
@@ -145,8 +148,9 @@ def test_remove_last_field(multiseek_page):
     alert.accept()
 
 
-@pytest.mark.django_db
 def test_autocomplete_field(multiseek_page):
+    assert Language.objects.count()
+
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
         unicode(multiseek_registry.AuthorQueryObject.label)).click()
