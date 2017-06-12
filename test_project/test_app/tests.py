@@ -21,6 +21,7 @@ from multiseek.logic import RANGE_OPS, EQUAL, CONTAINS
 from multiseek.models import SearchForm
 from multiseek.util import make_field
 from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
+from test_app.conftest import wait_for_page_load
 
 
 class wait_for_alert(object):
@@ -173,9 +174,9 @@ def test_autocomplete_field_bug(multiseek_page):
         unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     multiseek_page.browser.find_by_id("sendQueryButton").click()
-    time.sleep(2)
-    multiseek_page.browser.reload()
-    time.sleep(2)
+    time.sleep(1)
+    with wait_for_page_load(multiseek_page.browser):
+        multiseek_page.browser.reload()
     assert "Server Error (500)" not in multiseek_page.browser.html
 
 
@@ -189,11 +190,13 @@ def test_autocomplete_field_bug_2(multiseek_page):
         unicode(multiseek_registry.AuthorQueryObject.label)).click()
 
     multiseek_page.browser.find_by_id("sendQueryButton").click()
-    time.sleep(2)
-    multiseek_page.browser.reload()
-    time.sleep(2)
+    time.sleep(1)
+    with wait_for_page_load(multiseek_page.browser):
+        multiseek_page.browser.reload()
+
     multiseek_page.browser.find_by_id("add_field").click()
-    time.sleep(2)
+    time.sleep(1)
+
     selects = [tag for tag in multiseek_page.browser.find_by_tag("select") if
                tag['id'] == 'type']
     assert len(selects[0].find_by_tag("option")) != 0
@@ -344,7 +347,7 @@ def test_removed_records(multiseek_page, live_server):
     assert "Second book" in multiseek_page.browser.html
     multiseek_page.browser.execute_script(
         '''$("a:contains('remove from results')").first().click()''')
-    time.sleep(2)
+    time.sleep(1)
 
     multiseek_page.browser.visit(live_server + '/multiseek/results')
     assert "A book with" in multiseek_page.browser.html
@@ -353,10 +356,10 @@ def test_removed_records(multiseek_page, live_server):
 
     multiseek_page.browser.execute_script(
         '''$("a:contains('remove from results')").first().click()''')
-    time.sleep(2)
+    time.sleep(1)
     multiseek_page.browser.execute_script(
         '''$("a:contains('remove from results')").first().click()''')
-    time.sleep(2)
+    time.sleep(1)
     multiseek_page.browser.visit(live_server + '/multiseek/results')
     assert "A book with" in multiseek_page.browser.html
     assert "Second book" not in multiseek_page.browser.html
