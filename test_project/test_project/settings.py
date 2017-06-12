@@ -24,7 +24,7 @@ DATABASES = {
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -163,22 +163,20 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
         }
     },
     'loggers': {
         'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+            'handlers': ['mail_admins', 'console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     }
+
 }
 
 MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
-
-# TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-
-SELENIUM_DRIVER = "Remote"
-SELENIUM_CAPABILITIES = {"browser": "firefox"}
-
-MIGRATION_MODULES = {"test_app": "test_app.migrations"}

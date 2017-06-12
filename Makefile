@@ -23,8 +23,9 @@ clean-test: ## remove test and coverage artifacts
 tests: clean
 	-docker-compose stop
 	-docker-compose rm -f
-	docker-compose run --rm test tox -e py27-django18
+	docker-compose build test
 	docker-compose run --rm test tox -e py27-django110
+	docker-compose run --rm test tox -e py27-django18
 
 # target: setup-lo0
 # Configures loopback interafce so the Selenium Docker container can access
