@@ -15,10 +15,13 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                '', '../db.sqlite')),
+        'NAME': ':memory:'
+
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'NAME': 'multiseek_test_app',
+        # 'HOST': os.getenv("DJANGO_MULTISEEK_DB_HOST", "localhost"),
+        # 'PORT': int(os.getenv("DJANGO_MULTISEEK_DB_PORT", "5433")),
+        # 'USERNAME': 'postgres'
     }
 }
 
@@ -180,3 +183,5 @@ LOGGING = {
 }
 
 MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
+
+ATOMIC_REQUESTS = False
