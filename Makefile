@@ -21,8 +21,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 tests: clean
-	docker-compose build test
-	docker-compose run --rm test
+	-docker-compose stop
+	-docker-compose rm -f
+	docker-compose run --rm test tox
 
 # target: setup-lo0
 # Configures loopback interafce so the Selenium Docker container can access
