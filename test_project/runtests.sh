@@ -8,6 +8,4 @@ yarn install
 python manage.py compress --force -v0
 python manage.py collectstatic --noinput -v0
 
-py.test -sv ../multiseek test_app/tests.py
-
-
+py.test -sv test_app/tests.py ../multiseek
