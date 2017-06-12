@@ -9,6 +9,10 @@ fixture = 'initial_data'
 
 
 def load_fixture(apps, schema_editor):
+    # StackOverflow says it is very wrong to loaddata here, we should get
+    # "old" models and then load... but, this is only a simple test app
+    # so whatever. Just don't use loaddata command in your migrations or
+    # don't be suprised when it stops working... without understanding why.
     call_command('loaddata', fixture, app_label='test_app')
 
 
