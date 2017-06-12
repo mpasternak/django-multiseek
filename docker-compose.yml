@@ -7,8 +7,14 @@ services:
       dockerfile: Dockerfile
     depends_on: 
       - selenium
+      - db
     ports: 
       - "9015:9015"
+
+  db: 
+    image: postgres:9.6
+    ports:
+      - "5432"
 
   selenium:
     image: selenium/standalone-firefox-debug
