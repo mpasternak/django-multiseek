@@ -22,6 +22,9 @@ from multiseek.models import SearchForm
 from multiseek.util import make_field
 from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
 from test_app.conftest import wait_for_page_load
+import pytest
+
+pytestmark = pytest.mark.django_db
 
 
 class wait_for_alert(object):
