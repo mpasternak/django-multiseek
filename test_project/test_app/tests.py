@@ -24,8 +24,6 @@ from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
 from test_app.conftest import wait_for_page_load
 import pytest
 
-pytestmark = pytest.mark.django_db
-
 
 class wait_for_alert(object):
     method_name = 'until'
@@ -145,6 +143,7 @@ def test_remove_last_field(multiseek_page):
     alert.accept()
 
 
+@pytest.mark.django_db
 def test_autocomplete_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
