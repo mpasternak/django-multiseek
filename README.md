@@ -10,11 +10,19 @@ django-multiseek's purpose is to enable end-user of the web page to build a quer
 
 Launch the demo, then look for a book called "A book with a title" written by John Smith.
 
-To install the demo
--------------------
+To run the demo
+---------------
 
-`test_project` demo uses django-bower to handle javascript dependencies, so:
+`test_project` demo uses yarn to handle javascript dependencies, so:
 
-    $ cd test_project
-    $ pip install -r requirements.txt
-    $ python manage.py bower install
+
+    export PYTHONPATH=..:$PYTHONPATH
+    export DJANGO_SETTINGS_MODULE=test_project.settings
+
+    yarn install
+    python manage.py compress --force -v0
+    python manage.py collectstatic --noinput -v0
+
+    python manage.py migrate
+    python manage.py initial_data
+    python manage.py runserver
