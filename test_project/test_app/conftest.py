@@ -4,6 +4,7 @@ import json
 import pytest
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from model_mommy import mommy
 from selenium.webdriver.support.expected_conditions import staleness_of, \
     alert_is_present
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,6 +12,8 @@ from splinter.exceptions import ElementDoesNotExist
 
 from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, \
     get_registry
+from .models import Language, Author, Book
+import datetime
 
 
 class wait_for_page_load(object):
@@ -225,3 +228,24 @@ def splinter_firefox_profile_preferences():
         "startup.homepage_welcome_url": "about:blank",
         "startup.homepage_welcome_url.additional": "about:blank"
     }
+
+
+def initial_data():
+    eng = mommy.make(Language, name="english", description="English language")
+    mommy.make(Language, name="polish", description="Polish language")
+    a1 = mommy.make(Author, last_name="Smith", first_name="John")
+    a2 = mommy.make(Author, last_name="Kovalsky", first_name="Ian")
+    b1 = mommy.make(Book, title="A book with a title", year=2013, language=eng,
+                    no_editors=5, last_updated=datetime.date(2013, 10, 22),
+                    available=True)
+    b2 = mommy.make(Book, title="Second book", year=2000, language=eng,
+                    no_editors=5, last_updated=datetime.date(2013, 9, 22),
+                    available=False)
+
+    b1.authors.add(a1)
+    b2.authors.add(a2)
+
+@pytest.fixture(scope='function')
+def django_db_setup(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        initial_data()
