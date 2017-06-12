@@ -180,3 +180,5 @@ MULTISEEK_REGISTRY = 'test_app.multiseek_registry'
 
 SELENIUM_DRIVER = "Remote"
 SELENIUM_CAPABILITIES = {"browser": "firefox"}
+
+MIGRATION_MODULES = {"test_app": "test_app.migrations"}
