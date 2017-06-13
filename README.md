@@ -2,7 +2,7 @@ django-multiseek
 ================
 
 [![Build Status](https://travis-ci.org/mpasternak/django-multiseek.svg?branch=master)](https://travis-ci.org/mpasternak/django-multiseek)
-[![Coverage Status](https://img.shields.io/coveralls/mpasternak/django-multiseek.svg)](https://coveralls.io/r/mpasternak/django-multiseek?branch=master)
+
 
 Graphical query builder for Django. Supports Django versions 1.8 and 1.10 with Python 2.7. 
 
