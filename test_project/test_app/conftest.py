@@ -33,7 +33,7 @@ class SplinterLoginMixin:
     def login(self, username="admin", password="password"):
         url = self.browser.url
         with wait_for_page_load(self.browser):
-            self.browser.visit(self.live_server + reverse("admin:login"))
+            self.browser.visit(self.live_server_url + reverse("admin:login"))
 
         self.browser.fill('username', username)
         self.browser.fill('password', password)
@@ -48,10 +48,10 @@ class MultiseekWebPage(SplinterLoginMixin):
     """Helper functions, that take care of the multiseek form web page
     """
 
-    def __init__(self, registry, browser, live_server):
+    def __init__(self, registry, browser, live_server_url):
         self.browser = browser
         self.registry = registry
-        self.live_server = live_server
+        self.live_server_url = live_server_url
 
     def get_frame(self, id):
         """Ta funkcja zwraca multiseekową "ramkę" po jej ID
@@ -211,7 +211,7 @@ def multiseek_page(browser, live_server):
     browser.visit(live_server + reverse('multiseek:index'))
     registry = get_registry(settings.MULTISEEK_REGISTRY)
     return MultiseekWebPage(browser=browser, registry=registry,
-                            live_server=live_server)
+                            live_server_url=live_server.url)
 
 
 @pytest.fixture
