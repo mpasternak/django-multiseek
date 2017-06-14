@@ -27,7 +27,7 @@ class YearQueryObject(RangeQueryObject):
 
 class LanguageQueryObject(ValueListQueryObject):
     field_name = 'language__name'
-    values = Language.objects.all()
+    values = Language.objects.all
     label = _("Language")
 
 
