@@ -73,9 +73,14 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
                   for field in registry.field_by_type(
                     AUTOCOMPLETE, public)]))
 
+        def get_values(values):
+            if callable(values):
+                return values()
+            return values
+
         js_value_lists = json.dumps(
             dict([
-                (unicode(field.label), [unicode(x) for x in field.values])
+                (unicode(field.label), [unicode(x) for x in get_values(field.values)])
                 for field in registry.field_by_type(VALUE_LIST, public)]))
 
         initialize_empty_form = True
