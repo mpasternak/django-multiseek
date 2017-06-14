@@ -50,6 +50,44 @@ FIELD = 'field-0'
 if six.PY3:
     unicode = str
 
+@pytest.mark.django_db(transaction=False)
+def test_client_picks_up_database_changes_direct(client):
+    res = client.get("/multiseek/")
+    assert "english" in res.content.decode(res.charset)
+
+    n = Language.objects.all()[0]
+    n.name = "FOOBAR"
+    n.save()
+
+    res = client.get("/multiseek/")
+    print(res.content)
+    assert "FOOBAR" in res.content.decode(res.charset)
+
+
+def test_liveserver_picks_up_database_changes_direct(browser, live_server):
+    with wait_for_page_load(browser):
+        browser.visit(live_server.url)
+    assert "english" in browser.html
+
+    n = Language.objects.all()[0]
+    n.name = "FOOBAR"
+    n.save()
+
+    with wait_for_page_load(browser):
+        browser.reload()
+
+    assert "FOOBAR" in browser.html
+
+def test_liveserver_picks_up_database_changes(multiseek_page):
+    n = Language.objects.all()[0]
+    n.name = "FOOBAR"
+    n.save()
+
+    with wait_for_page_load(multiseek_page.browser):
+        multiseek_page.browser.reload()
+
+    assert "FOOBAR" in multiseek_page.browser.html
+
 def test_multiseek(multiseek_page):
 
     field = multiseek_page.get_field(FIELD)
