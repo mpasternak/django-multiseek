@@ -9,3 +9,5 @@ psycopg2==2.7.1
 # compressor IS needed for liveserver testing. without compressor,
 # it won't find files in YarnFinders
 django-compressor==2.1
+
+bumpversion
