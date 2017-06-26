@@ -14,6 +14,7 @@ from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, \
     get_registry
 from .models import Language, Author, Book
 import datetime
+from builtins import str as text
 
 
 class wait_for_page_load(object):
@@ -154,8 +155,8 @@ class MultiseekWebPage(SplinterLoginMixin):
         code = """
         $("#%(frame)s").multiseekFrame("addField", "%(label)s", "%(op)s", %(value)s);
         """ % dict(frame=frame,
-                   label=unicode(label),
-                   op=unicode(op),
+                   label=text(label),
+                   op=text(op),
                    value=json.dumps(value))
 
         self.browser.execute_script(code)
@@ -207,12 +208,13 @@ class MultiseekWebPage(SplinterLoginMixin):
 
 
 @pytest.fixture
-def multiseek_page(browser, live_server):
+def multiseek_page(browser, live_server, initial_data):
     browser.visit(live_server + reverse('multiseek:index'))
     registry = get_registry(settings.MULTISEEK_REGISTRY)
-    return MultiseekWebPage(browser=browser, registry=registry,
+    page = MultiseekWebPage(browser=browser, registry=registry,
                             live_server_url=live_server.url)
-
+    yield page
+    page.browser.quit()
 
 @pytest.fixture
 def multiseek_admin_page(multiseek_page, admin_user):
@@ -230,6 +232,7 @@ def splinter_firefox_profile_preferences():
     }
 
 
+@pytest.fixture
 def initial_data():
     eng = mommy.make(Language, name="english", description="English language")
     mommy.make(Language, name="polish", description="Polish language")
@@ -244,8 +247,3 @@ def initial_data():
 
     b1.authors.add(a1)
     b2.authors.add(a2)
-
-@pytest.fixture(scope='function')
-def django_db_setup(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        initial_data()

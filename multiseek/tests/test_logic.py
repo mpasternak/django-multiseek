@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-
+from __future__ import unicode_literals
 import json
 from unittest import TestCase
 
@@ -13,9 +13,11 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
 from multiseek.models import SearchForm
 from multiseek.util import make_field
+import six
+from builtins import str as text
 
 test_json = json.dumps({'form_data': [None,
-    dict(field='foo', operator=unicode(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]})
+    dict(field='foo', operator=text(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]})
 
 
 class TestQueryObject(TestCase):
@@ -113,7 +115,7 @@ class TestIntegerQueryObject(TestCase):
         self.assertRaises(
             UnknownOperation, r.real_query, 123, 'foo')
 
-        res = r.real_query(123, unicode(LESSER_OR_EQUAL))
+        res = r.real_query(123, text(LESSER_OR_EQUAL))
         self.assertEquals(
             str(res), "(AND: ('foo__lte', 123))")
 
@@ -176,8 +178,8 @@ class TestMultiseekRegistry(TestCase):
 
     def test_get_recursive_list(self):
         input = [None,
-            [None, [None, dict(field='foo', operator=unicode(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]],
-            dict(field='foo', operator=unicode(EQUALITY_OPS_ALL[0]), value='bar', prev_op="BAD OP")]
+            [None, [None, dict(field='foo', operator=text(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]],
+            dict(field='foo', operator=text(EQUALITY_OPS_ALL[0]), value='bar', prev_op="BAD OP")]
 
         self.assertRaises(
             UnknownOperation,
@@ -190,11 +192,11 @@ class TestMultiseekRegistry(TestCase):
         self.assertEquals(str(res), "(OR: ('foo', 'foo'), ('foo', 'bar'))")
 
     def test_get_query(self):
-        self.assertEquals(
-            str(
-                self.registry.get_query(
-                    json.loads(test_json)['form_data'])),
-            "(AND: ('foo', 'foo'))")
+        print(test_json)
+        print(json.loads(test_json))
+        gq = self.registry.get_query(json.loads(test_json)['form_data'])
+        print(gq)
+        self.assertEquals(str(gq),  "(AND: ('foo', 'foo'))")
 
     def test_get_query_for_model(self):
         self.registry.model = MagicMock()
@@ -202,7 +204,7 @@ class TestMultiseekRegistry(TestCase):
         self.registry.get_query_for_model(None)
 
     def test_recreate_form(self):
-        op = unicode(EQUALITY_OPS_ALL[0])
+        op = text(EQUALITY_OPS_ALL[0])
         fld_noop = dict(field='foo', operator=op, value=u'foo', prev_op=None)
         fld_and = dict(field='foo', operator=op, value=u'foo', prev_op=AND)
         fld_or = dict(field='foo', operator=op, value=u'foo', prev_op=OR)

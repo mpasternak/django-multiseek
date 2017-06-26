@@ -79,6 +79,7 @@ setup(
     license='MIT',
     keywords='django multiseek',
     cmdclass={'test': RunTests},
+    install_requires=[x.strip() for x in open("requirements.txt").readlines()],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

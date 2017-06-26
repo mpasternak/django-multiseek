@@ -16,6 +16,7 @@ from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
     UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 from multiseek.logic import MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
+from builtins import str as text
 
 
 SAVED = 'saved'
@@ -62,14 +63,14 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
 
         fields = registry.get_fields(public)
 
-        js_fields = json.dumps([unicode(x.label) for x in fields])
+        js_fields = json.dumps([text(x.label) for x in fields])
         js_ops = json.dumps(dict(
-            [(unicode(f.label), [unicode(x) for x in f.ops]) for f in fields]))
+            [(text(f.label), [text(x) for x in f.ops]) for f in fields]))
         js_types = json.dumps(
-            dict([(unicode(f.label), f.type) for f in fields]))
+            dict([(text(f.label), f.type) for f in fields]))
 
         js_autocompletes = json.dumps(
-            dict([(unicode(field.label), reverse_or_just_url(field.get_url()))
+            dict([(text(field.label), reverse_or_just_url(field.get_url()))
                   for field in registry.field_by_type(
                     AUTOCOMPLETE, public)]))
 
@@ -80,7 +81,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
 
         js_value_lists = json.dumps(
             dict([
-                (unicode(field.label), [unicode(x) for x in get_values(field.values)])
+                (text(field.label), [text(x) for x in get_values(field.values)])
                 for field in registry.field_by_type(VALUE_LIST, public)]))
 
         initialize_empty_form = True
@@ -91,7 +92,6 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         js_init = registry.recreate_form(form_data)
 
         js_removed = ",".join('"%s"' %x for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
-
         return dict(
             js_fields=js_fields, js_ops=js_ops, js_types=js_types,
             js_autocompletes=js_autocompletes, js_value_lists=js_value_lists,
@@ -111,7 +111,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
 
 def reset_form(request):
     for key in [MULTISEEK_SESSION_KEY, MULTISEEK_SESSION_KEY_REMOVED]:
-        if request.session.has_key(key):
+        if key in request.session:
             del request.session[key]
     return shortcuts.redirect("..")
 
@@ -157,20 +157,20 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
         overwrite = self.request.POST.get('overwrite') == 'true'
 
         if not _json:
-            return dict(result=unicode(ERR_NO_FORM_DATA))
+            return dict(result=text(ERR_NO_FORM_DATA))
 
         try:
             json.loads(_json)
         except ValueError:
-            return dict(result=unicode(ERR_PARSING_DATA))
+            return dict(result=text(ERR_PARSING_DATA))
 
         try:
             get_registry(self.registry).recreate_form(json.loads(_json))
         except (TypeError, UnknownField, ParseError, UnknownOperation):
-            return dict(result=unicode(ERR_LOADING_DATA))
+            return dict(result=text(ERR_LOADING_DATA))
 
         if not name:
-            return dict(result=unicode(ERR_FORM_NAME))
+            return dict(result=text(ERR_FORM_NAME))
 
         if SearchForm.objects.filter(name=name).count():
             if not overwrite:
@@ -232,7 +232,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
                 if type(d[cur]) == list:
                     if d[cur][0] != None:
-                        ret += u' <b>' + unicode(
+                        ret += u' <b>' + text(
                             ugettext_lazy(d[cur][0])).upper() + u'</b> '
                     ret += u'(' + _recur(d[cur][1:]) + u')'
                 else:
@@ -245,9 +245,9 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
                     if impacts_query:
 
-                        if d[cur].has_key('prev_op') and d[cur]['prev_op'] != None:
+                        if 'prev_op' in d[cur] and d[cur]['prev_op'] != None:
                             tmp = d[cur]['prev_op']
-                            ret += u' <b>' + unicode(
+                            ret += u' <b>' + text(
                                 ugettext_lazy(tmp)).upper() + u'</b> '
 
 

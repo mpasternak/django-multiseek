@@ -12,3 +12,4 @@ ipython
 django-bower
 coveralls
 mock
+django-compressor

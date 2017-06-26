@@ -1,17 +1,16 @@
 # -*- encoding: utf-8 -*-
 import json
 import time
+from builtins import str as text
 
+import pytest
 from django.contrib.auth.models import User
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from model_mommy import mommy
-from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.expected_conditions import alert_is_present
 from selenium.webdriver.support.wait import WebDriverWait
-from . import multiseek_registry
-from .models import Author, Language
 
 from multiseek import logic
 from multiseek.logic import AND, MULTISEEK_ORDERING_PREFIX, \
@@ -22,7 +21,8 @@ from multiseek.models import SearchForm
 from multiseek.util import make_field
 from multiseek.views import LAST_FIELD_REMOVE_MESSAGE
 from test_app.conftest import wait_for_page_load
-import pytest
+from . import multiseek_registry
+from .models import Author, Language
 
 
 class wait_for_alert(object):
@@ -50,8 +50,9 @@ FIELD = 'field-0'
 if six.PY3:
     unicode = str
 
-@pytest.mark.django_db(transaction=False)
-def test_client_picks_up_database_changes_direct(client):
+
+@pytest.mark.django_db
+def test_client_picks_up_database_changes_direct(initial_data, client):
     res = client.get("/multiseek/")
     assert "english" in res.content.decode(res.charset)
 
@@ -64,7 +65,10 @@ def test_client_picks_up_database_changes_direct(client):
     assert "FOOBAR" in res.content.decode(res.charset)
 
 
-def test_liveserver_picks_up_database_changes_direct(browser, live_server):
+@pytest.mark.django_db
+def test_liveserver_picks_up_database_changes_direct(initial_data,
+                                                     browser,
+                                                     live_server):
     with wait_for_page_load(browser):
         browser.visit(live_server.url)
     assert "english" in browser.html
@@ -78,6 +82,8 @@ def test_liveserver_picks_up_database_changes_direct(browser, live_server):
 
     assert "FOOBAR" in browser.html
 
+
+@pytest.mark.django_db
 def test_liveserver_picks_up_database_changes(multiseek_page):
     n = Language.objects.all()[0]
     n.name = "FOOBAR"
@@ -88,36 +94,39 @@ def test_liveserver_picks_up_database_changes(multiseek_page):
 
     assert "FOOBAR" in multiseek_page.browser.html
 
-def test_multiseek(multiseek_page):
 
+@pytest.mark.django_db
+def test_multiseek(multiseek_page):
     field = multiseek_page.get_field(FIELD)
     # On init, the first field will be selected
     assert field['selected'] == multiseek_page.registry.fields[0].label
 
-def test_change_field(multiseek_page):
 
+@pytest.mark.django_db
+def test_change_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
-        unicode(multiseek_registry.YearQueryObject.label)).click()
+        text(multiseek_registry.YearQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.RANGE
     assert len(field['value']) == 2
 
     field['type'].find_by_value(
-        unicode(multiseek_registry.LanguageQueryObject.label)).click()
+        text(multiseek_registry.LanguageQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.VALUE_LIST
 
     field['type'].find_by_value(
-        unicode(multiseek_registry.AuthorQueryObject.label)).click()
+        text(multiseek_registry.AuthorQueryObject.label)).click()
 
     field = multiseek_page.get_field(FIELD)
     assert field['inner_type'] == logic.AUTOCOMPLETE
 
-def test_serialize_form(multiseek_page):
 
+@pytest.mark.django_db
+def test_serialize_form(multiseek_page):
     with wait_for_page_load(multiseek_page.browser):
         multiseek_page.browser.reload()
 
@@ -135,7 +144,7 @@ def test_serialize_form(multiseek_page):
 
     field = multiseek_page.get_field('field-0')
     field['type'].find_by_value(
-        unicode(multiseek_registry.YearQueryObject.label)).click()
+        text(multiseek_registry.YearQueryObject.label)).click()
 
     field = multiseek_page.get_field('field-0')
     field['value_widget'][0].type('1999')
@@ -144,23 +153,23 @@ def test_serialize_form(multiseek_page):
     field = multiseek_page.get_field('field-1')
     field['prev-op'].find_by_value("or").click()
     field['type'].find_by_value(
-        unicode(multiseek_registry.LanguageQueryObject.label)).click()
+        text(multiseek_registry.LanguageQueryObject.label)).click()
 
     field = multiseek_page.get_field('field-1')
-    field['value_widget'].find_by_value(unicode(_(u'english'))).click()
+    field['value_widget'].find_by_value(text(_(u'english'))).click()
 
     expected = [None,
-                {u'field': u'Year', u'operator': unicode(RANGE_OPS[0]),
+                {u'field': u'Year', u'operator': text(RANGE_OPS[0]),
                  u'value': u'[1999,2000]', u'prev_op': None},
-                {u'field': u'Language', u'operator': unicode(EQUAL),
+                {u'field': u'Language', u'operator': text(EQUAL),
                  u'value': u'english', u'prev_op': OR},
-                {u'field': u'Title', u'operator': unicode(CONTAINS),
+                {u'field': u'Title', u'operator': text(CONTAINS),
                  u'value': u'aaapud!', u'prev_op': AND},
-                {u'field': u'Title', u'operator': unicode(CONTAINS),
+                {u'field': u'Title', u'operator': text(CONTAINS),
                  u'value': u'aaapud!', u'prev_op': AND},
-                [AND, {u'field': u'Title', u'operator': unicode(CONTAINS),
+                [AND, {u'field': u'Title', u'operator': text(CONTAINS),
                        u'value': u'aaapud!', u'prev_op': None}],
-                [AND, {u'field': u'Title', u'operator': unicode(CONTAINS),
+                [AND, {u'field': u'Title', u'operator': text(CONTAINS),
                        u'value': u'', u'prev_op': None}]
                 ]
 
@@ -175,6 +184,7 @@ def test_serialize_form(multiseek_page):
     assert multiseek_page.serialize() == expected
 
 
+@pytest.mark.django_db
 def test_remove_last_field(multiseek_page):
     assert Language.objects.count()
 
@@ -186,12 +196,13 @@ def test_remove_last_field(multiseek_page):
     alert.accept()
 
 
+@pytest.mark.django_db
 def test_autocomplete_field(multiseek_page):
     assert Language.objects.count()
 
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
-        unicode(multiseek_registry.AuthorQueryObject.label)).click()
+        text(multiseek_registry.AuthorQueryObject.label)).click()
 
     valueWidget = multiseek_page.browser.find_by_id("value")
     valueWidget.type('smit')
@@ -202,14 +213,14 @@ def test_autocomplete_field(multiseek_page):
     expect = [None,
               make_field(
                   multiseek_registry.AuthorQueryObject,
-                  unicode(EQUAL),
+                  text(EQUAL),
                   Author.objects.filter(last_name='Smith')[0].pk,
                   prev_op=None)]
 
     assert got == expect
 
 
-#
+@pytest.mark.django_db
 def test_autocomplete_field_bug(multiseek_page):
     """We fill autocomplete field with NOTHING, then we submit the form,
     then we reload the homepage, and by the time of writing, we see
@@ -217,7 +228,7 @@ def test_autocomplete_field_bug(multiseek_page):
 
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
-        unicode(multiseek_registry.AuthorQueryObject.label)).click()
+        text(multiseek_registry.AuthorQueryObject.label)).click()
 
     multiseek_page.browser.find_by_id("sendQueryButton").click()
     time.sleep(1)
@@ -226,6 +237,7 @@ def test_autocomplete_field_bug(multiseek_page):
     assert "Server Error (500)" not in multiseek_page.browser.html
 
 
+@pytest.mark.django_db
 def test_autocomplete_field_bug_2(multiseek_page):
     """We fill autocomplete field with NOTHING, then we submit the form,
     then we reload the homepage, click the "add field button" and by the
@@ -233,7 +245,7 @@ def test_autocomplete_field_bug_2(multiseek_page):
 
     field = multiseek_page.get_field(FIELD)
     field['type'].find_by_value(
-        unicode(multiseek_registry.AuthorQueryObject.label)).click()
+        text(multiseek_registry.AuthorQueryObject.label)).click()
 
     multiseek_page.browser.find_by_id("sendQueryButton").click()
     time.sleep(1)
@@ -249,6 +261,7 @@ def test_autocomplete_field_bug_2(multiseek_page):
     assert len(selects[1].find_by_tag("option")) != 0
 
 
+@pytest.mark.django_db
 def test_set_join(multiseek_page):
     multiseek_page.browser.find_by_id("add_field").click()
     multiseek_page.browser.execute_script(
@@ -260,8 +273,8 @@ def test_set_join(multiseek_page):
     assert ret == "or"
 
     multiseek_page.add_field(FRAME,
-                             unicode(multiseek_page.registry.fields[0].label),
-                             unicode(multiseek_page.registry.fields[0].ops[0]),
+                             text(multiseek_page.registry.fields[0].label),
+                             text(multiseek_page.registry.fields[0].ops[0]),
                              '')
 
     multiseek_page.browser.execute_script(
@@ -273,6 +286,7 @@ def test_set_join(multiseek_page):
     assert ret == "or"
 
 
+@pytest.mark.django_db
 def test_set_frame_join(multiseek_page):
     multiseek_page.browser.execute_script("""
     $("#frame-0").multiseekFrame('addFrame');
@@ -285,21 +299,23 @@ def test_set_frame_join(multiseek_page):
     assert ret == "or"
 
 
+@pytest.mark.django_db
 def test_add_field_value_list(multiseek_page):
     multiseek_page.add_field(
         FRAME,
         multiseek_registry.LanguageQueryObject.label,
         multiseek_registry.LanguageQueryObject.ops[1],
-        unicode(_(u'polish')))
+        text(_(u'polish')))
 
     field = multiseek_page.get_field("field-1")
-    assert field['type'].value == unicode(
+    assert field['type'].value == text(
         multiseek_registry.LanguageQueryObject.label)
-    assert field['op'].value == unicode(
+    assert field['op'].value == text(
         multiseek_registry.LanguageQueryObject.ops[1])
-    assert field['value'] == unicode(_(u'polish'))
+    assert field['value'] == text(_(u'polish'))
 
 
+@pytest.mark.django_db
 def test_add_field_autocomplete(multiseek_page):
     multiseek_page.add_field(
         FRAME,
@@ -311,6 +327,7 @@ def test_add_field_autocomplete(multiseek_page):
     assert value == 1
 
 
+@pytest.mark.django_db
 def test_add_field_string(multiseek_page):
     multiseek_page.add_field(
         FRAME,
@@ -322,6 +339,7 @@ def test_add_field_string(multiseek_page):
     assert field == 'aaapud!'
 
 
+@pytest.mark.django_db
 def test_add_field_range(multiseek_page):
     multiseek_page.add_field(
         FRAME,
@@ -333,6 +351,7 @@ def test_add_field_range(multiseek_page):
     assert field == "[1000,2000]"
 
 
+@pytest.mark.django_db
 def test_refresh_bug(multiseek_page):
     # There was a bug, that when you submit the form with "OR" operation,
     # and then you refresh the page, the operation is changed to "AND"
@@ -341,8 +360,8 @@ def test_refresh_bug(multiseek_page):
     frame['add_field'].click()
 
     field = multiseek_page.get_field("field-1")
-    field['prev-op'].find_by_value(unicode(_("or"))).click()
-    assert field['prev-op'].value == unicode(_("or"))
+    field['prev-op'].find_by_value(text(_("or"))).click()
+    assert field['prev-op'].value == text(_("or"))
 
     button = multiseek_page.browser.find_by_id("sendQueryButton")
     button.click()
@@ -352,9 +371,10 @@ def test_refresh_bug(multiseek_page):
     multiseek_page.browser.reload()
 
     field = multiseek_page.get_field("field-1")
-    assert field['prev-op'].value == unicode(_("or"))
+    assert field['prev-op'].value == text(_("or"))
 
 
+@pytest.mark.django_db
 def test_frame_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
     multiseek_page.browser.find_by_text("X")[1].click()
@@ -364,27 +384,29 @@ def test_frame_bug(multiseek_page):
         assert "Server Error (500)" not in iframe.html
 
 
+@pytest.mark.django_db
 def test_date_field(multiseek_page):
     field = multiseek_page.get_field("field-0")
 
     field['type'].find_by_value(
-        unicode(multiseek_registry.DateLastUpdatedQueryObject.label)).click()
+        text(multiseek_registry.DateLastUpdatedQueryObject.label)).click()
     field['op'].find_by_value(
-        unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[6])).click()
+        text(multiseek_registry.DateLastUpdatedQueryObject.ops[6])).click()
 
     expected = [None, {u'field': u'Last updated on', u'operator': u'in range',
                        u'value': u'["",""]', u'prev_op': None}]
     assert multiseek_page.serialize() == expected
 
     field['op'].find_by_value(
-        unicode(multiseek_registry.DateLastUpdatedQueryObject.ops[3])).click()
+        text(multiseek_registry.DateLastUpdatedQueryObject.ops[3])).click()
     expected = [None, {u'field': u'Last updated on',
                        u'operator': u'greater or equal to(female gender)',
                        u'value': u'[""]', u'prev_op': None}]
     assert expected == multiseek_page.serialize()
 
 
-def test_removed_records(multiseek_page, live_server):
+@pytest.mark.django_db
+def test_removed_records(multiseek_page, live_server, initial_data):
     """Try to remove a record by hand and check if that fact is properly
     recorded."""
 
@@ -412,24 +434,26 @@ def test_removed_records(multiseek_page, live_server):
     assert "1 record(s) has been removed manually" in multiseek_page.browser.html
 
 
+@pytest.mark.django_db
 def test_form_save_anon_initial(multiseek_page):
     # Without SearchForm objects, the formsSelector is invisible
     elem = multiseek_page.browser.find_by_id("formsSelector")
     assert elem.visible == False
 
 
+@pytest.mark.django_db
 def test_form_save_anon_initial_with_data(multiseek_page):
     mommy.make(SearchForm, public=True)
     multiseek_page.browser.reload()
     elem = multiseek_page.browser.find_by_id("formsSelector")
     assert elem.visible
 
-
+@pytest.mark.django_db
 def test_form_save_anon_form_save_anonymous(multiseek_page):
     # Anonymous users cannot save forms:
     assert len(multiseek_page.browser.find_by_id("saveFormButton")) == 0
 
-
+@pytest.mark.django_db
 def test_form_save_anon_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
     multiseek_page.browser.find_by_id("add_field").click()
@@ -437,25 +461,25 @@ def test_form_save_anon_bug(multiseek_page):
     assert len([x for x in multiseek_page.browser.find_by_tag("select") if
                 x['id'] == 'prev-op']) == 1
 
-
+@pytest.mark.django_db
 def test_public_report_types_secret_report_invisible(multiseek_page):
     elem = multiseek_page.browser.find_by_name("_ms_report_type").find_by_tag(
         "option")
     assert len(elem) == 2
 
-
-def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user):
+@pytest.mark.django_db
+def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user, initial_data):
     elem = multiseek_admin_page.browser.find_by_name("_ms_report_type")
     elem = elem.first.find_by_tag("option")
     assert len(elem) == 3
 
-
-def test_save_form_logged_in(multiseek_admin_page):
+@pytest.mark.django_db
+def test_save_form_logged_in(multiseek_admin_page, initial_data):
     assert multiseek_admin_page.browser.find_by_id(
         "saveFormButton").visible == True
 
-
-def test_save_form_server_error(multiseek_admin_page):
+@pytest.mark.django_db
+def test_save_form_server_error(multiseek_admin_page, initial_data):
     NAME = 'testowy formularz'
     multiseek_admin_page.browser.execute_script(
         "multiseek.SAVE_FORM_URL='/unexistent';")
@@ -480,8 +504,8 @@ def test_save_form_server_error(multiseek_admin_page):
     # ... i w bazie też PUSTKA:
     assert SearchForm.objects.all().count() == 0
 
-
-def test_save_form_save(multiseek_admin_page):
+@pytest.mark.django_db
+def test_save_form_save(multiseek_admin_page, initial_data):
     browser = multiseek_admin_page.browser
 
     assert SearchForm.objects.all().count() == 0
@@ -577,8 +601,8 @@ def test_save_form_save(multiseek_admin_page):
     # ... i jest to już NIE-publiczny:
     assert SearchForm.objects.all()[0].public == False
 
-
-def test_load_form(multiseek_admin_page):
+@pytest.mark.django_db
+def test_load_form(multiseek_admin_page, initial_data):
     fld = make_field(
         multiseek_admin_page.registry.fields[2],
         multiseek_admin_page.registry.fields[2].ops[1],
@@ -593,7 +617,7 @@ def test_load_form(multiseek_admin_page):
     field = multiseek_admin_page.extract_field_data(
         multiseek_admin_page.browser.find_by_id("field-0"))
 
-    assert field['selected'] == unicode(
+    assert field['selected'] == text(
         multiseek_admin_page.registry.fields[2].label)
     assert field['value'][0] == 2000
     assert field['value'][1] == 2010
@@ -607,8 +631,8 @@ def test_load_form(multiseek_admin_page):
         "formsSelector").find_by_tag("option")
     assert elem[0].selected == True
 
-
-def test_bug_2(multiseek_admin_page):
+@pytest.mark.django_db
+def test_bug_2(multiseek_admin_page, initial_data):
     f = multiseek_admin_page.registry.fields[0]
     v = multiseek_admin_page.registry.fields[0].ops[0]
     value = 'foo'
@@ -637,8 +661,8 @@ def test_bug_2(multiseek_admin_page):
         if elem.css("visibility") != 'hidden':
             assert elem.value == logic.OR
 
-
-def test_save_ordering_direction(multiseek_admin_page):
+@pytest.mark.django_db
+def test_save_ordering_direction(multiseek_admin_page, initial_data):
     elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
     browser = multiseek_admin_page.browser
 
@@ -659,8 +683,8 @@ def test_save_ordering_direction(multiseek_admin_page):
     assert len(
         multiseek_admin_page.browser.find_by_css("%s:checked" % elem)) == 1
 
-
-def test_save_ordering_box(multiseek_admin_page):
+@pytest.mark.django_db
+def test_save_ordering_box(multiseek_admin_page, initial_data):
     elem = "select[name=%s0]" % MULTISEEK_ORDERING_PREFIX
     browser = multiseek_admin_page.browser
     select = browser.find_by_css(elem)
@@ -684,8 +708,8 @@ def test_save_ordering_box(multiseek_admin_page):
     option = select.find_by_css('option[value="2"]')
     assert option.selected == True
 
-
-def test_save_report_type(multiseek_admin_page):
+@pytest.mark.django_db
+def test_save_report_type(multiseek_admin_page, initial_data):
     elem = "select[name=%s]" % MULTISEEK_REPORT_TYPE
     select = multiseek_admin_page.browser.find_by_css(elem).first
     option = select.find_by_css('option[value="1"]')

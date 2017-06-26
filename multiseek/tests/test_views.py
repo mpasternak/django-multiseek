@@ -16,6 +16,7 @@ from multiseek.views import MultiseekFormPage, MULTISEEK_SESSION_KEY, \
     OVERWRITE_PROMPT, SAVED, load_form, MultiseekResults
 from test_app import multiseek_registry
 from test_app.models import Author
+from builtins import str as text
 
 
 class Session(dict):
@@ -53,7 +54,7 @@ class TestViews(RegistryMixin, TestCase):
     def test_multiseek(self):
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
             {'form_data':
-                 [None, dict(field="foo", prev_op="or", operator=unicode(EQUALITY_OPS_ALL[0]), value="foo")]})
+                 [None, dict(field="foo", prev_op="or", operator=text(EQUALITY_OPS_ALL[0]), value="foo")]})
 
         mfp = MultiseekFormPage(registry=self.registry)
         mfp.request = self.request
@@ -115,26 +116,26 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
         self.request.POST['json'] = None
         self.assertEquals(
             self.msp.get_context_data(), 
-            dict(result=unicode(ERR_NO_FORM_DATA)))
+            dict(result=text(ERR_NO_FORM_DATA)))
         
         self.request.POST['json'] = "wcale, nie, json"
         self.assertEquals(
             self.msp.get_context_data(),
-            dict(result=unicode(ERR_PARSING_DATA)))
+            dict(result=text(ERR_PARSING_DATA)))
         
         self.request.POST['json'] = '[{"field": "foo", "bad": "field"}]'
         self.assertEquals(
             self.msp.get_context_data(),
-            dict(result=unicode(ERR_LOADING_DATA)))
+            dict(result=text(ERR_LOADING_DATA)))
         
         self.request.POST['json'] = \
             '{"form_data": [{"field": "foo", "operation": "' \
-            + unicode(EQUAL) \
+            + text(EQUAL) \
             + '", "value": "foo"}]}'
         self.request.POST['name'] = ''
         self.assertEquals(
             self.msp.get_context_data(),
-            dict(result=unicode(ERR_FORM_NAME)))
+            dict(result=text(ERR_FORM_NAME)))
 
         sf = mommy.make(SearchForm, name='foo')
         self.request.POST['name'] = 'foo'
@@ -200,8 +201,8 @@ class TestMultiseekResults(RegistryMixin, TestCase):
         self.mr = MultiseekResults(registry=self.registry)
         self.mr.request = self.request
         self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
-            {'form_data': [{'field': unicode(self.registry.fields[0].label),
-              'operation': unicode(self.registry.fields[0].ops[0]),
+            {'form_data': [{'field': text(self.registry.fields[0].label),
+              'operation': text(self.registry.fields[0].ops[0]),
               'value': u'foobar'}]})
 
     def test_post(self):

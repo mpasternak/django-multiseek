@@ -1,8 +1,9 @@
+from __future__ import unicode_literals
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-
+from django.utils.encoding import python_2_unicode_compatible
 
 class SearchFormManager(models.Manager):
     def get_for_user(self, user):
@@ -13,6 +14,7 @@ class SearchFormManager(models.Manager):
             Q(public=True) | Q(owner=user))
 
 
+@python_2_unicode_compatible
 class SearchForm(models.Model):
     name = models.TextField(verbose_name=_("Name"), unique=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -27,5 +29,5 @@ class SearchForm(models.Model):
     class Meta:
         ordering = ['name',]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name

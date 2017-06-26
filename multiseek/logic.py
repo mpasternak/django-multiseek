@@ -15,6 +15,7 @@ except ImportError:
     from django.utils.text import camel_case_to_spaces as get_verbose_name
 from django.utils.translation import ugettext_lazy as _
 from collections import namedtuple
+from builtins import str as text
 
 MULTISEEK_REPORT_TYPE = '_ms_report_type'
 MULTISEEK_ORDERING_PREFIX = "order_"
@@ -211,7 +212,10 @@ class StringQueryObject(QueryObject):
         return True
 
     def value_from_web(self, value):
-        return value.encode('utf-8')
+        if type(value) == text:
+            return value
+        if type(value) == bytes:
+            return value.decode("utf-8")
 
     def value_for_description(self, value):
         value = super(StringQueryObject, self).value_for_description(value)
@@ -267,7 +271,7 @@ class AutocompleteQueryObject(QueryObject):
 
     @classmethod
     def get_label(cls, model):
-        return unicode(model)
+        return text(model)
 
     def value_from_web(self, value):
         # The value should be an integer:
@@ -314,7 +318,7 @@ class AutocompleteQueryObject(QueryObject):
     def get_autocomplete_label(self, elem):
         """This function returns a label for the elem, this label in turn
         will be used by JQuery UI widget."""
-        return unicode(elem)
+        return text(elem)
 
 
 class DateQueryObject(QueryObject):
@@ -542,7 +546,7 @@ class MultiseekRegistry:
 
     def get_field_by_name(self, name):
         for field in self.fields:
-            if unicode(field.label) == name:
+            if text(field.label) == name:
                 return field
 
     def add_field(self, field):
@@ -647,8 +651,7 @@ class MultiseekRegistry:
         if report_types:
             default_retval = self.report_types[0].id
 
-        if data is None or type(data) == list or not data.has_key(
-                'report_type'):
+        if data is None or type(data) == list or 'report_type' not in data:
             return default_retval
 
         try:
@@ -669,7 +672,7 @@ class MultiseekRegistry:
         if type(data) != dict:
             data = {'form_data': data}
 
-        if data.has_key("form_data"):
+        if 'form_data' in data:
             query = self.get_query(data['form_data'])
             retval = self.model.objects.filter(query)
         else:
@@ -684,7 +687,7 @@ class MultiseekRegistry:
         if ordering:
             for no, element in enumerate(self.order_boxes):
                 key, key_dir = get_ordering_key_name(no)
-                if ordering.has_key(key):
+                if key in ordering:
                     try:
                         sort_idx = int(ordering[key])
                     except (TypeError, ValueError):
@@ -698,7 +701,7 @@ class MultiseekRegistry:
                     if not srt:
                         continue
 
-                    if ordering.has_key(key_dir) and ordering[key_dir] == "1":
+                    if key_dir in ordering and ordering[key_dir] == "1":
                         srt = "-" + srt
 
                     sb.append(srt)
@@ -755,7 +758,7 @@ class MultiseekRegistry:
         if type(data) != dict:
             raise ParseError
 
-        if data.has_key('form_data'):
+        if 'form_data' in data:
             result = self.recreate_form_recursive(data['form_data'], info)
         foundation = []
 
@@ -767,7 +770,7 @@ class MultiseekRegistry:
         if ordering:
             for no, elem in enumerate(self.order_boxes):
                 key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
-                if ordering.has_key(key):
+                if key in ordering:
                     result.append(
                         '\t\t'
                         '$("select[name=%s] option").eq(%s).prop("selected", true)' % (
@@ -777,7 +780,7 @@ class MultiseekRegistry:
                     #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % key
                     # )
                 key = key + "_dir"
-                if ordering.has_key(key):
+                if key in ordering:
                     if ordering[key] == "1":
                         result.append(
                             '\t\t'
@@ -787,7 +790,7 @@ class MultiseekRegistry:
                             '$("input[name=%s]").next().toggleClass("checked", true)' % key
                         )
 
-        if data.has_key('report_type'):
+        if 'report_type' in data:
             if data['report_type']:
                 result.append(
                     '\t\t'
@@ -829,7 +832,7 @@ def get_registry(registry):
     """
     :rtype: MultiseekRegistry
     """
-    if type(registry) is str or type(registry) is unicode:
+    if type(registry) is text: #  or type(registry) is unicode:
         return importlib.import_module(registry).registry
 
     return registry
