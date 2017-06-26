@@ -828,11 +828,20 @@ def create_registry(model, *args, **kw):
     return r
 
 
+_cached_registry = {}
+
 def get_registry(registry):
     """
     :rtype: MultiseekRegistry
     """
-    if type(registry) is text: #  or type(registry) is unicode:
-        return importlib.import_module(registry).registry
+    import six
+    if six.PY3:
+        unicode = str
+
+    if type(registry) is str or type(registry) is unicode:
+        if registry not in _cached_registry:
+            m = importlib.import_module(registry).registry
+            _cached_registry[registry] = m
+        return _cached_registry[registry]
 
     return registry
