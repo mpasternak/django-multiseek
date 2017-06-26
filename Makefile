@@ -27,6 +27,10 @@ tests: clean
 	docker-compose run --rm test tox -e py27-django110
 	docker-compose run --rm test tox -e py27-django18
 
+release: clean ## package and upload a release
+	python setup.py sdist upload
+	python setup.py bdist_wheel upload
+
 # target: setup-lo0
 # Configures loopback interafce so the Selenium Docker container can access
 # Django's LiveServer. Used on macOS. 
