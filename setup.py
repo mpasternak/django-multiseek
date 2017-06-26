@@ -62,7 +62,7 @@ else:
 
 setup(
     name='django-multiseek',
-    version='0.9.17',
+    version='0.9.18',
     description='Build a form to seek records using multiple parameters',
     author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
