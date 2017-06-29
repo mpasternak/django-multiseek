@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+from __future__ import unicode_literals
+
 from decimal import Decimal
 import decimal
 import importlib
@@ -16,6 +18,10 @@ except ImportError:
 from django.utils.translation import ugettext_lazy as _
 from collections import namedtuple
 from builtins import str as text
+
+import six
+if six.PY3:
+    unicode = str
 
 MULTISEEK_REPORT_TYPE = '_ms_report_type'
 MULTISEEK_ORDERING_PREFIX = "order_"
@@ -187,7 +193,7 @@ class QueryObject(object):
         """
         ret = None
 
-        if operation in EQUALITY_OPS_ALL:
+        if operation in [text(x) for x in EQUALITY_OPS_ALL]:
             ret = Q(**{self.field_name: value})
 
         else:
@@ -212,7 +218,7 @@ class StringQueryObject(QueryObject):
         return True
 
     def value_from_web(self, value):
-        if type(value) == text:
+        if type(value) == str or type(value) == unicode:
             return value
         if type(value) == bytes:
             return value.decode("utf-8")
@@ -230,10 +236,10 @@ class StringQueryObject(QueryObject):
         if ret is not None:
             return ret
 
-        elif operation in [CONTAINS, NOT_CONTAINS]:
+        elif operation in [text(x) for x in [CONTAINS, NOT_CONTAINS]]:
             ret = Q(**{self.field_name + "__icontains": value})
 
-        elif operation in [STARTS_WITH, NOT_STARTS_WITH]:
+        elif operation in [text(x) for x in [STARTS_WITH, NOT_STARTS_WITH]]:
             ret = Q(**{self.field_name + "__startswith": value})
 
         else:
@@ -405,17 +411,17 @@ class AbstractNumberQueryObject(QueryObject):
         return True
 
     def real_query(self, value, operation):
-        if operation in EQUALITY_OPS_ALL:
+        if operation in [text(x) for x in EQUALITY_OPS_ALL]:
             return Q(**{self.field_name: value})
-        elif operation in DIFFERENT_ALL:
+        elif operation in [text(x) for x in DIFFERENT_ALL]:
             return ~Q(**{self.field_name: value})
-        elif operation in GREATER_OPS_ALL:
+        elif operation in [text(x) for x in GREATER_OPS_ALL]:
             return Q(**{self.field_name + "__gt": value})
-        elif operation in LESSER_OPS_ALL:
+        elif operation in [text(x) for x in LESSER_OPS_ALL]:
             return Q(**{self.field_name + "__lt": value})
-        elif operation in GREATER_OR_EQUAL_OPS_ALL:
+        elif operation in [text(x) for x in GREATER_OR_EQUAL_OPS_ALL]:
             return Q(**{self.field_name + "__gte": value})
-        elif operation in LESSER_OR_EQUAL_OPS_ALL:
+        elif operation in [text(x) for x in LESSER_OR_EQUAL_OPS_ALL]:
             return Q(**{self.field_name + "__lte": value})
         else:
             raise UnknownOperation(operation)
@@ -593,7 +599,7 @@ class MultiseekRegistry:
         if f is None:
             raise UnknownField("Field type %r not found!" % field)
 
-        if field['operator'] not in f.ops:
+        if field['operator'] not in [text(x) for x in f.ops]:
             raise UnknownOperation(
                 "Operation %r not valid for field %r" % (
                     field['operator'], field['field']))
@@ -834,9 +840,6 @@ def get_registry(registry):
     """
     :rtype: MultiseekRegistry
     """
-    import six
-    if six.PY3:
-        unicode = str
 
     if type(registry) is str or type(registry) is unicode:
         if registry not in _cached_registry:

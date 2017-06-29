@@ -19,6 +19,10 @@ from builtins import str as text
 test_json = json.dumps({'form_data': [None,
     dict(field='foo', operator=text(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]})
 
+def py3k_test_string(s):
+    if six.PY3:
+        return s.replace("u'", "'").replace('u"', '"').replace(", u'", ", '")
+    return s
 
 class TestQueryObject(TestCase):
     def setUp(self):
@@ -34,7 +38,7 @@ class TestQueryObject(TestCase):
     def test_query_for(self):
         res = self.q.query_for("foobar", DIFFERENT)
         self.assertEquals(
-            """(NOT (AND: ('foo', 'foobar')))""",
+            py3k_test_string("(NOT (AND: (u'foo', u'foobar')))"),
             str(res))
 
     def test_query_for_raises(self):
@@ -51,15 +55,17 @@ class TestStringQueryObject(TestCase):
 
     def test_query_for(self):
         args = [
-            (DIFFERENT, "(NOT (AND: ('foo', 'foobar')))"),
-            (NOT_CONTAINS, "(NOT (AND: ('foo__icontains', 'foobar')))"),
+            (DIFFERENT, "(NOT (AND: (u'foo', u'foobar')))"),
+            (NOT_CONTAINS, "(NOT (AND: (u'foo__icontains', u'foobar')))"),
             (NOT_STARTS_WITH,
-             "(NOT (AND: ('foo__startswith', 'foobar')))")
+             "(NOT (AND: (u'foo__startswith', u'foobar')))")
         ]
 
         for param, result in args:
             res = self.q.real_query("foobar", param)
-            self.assertEquals(str(res), result)
+            self.assertEquals(
+                str(res),
+                py3k_test_string(result))
 
     def test_query_for_raises(self):
         self.assertRaises(
@@ -102,8 +108,13 @@ class TestRangeQueryObject(TestCase):
             UnknownOperation, r.real_query, [1, 2], 'foo')
 
         res = r.real_query([1, 2], RANGE_OPS[1])
-        maybe_this = str(res) == "(NOT (AND: ('foo__gte', 1), ('foo__lte', 2)))"
-        maybe_that = str(res) == "(NOT (AND: ('foo__lte', 2), ('foo__gte', 1)))"
+
+        s1 = "(NOT (AND: (u'foo__gte', 1), (u'foo__lte', 2)))"
+        maybe_this = str(res) == py3k_test_string(s1)
+
+        s2 = "(NOT (AND: (u'foo__lte', 2), (u'foo__gte', 1)))"
+        maybe_that = str(res) == py3k_test_string(s2)
+
         self.assert_(maybe_that or maybe_this)
 
 
@@ -117,7 +128,8 @@ class TestIntegerQueryObject(TestCase):
 
         res = r.real_query(123, text(LESSER_OR_EQUAL))
         self.assertEquals(
-            str(res), "(AND: ('foo__lte', 123))")
+            str(res),
+            py3k_test_string("(AND: (u'foo__lte', 123))"))
 
 
 class TestMultiseekRegistry(TestCase):
@@ -174,7 +186,8 @@ class TestMultiseekRegistry(TestCase):
         res = self.registry.parse_field(
             dict(field='foo', operator=EQUALITY_OPS_ALL[0], value='foo', prev_op=None))
 
-        self.assertEquals(str(res), "(AND: ('foo', 'foo'))")
+        self.assertEquals(str(res),
+                          py3k_test_string("(AND: (u'foo', u'foo'))"))
 
     def test_get_recursive_list(self):
         input = [None,
@@ -189,14 +202,15 @@ class TestMultiseekRegistry(TestCase):
         input[2]['prev_op'] = OR
 
         res = self.registry.get_query_recursive(input)
-        self.assertEquals(str(res), "(OR: ('foo', 'foo'), ('foo', 'bar'))")
+        self.assertEquals(
+            str(res),
+            py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))"))
 
     def test_get_query(self):
-        print(test_json)
-        print(json.loads(test_json))
         gq = self.registry.get_query(json.loads(test_json)['form_data'])
-        print(gq)
-        self.assertEquals(str(gq),  "(AND: ('foo', 'foo'))")
+        self.assertEquals(
+            str(gq),
+            py3k_test_string("(AND: (u'foo', u'foo'))"))
 
     def test_get_query_for_model(self):
         self.registry.model = MagicMock()

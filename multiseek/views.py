@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from __future__ import unicode_literals
 import json
 
 from django.http.response import HttpResponse, Http404, HttpResponseServerError, \
@@ -226,15 +227,15 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
         def _recur(d):
             cur = 0
-            ret = u''
+            ret = ''
 
             while cur < len(d):
 
                 if type(d[cur]) == list:
                     if d[cur][0] != None:
-                        ret += u' <b>' + text(
-                            ugettext_lazy(d[cur][0])).upper() + u'</b> '
-                    ret += u'(' + _recur(d[cur][1:]) + u')'
+                        ret += ' <b>' + text(
+                            ugettext_lazy(d[cur][0])).upper() + '</b> '
+                    ret += '(' + _recur(d[cur][1:]) + ')'
                 else:
                     f = registry.get_field_by_name(d[cur]['field'])
 
@@ -247,8 +248,8 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
                         if 'prev_op' in d[cur] and d[cur]['prev_op'] != None:
                             tmp = d[cur]['prev_op']
-                            ret += u' <b>' + text(
-                                ugettext_lazy(tmp)).upper() + u'</b> '
+                            ret += ' <b>' + text(
+                                ugettext_lazy(tmp)).upper() + '</b> '
 
 
                         ret += '%s %s %s' % (d[cur]['field'].lower(),
@@ -262,9 +263,9 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
 
         if data is None:
-            return u''
+            return ''
         if not data.get('form_data'):
-            return u''
+            return ''
 
         return _recur(data['form_data'][1:])
 

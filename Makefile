@@ -26,6 +26,8 @@ tests: clean
 	docker-compose build test
 	docker-compose run --rm test tox -e py27-django110
 	docker-compose run --rm test tox -e py27-django18
+	docker-compose run --rm test tox -e py36-django110
+	docker-compose run --rm test tox -e py36-django18
 
 release: clean ## package and upload a release
 	python setup.py sdist upload
