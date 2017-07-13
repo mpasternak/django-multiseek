@@ -12,7 +12,6 @@ from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.views.generic import TemplateView, ListView
 from django.utils.translation import ugettext_lazy as _, ugettext_lazy
 
-import simplejson
 from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
     UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 from multiseek.logic import MULTISEEK_REPORT_TYPE
@@ -320,11 +319,11 @@ class MultiseekModelAutocomplete(View):
                  'label': self.original.get_autocomplete_label(elem),
                  'value': self.original.get_autocomplete_label(elem)})
 
-        return HttpResponse(simplejson.dumps(ret),
+        return HttpResponse(json.dumps(ret),
                             content_type='application/json')
 
 
-JSON_OK = HttpResponse(simplejson.dumps({'status':"OK"}), content_type='application/json')
+JSON_OK = HttpResponse(json.dumps({'status':"OK"}), content_type='application/json')
 
 def manually_add_or_remove(request, pk, add=True):
     data = request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
