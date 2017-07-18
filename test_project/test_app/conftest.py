@@ -247,3 +247,12 @@ def initial_data():
 
     b1.authors.add(a1)
     b2.authors.add(a2)
+
+    # Some more books by author 3 so we can test pagination...
+
+    a3 = mommy.make(Author, last_name="Novak", first_name="Stephan")
+    fr = mommy.make(Language, name="french", description="French language")
+    for a in range(0, 50):
+        b3 = mommy.make(Book, title="Book no %i" % a, year=1999, language=fr)
+        b3.authors.add(a3)
+                   
