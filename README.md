@@ -20,6 +20,10 @@ To run the demo
 `test_project` demo uses yarn to handle javascript dependencies, so:
 
 
+    mkvirtualenv django-multiseek
+    pip install -r requirements_dev.txt
+
+    cd test_project
     export PYTHONPATH=..:$PYTHONPATH
     export DJANGO_SETTINGS_MODULE=test_project.settings
 
