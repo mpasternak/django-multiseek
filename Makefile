@@ -38,3 +38,6 @@ release: clean ## package and upload a release
 # Django's LiveServer. Used on macOS. 
 setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
+
+travis: 
+	docker-compose run --rm test tox -e py36-django110
