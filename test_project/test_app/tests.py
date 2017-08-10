@@ -67,23 +67,6 @@ def test_client_picks_up_database_changes_direct(initial_data, client):
     assert "FOOBAR" in res.content.decode(res.charset)
 
 
-@pytest.mark.django_db
-def test_liveserver_picks_up_database_changes_direct(initial_data,
-                                                     browser,
-                                                     live_server):
-    with wait_for_page_load(browser):
-        browser.visit(live_server.url)
-    assert "english" in browser.html
-
-    n = Language.objects.all()[0]
-    n.name = "FOOBAR"
-    n.save()
-
-    with wait_for_page_load(browser):
-        browser.reload()
-
-    assert "FOOBAR" in browser.html
-
 
 @pytest.mark.django_db
 def test_liveserver_picks_up_database_changes(multiseek_page):
@@ -104,6 +87,23 @@ def test_multiseek(multiseek_page):
     # On init, the first field will be selected
     assert field['selected'] == multiseek_page.registry.fields[0].label
 
+
+@pytest.mark.django_db
+def test_liveserver_picks_up_database_changes_direct(initial_data,
+                                                     browser,
+                                                     live_server):
+    with wait_for_page_load(browser):
+        browser.visit(live_server.url)
+    assert "english" in browser.html
+
+    n = Language.objects.all()[0]
+    n.name = "FOOBAR"
+    n.save()
+
+    with wait_for_page_load(browser):
+        browser.reload()
+
+    assert "FOOBAR" in browser.html
 
 @pytest.mark.django_db
 def test_change_field(multiseek_page):
