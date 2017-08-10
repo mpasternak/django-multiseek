@@ -13,4 +13,4 @@ echo "set"
 set
 echo "-----------------------------------------------------------------------------"
 
-py.test -vv test_app/tests.py ../multiseek
+py.test -s -vvv test_app/tests.py ../multiseek

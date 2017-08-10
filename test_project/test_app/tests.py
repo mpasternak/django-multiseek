@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+from __future__ import print_function
+
 import json
 import time
 from builtins import str as text
@@ -85,15 +87,16 @@ def test_liveserver_picks_up_database_changes_direct(initial_data,
 
 @pytest.mark.django_db
 def test_liveserver_picks_up_database_changes(multiseek_page):
+    print("init")
     n = Language.objects.all()[0]
     n.name = "FOOBAR"
     n.save()
-
+    print("before wait")
     with wait_for_page_load(multiseek_page.browser):
         multiseek_page.browser.reload()
-
+    print("post wait")
     assert "FOOBAR" in multiseek_page.browser.html
-
+    print("function done")
 
 @pytest.mark.django_db
 def test_multiseek(multiseek_page):
@@ -448,10 +451,12 @@ def test_form_save_anon_initial_with_data(multiseek_page):
     elem = multiseek_page.browser.find_by_id("formsSelector")
     assert elem.visible
 
+
 @pytest.mark.django_db
 def test_form_save_anon_form_save_anonymous(multiseek_page):
     # Anonymous users cannot save forms:
     assert len(multiseek_page.browser.find_by_id("saveFormButton")) == 0
+
 
 @pytest.mark.django_db
 def test_form_save_anon_bug(multiseek_page):
@@ -461,22 +466,27 @@ def test_form_save_anon_bug(multiseek_page):
     assert len([x for x in multiseek_page.browser.find_by_tag("select") if
                 x['id'] == 'prev-op']) == 1
 
+
 @pytest.mark.django_db
 def test_public_report_types_secret_report_invisible(multiseek_page):
     elem = multiseek_page.browser.find_by_name("_ms_report_type").find_by_tag(
         "option")
     assert len(elem) == 2
 
+
 @pytest.mark.django_db
-def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user, initial_data):
+def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user,
+                                         initial_data):
     elem = multiseek_admin_page.browser.find_by_name("_ms_report_type")
     elem = elem.first.find_by_tag("option")
     assert len(elem) == 3
+
 
 @pytest.mark.django_db
 def test_save_form_logged_in(multiseek_admin_page, initial_data):
     assert multiseek_admin_page.browser.find_by_id(
         "saveFormButton").visible == True
+
 
 @pytest.mark.django_db
 def test_save_form_server_error(multiseek_admin_page, initial_data):
@@ -503,6 +513,7 @@ def test_save_form_server_error(multiseek_admin_page, initial_data):
         'formsSelector').visible == False
     # ... i w bazie też PUSTKA:
     assert SearchForm.objects.all().count() == 0
+
 
 @pytest.mark.django_db
 def test_save_form_save(multiseek_admin_page, initial_data):
@@ -601,6 +612,7 @@ def test_save_form_save(multiseek_admin_page, initial_data):
     # ... i jest to już NIE-publiczny:
     assert SearchForm.objects.all()[0].public == False
 
+
 @pytest.mark.django_db
 def test_load_form(multiseek_admin_page, initial_data):
     fld = make_field(
@@ -630,6 +642,7 @@ def test_load_form(multiseek_admin_page, initial_data):
     elem = multiseek_admin_page.browser.find_by_id(
         "formsSelector").find_by_tag("option")
     assert elem[0].selected == True
+
 
 @pytest.mark.django_db
 def test_bug_2(multiseek_admin_page, initial_data):
@@ -661,6 +674,7 @@ def test_bug_2(multiseek_admin_page, initial_data):
         if elem.css("visibility") != 'hidden':
             assert elem.value == logic.OR
 
+
 @pytest.mark.django_db
 def test_save_ordering_direction(multiseek_admin_page, initial_data):
     elem = "input[name=%s1_dir]" % MULTISEEK_ORDERING_PREFIX
@@ -682,6 +696,7 @@ def test_save_ordering_direction(multiseek_admin_page, initial_data):
     multiseek_admin_page.load_form_by_name("foobar")
     assert len(
         multiseek_admin_page.browser.find_by_css("%s:checked" % elem)) == 1
+
 
 @pytest.mark.django_db
 def test_save_ordering_box(multiseek_admin_page, initial_data):
@@ -707,6 +722,7 @@ def test_save_ordering_box(multiseek_admin_page, initial_data):
     select = multiseek_admin_page.browser.find_by_css(elem)
     option = select.find_by_css('option[value="2"]')
     assert option.selected == True
+
 
 @pytest.mark.django_db
 def test_save_report_type(multiseek_admin_page, initial_data):
