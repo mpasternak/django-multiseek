@@ -63,23 +63,18 @@ def test_client_picks_up_database_changes_direct(initial_data, client):
     n.save()
 
     res = client.get("/multiseek/")
-    print(res.content)
     assert "FOOBAR" in res.content.decode(res.charset)
 
 
 
 @pytest.mark.django_db
 def test_liveserver_picks_up_database_changes(multiseek_page):
-    print("init")
     n = Language.objects.all()[0]
     n.name = "FOOBAR"
     n.save()
-    print("before wait")
     with wait_for_page_load(multiseek_page.browser):
         multiseek_page.browser.reload()
-    print("post wait")
     assert "FOOBAR" in multiseek_page.browser.html
-    print("function done")
 
 @pytest.mark.django_db
 def test_multiseek(multiseek_page):

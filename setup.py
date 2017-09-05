@@ -1,4 +1,4 @@
-﻿# -*- encoding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 
 import os
 import sys
@@ -60,6 +60,14 @@ else:
     os.system('django-admin.py compilemessages')
     os.chdir(dir)
 
+def reqs(f):
+    for elem in open(f).readlines():
+        elem = elem.strip()
+        if elem.startswith("#") or elem.startswith("-r"):
+            continue
+        yield elem
+
+        
 setup(
     name='django-multiseek',
     version='0.9.20',
@@ -79,7 +87,8 @@ setup(
     license='MIT',
     keywords='django multiseek',
     cmdclass={'test': RunTests},
-    install_requires=[x.strip() for x in open("requirements.txt").readlines()],
+    install_requires=reqs("requirements.txt"),
+    tests_require=reqs("requirements_dev.txt"),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
