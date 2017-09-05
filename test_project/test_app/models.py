@@ -1,6 +1,10 @@
 from __future__ import unicode_literals
 from django.db import models
-from builtins import str as text
+try:
+    from builtins import str as text
+except ImportError:
+    text = unicode
+    
 from django.utils.encoding import python_2_unicode_compatible
 
 
