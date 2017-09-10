@@ -255,11 +255,18 @@ $.widget("multiseek.multiseekValueListValue", $.multiseek.multiseekBaseValue, {
 
 $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
+
+        var currentDate = new Date()
+        var day = currentDate.getDate()
+        var month = currentDate.getMonth() + 1
+        var year = currentDate.getFullYear()
+        var today = year + "-" + month + "-" + day;
+
         var element = $('<input/>')
             .attr("type", "text")
             .attr("name", "value")
             .attr("id", "value")
-            .attr("placeholder", gettext("today"))
+            .attr("placeholder", today)
             .attr("size", "10");
 
         installDatePicker(element);
