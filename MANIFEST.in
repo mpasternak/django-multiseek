@@ -1,4 +1,4 @@
-include *.rst *.txt PLAN README LICENSE README.md
+include *.rst *.txt PLAN README LICENSE README.md requirements.txt
 recursive-include multiseek *.html *.css *.js *.py *.po *.mo
 recursive-include multiseek/static/multiseek jquery* multiseek* style*
 exclude test_app

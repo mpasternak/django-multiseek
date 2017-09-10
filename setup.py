@@ -4,6 +4,37 @@ import os
 import sys
 
 from setuptools import setup, Command
+from distutils.command.build import build as _build
+from setuptools.command.install_lib import install_lib as _install_lib
+from distutils.cmd import Command
+
+
+class compile_translations(Command):
+    description = 'compile message catalogs to MO files via django compilemessages'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        curdir = os.getcwd()
+        os.chdir(os.path.realpath('multiseek'))
+        from django.core.management import call_command
+        call_command('compilemessages')
+        os.chdir(curdir)
+
+
+class build(_build):
+    sub_commands = [('compile_translations', None)] + _build.sub_commands
+
+
+class install_lib(_install_lib):
+    def run(self):
+        self.run_command('compile_translations')
+        _install_lib.run(self)
 
 
 
@@ -86,9 +117,8 @@ setup(
     long_description=read("README.md"),
     license='MIT',
     keywords='django multiseek',
-    cmdclass={'test': RunTests},
-    install_requires=reqs("requirements.txt"),
-    tests_require=reqs("requirements_dev.txt"),
+    install_requires=list(reqs("requirements.txt")),
+    tests_require=list(reqs("requirements_dev.txt")),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
@@ -103,5 +133,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
+    ],
+    cmdclass={'build': build, 'install_lib': install_lib,
+              'compile_translations': compile_translations,
+              'test': RunTests},
 )
