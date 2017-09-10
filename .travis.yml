@@ -1,7 +1,6 @@
 addons:
   apt:
     packages:
-      - xvfb
       - gettext
 
 #cache:
@@ -21,6 +20,7 @@ env:
   - DJANGO=110
 
 before_install:
+  - ls -las /usr/bin/msgfmt
   # Repo for newer Node.js versions
   - curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
   # Repo for Yarn
@@ -30,8 +30,6 @@ before_install:
   - sudo apt-get install -y -qq yarn
   - sudo yarn global add bower grunt-cli npm
 
-  - export DISPLAY=:99.0
-  - Xvfb $DISPLAY &
   - docker-compose build
 
 services: 
