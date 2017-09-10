@@ -333,11 +333,20 @@ class DateQueryObject(QueryObject):
 
     def value_from_web(self, value):
         value = json.loads(value)
-        if not value:
-            value = str(datetime.now().date())
         if len(value) == 1:
+            if not value[0]:
+                # assume 'today'
+                return datetime.now().date()
             return parse(value[0]).date()
-        return [parse(value[0]).date(), parse(value[1]).date()]
+
+        ret = []
+        for elem in value:
+            if not elem:
+                # assume 'today'
+                ret.append(datetime.now().date())
+                continue
+            ret.append(parse(elem).date())
+        return ret
 
     def real_query(self, value, operation):
         if operation in RANGE_OPS:
