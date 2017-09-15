@@ -1,23 +1,23 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
-import json
 
-from django.http.response import HttpResponse, Http404, HttpResponseServerError, \
-    HttpResponseRedirect
-from django.views.generic.base import View
+import json
+from builtins import str as text
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
-from django.views.generic import TemplateView, ListView
+from django.http.response import HttpResponse, Http404, \
+    HttpResponseServerError, \
+    HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _, ugettext_lazy
+from django.views.generic import TemplateView, ListView
+from django.views.generic.base import View
 
-from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
-    UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 from multiseek.logic import MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
-from builtins import str as text
-
+from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
+    UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 
 SAVED = 'saved'
 OVERWRITE_PROMPT = 'overwrite-prompt'
@@ -109,6 +109,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             MULTISEEK_REPORT_TYPE=MULTISEEK_REPORT_TYPE)
 
 
+@never_cache
 def reset_form(request):
     for key in [MULTISEEK_SESSION_KEY, MULTISEEK_SESSION_KEY_REMOVED]:
         if key in request.session:
@@ -347,6 +348,7 @@ def manually_add_or_remove(request, pk, add=True):
     return JSON_OK
 
 
+@never_cache
 def remove_by_hand(request, pk):
     """Add a record's PK to a list of manually removed records.
 
@@ -357,10 +359,14 @@ def remove_by_hand(request, pk):
     """
     return manually_add_or_remove(request, pk)
 
+
+@never_cache
 def remove_from_removed_by_hand(request, pk):
     """Cancel manual record removal."""
     return manually_add_or_remove(request, pk, add=False)
 
+
+@never_cache
 def reenable_removed_by_hand(request):
     request.session[MULTISEEK_SESSION_KEY_REMOVED] = []
     return HttpResponseRedirect(request.META.get('HTTP_REFERER') or '..')
