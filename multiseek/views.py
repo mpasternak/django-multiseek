@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import json
 from builtins import str as text
+
+import sys
 from django import shortcuts, http
 from django.core.urlresolvers import reverse
 from django.db import transaction
@@ -310,7 +312,9 @@ class MultiseekModelAutocomplete(View):
         return self.qobj.model.objects.all()
 
     def get(self, request, *args, **kwargs):
-        q = request.GET.get('term', '').encode('utf-8')
+        q = request.GET.get('term', '')
+        if sys.version_info < (3, 0):
+            q = q.encode('utf-8')
 
         qset = self.original.get_autocomplete_query(q)
 
