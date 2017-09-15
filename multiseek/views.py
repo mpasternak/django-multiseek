@@ -11,6 +11,7 @@ from django.http.response import HttpResponse, Http404, \
     HttpResponseServerError, \
     HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _, ugettext_lazy
+from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView
 from django.views.generic.base import View
 
