@@ -270,6 +270,8 @@ class AutocompleteQueryObject(QueryObject):
         if url is not None:
             self.url = url
 
+        self._cache = {}
+
     def get_url(self):
         if self.url:
             return self.url
@@ -280,18 +282,22 @@ class AutocompleteQueryObject(QueryObject):
         return text(model)
 
     def value_from_web(self, value):
+        if value in self._cache:
+            return self._cache[value]
+
         # The value should be an integer:
         try:
-            value = int(value)
+            value_i = int(value)
         except (TypeError, ValueError):
             return
 
         try:
-            value = self.model.objects.get(pk=value)
+            ret = self.model.objects.get(pk=value_i)
         except self.model.DoesNotExist:
             return
 
-        return value
+        self._cache[value] = ret
+        return ret
 
     def value_to_web(self, value):
         try:
