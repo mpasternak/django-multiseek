@@ -40,9 +40,8 @@ setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
 
 travis: clean
-	docker-compose stop
-	docker-compose rm -f
-	docker-compose run test tox -e py36-django110
+	docker-compose up -d
+	tox -e py36-django110
 
 travis-coveralls:
 	docker-compose run test tox -e coveralls

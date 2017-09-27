@@ -1,20 +1,6 @@
 version: '2'
 services:
 
-  test:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - TRAVIS
-      - TRAVIS_JOB_ID
-      - TRAVIS_BRANCH
-    depends_on: 
-      - selenium
-      - db
-    ports: 
-      - "9015:9015"
-
   db: 
     image: postgres:9.6
     ports:
