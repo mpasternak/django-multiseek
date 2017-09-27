@@ -5,6 +5,10 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+    environment:
+      - TRAVIS
+      - TRAVIS_JOB_ID
+      - TRAVIS_BRANCH
     depends_on: 
       - selenium
       - db

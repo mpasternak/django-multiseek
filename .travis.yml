@@ -32,4 +32,7 @@ install:
   - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}
 
 script:
-  - docker-compose run --rm test tox -e ${TOXENV}
+  - make travis
+
+after_success:
+  - make travis-coveralls

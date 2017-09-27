@@ -42,4 +42,7 @@ setup-lo0:
 travis: clean
 	docker-compose stop
 	docker-compose rm -f
-	docker-compose run --rm test tox -e py36-django110
+	docker-compose run test tox -e py36-django110
+
+travis-coveralls:
+	docker-compose run test tox -e coveralls
