@@ -14,7 +14,7 @@ services:
 
   test:
     image: python:3.6
-    env:
+    environment:
       - TRAVIS
       - TRAVIS_JOB_ID
       - TRAVIS_BRANCH
