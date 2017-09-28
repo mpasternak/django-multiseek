@@ -12,6 +12,3 @@ install:
 
 script:
   - make tests-via-docker
-
-after_success:
-  - make travis-coveralls

@@ -40,6 +40,4 @@ install-yarn-packages-via-docker:
 
 tests-via-docker: install-yarn-packages-via-docker
 	docker-compose up -d
-
 	docker-compose exec test /bin/bash -c "cd /usr/src/app && pip install tox && tox && tox coveralls"
-
