@@ -30,9 +30,10 @@ services:
   - docker
 
 install:
+  - /sbin/ifconfig
   - npm install -g bower
   - pip install -r requirements.txt -r requirements_dev.txt
-  - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}
+  - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}  
 
 script:
   - make travis
