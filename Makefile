@@ -20,18 +20,14 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-tests: clean
-	-docker-compose stop
-	-docker-compose rm -f
-	docker-compose build test
-	docker-compose run --rm test tox -e py27-django110
-	docker-compose run --rm test tox -e py27-django18
-	docker-compose run --rm test tox -e py36-django110
-	docker-compose run --rm test tox -e py36-django18
-
 release: clean ## package and upload a release
 	python setup.py sdist upload
 	python setup.py bdist_wheel upload
+
+tests:
+	pip install tox
+	tox
+
 
 # target: setup-lo0
 # Configures loopback interafce so the Selenium Docker container can access
@@ -39,9 +35,9 @@ release: clean ## package and upload a release
 setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
 
-travis: clean
-	docker-compose up -d
-	tox -e py36-django110
+install-yarn-packages-via-docker:
+	docker run --rm -v `pwd`:/usr/src/app -it node:alpine /bin/sh -c "cd /usr/src/app/test_project && yarn"
 
-travis-coveralls:
-	docker-compose run test tox -e coveralls
+tests-via-docker: install-yarn-packages-via-docker
+	docker-compose up -d
+	docker-compose exec test /bin/bash -c "cd /usr/src/app && pip install tox && tox"

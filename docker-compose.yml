@@ -1,6 +1,6 @@
-version: '2'
-services:
+version: '3'
 
+services:
   db: 
     image: postgres:9.6
     ports:
@@ -11,3 +11,16 @@ services:
     ports:
       - "4444:4444"
       - "5900:5900"
+
+  test:
+    image: python:3.6
+    ports:
+      - 9500
+    volumes:
+      - .:/usr/src/app
+    links:
+      - db
+      - selenium
+    entrypoint:
+      - /bin/sleep
+      - "3600"
