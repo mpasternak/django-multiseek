@@ -2,7 +2,7 @@ django-multiseek
 ================
 
 [![Build Status](https://travis-ci.org/mpasternak/django-multiseek.svg?branch=master)](https://travis-ci.org/mpasternak/django-multiseek)
-
+[![Coverage Status](https://coveralls.io/repos/github/mpasternak/django-multiseek/badge.svg?branch=master)](https://coveralls.io/github/mpasternak/django-multiseek?branch=master)
 
 Graphical query builder for Django. 
 
