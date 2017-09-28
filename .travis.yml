@@ -1,19 +1,11 @@
-language:
-  python
-
-python:
-  - "3.6"
-
-cache: pip
+services: 
+  - docker
 
 env:
   - DJANGO=110
 
 before_install:
   - make install-yarn-packages-via-docker
-
-services: 
-  - docker
 
 install:
   - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}  
