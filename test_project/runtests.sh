@@ -8,5 +8,3 @@ python manage.py compress --force -v0
 python manage.py collectstatic --noinput -v0
 
 py.test --cov=../multiseek test_app/tests.py ../multiseek
-
-coveralls
