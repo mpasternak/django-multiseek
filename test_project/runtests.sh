@@ -7,9 +7,6 @@ export PYTHONIOENCODING=utf_8
 python manage.py compress --force -v0
 python manage.py collectstatic --noinput -v0
 
-echo "-----------------------------------------------------------------------------"
-echo "set"
-set
-echo "-----------------------------------------------------------------------------"
+py.test --cov=../multiseek test_app/tests.py ../multiseek
 
-py.test -s -vvv test_app/tests.py ../multiseek
+coveralls
