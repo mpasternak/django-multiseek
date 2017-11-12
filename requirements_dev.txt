@@ -6,10 +6,8 @@ mock==2.0.0
 model_mommy==1.3.2
 psycopg2==2.7.1
 selenium>=3.4.0,<3.5.0
-
 # compressor IS needed for liveserver testing. without compressor,
 # it won't find files in YarnFinders
 django-compressor==2.1
-
 bumpversion
 tox
