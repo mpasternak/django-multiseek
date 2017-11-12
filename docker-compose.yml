@@ -22,6 +22,8 @@ services:
       - 9500
     volumes:
       - .:/usr/src/app
+    environment:
+      - DJANGO_LIVE_TEST_SERVER_ADDRESS=test
     links:
       - db
       - selenium
