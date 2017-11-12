@@ -94,7 +94,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             initialize_empty_form = False
         js_init = registry.recreate_form(form_data)
 
-        js_removed = ",".join('"%s"' %x for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
+        js_removed = ",".join('"%(x)s"' % dict(x=x) for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
         return dict(
             js_fields=js_fields, js_ops=js_ops, js_types=js_types,
             js_autocompletes=js_autocompletes, js_value_lists=js_value_lists,
