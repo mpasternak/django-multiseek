@@ -18,12 +18,11 @@ services:
       - TRAVIS
       - TRAVIS_JOB_ID
       - TRAVIS_BRANCH
+      - DJANGO_LIVE_TEST_SERVER_ADDRESS=test
     ports:
       - 9500
     volumes:
       - .:/usr/src/app
-    environment:
-      - DJANGO_LIVE_TEST_SERVER_ADDRESS=test
     links:
       - db
       - selenium
