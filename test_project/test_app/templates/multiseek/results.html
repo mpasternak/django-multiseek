@@ -32,7 +32,8 @@
                     <span class="multiseek-element">{{ element }}</span>
                 <a onclick="multiseek.removeFromResults('{{ element.pk }}');"
                    class="multiseek-remove-from-results">
-                    {% trans "remove from results" %}</a>
+                    ❌
+                </a>
                 </li>
             {% empty %}
                 {% trans "No elements" %}

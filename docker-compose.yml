@@ -7,7 +7,7 @@ services:
       - "5432"
 
   selenium:
-    image: selenium/standalone-firefox-debug:3.4.0
+    image: selenium/standalone-firefox-debug:3.7.1
     ports:
       - "4444:4444"
       - "5900:5900"
@@ -23,9 +23,15 @@ services:
       - 9500
     volumes:
       - .:/usr/src/app
+      - pip_cache:/root/.cache/pip
+      - yarn_cache:/usr/local/share/.cache/yarn/v1
     links:
       - db
       - selenium
     entrypoint:
       - /bin/sleep
       - "3600"
+
+volumes:
+  pip_cache:
+  yarn_cache:
