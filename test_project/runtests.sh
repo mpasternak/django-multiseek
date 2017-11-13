@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+set
+
 export PYTHONPATH=..:$PYTHONPATH
 export DJANGO_SETTINGS_MODULE=test_project.settings
 export PYTHONIOENCODING=utf_8
