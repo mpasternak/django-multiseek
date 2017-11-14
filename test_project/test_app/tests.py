@@ -412,7 +412,7 @@ def test_removed_records(multiseek_page, live_server, initial_data):
     assert "A book with" in multiseek_page.browser.html
     assert "Second book" in multiseek_page.browser.html
     multiseek_page.browser.execute_script(
-        '''$("a:contains('remove from results')").first().click()''')
+        '''$("a:contains('❌')").first().click()''')
     time.sleep(1)
 
     multiseek_page.browser.visit(live_server + '/multiseek/results')
@@ -421,10 +421,10 @@ def test_removed_records(multiseek_page, live_server, initial_data):
     assert "1 record(s) has been removed manually" in multiseek_page.browser.html
 
     multiseek_page.browser.execute_script(
-        '''$("a:contains('remove from results')").first().click()''')
+        '''$("a:contains('❌')").first().click()''')
     time.sleep(1)
     multiseek_page.browser.execute_script(
-        '''$("a:contains('remove from results')").first().click()''')
+        '''$("a:contains('❌')").first().click()''')
     time.sleep(1)
     multiseek_page.browser.visit(live_server + '/multiseek/results')
     assert "A book with" in multiseek_page.browser.html
