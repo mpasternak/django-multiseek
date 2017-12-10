@@ -6,7 +6,7 @@ from builtins import str as text
 
 import sys
 from django import shortcuts, http
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.http.response import HttpResponse, Http404, \
