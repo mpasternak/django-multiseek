@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('name', models.TextField(unique=True, verbose_name='Name')),
                 ('public', models.BooleanField(default=False, help_text='Make this search publicly available?', verbose_name='Public')),
                 ('data', models.TextField(verbose_name='Form data (JSON)')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['name'],
