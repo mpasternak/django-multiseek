@@ -11,9 +11,9 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r'^$', root),
-    url(r'^multiseek/', include('multiseek.urls', namespace='multiseek')),
+    url(r'^multiseek/', include(('multiseek.urls', 'multiseek'), namespace="multiseek")),
 
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     url(r'^i18n/$',
         JavaScriptCatalog.as_view(packages=['multiseek']),
