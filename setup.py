@@ -94,6 +94,11 @@ else:
 def reqs(f):
     for elem in open(f).readlines():
         elem = elem.strip()
+        if elem.find("#egg=")>0:
+            ign, egg = elem.split("#egg=")
+            yield egg
+            continue
+        
         if elem.startswith("#") or elem.startswith("-r"):
             continue
         yield elem
