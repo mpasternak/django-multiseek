@@ -7,7 +7,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 class SearchFormManager(models.Manager):
     def get_for_user(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous is True:
             return self.filter(public=True)
 
         return self.filter(
