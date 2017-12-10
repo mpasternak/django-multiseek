@@ -3,21 +3,16 @@
 from django.conf.urls import  url
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from django.views.i18n import javascript_catalog
+from django.views.i18n import JavaScriptCatalog
 
 from multiseek import views
 from multiseek.views import load_form, MultiseekModelRouter
 
-js_info_dict = {
-    'domain': 'djangojs',
-    'packages': ('multiseek',),
-}
 
 urlpatterns = [
 
     url(r'^jsi18n/$',
-        javascript_catalog,
-        js_info_dict,
+        JavaScriptCatalog.as_view(packages=['multiseek']),
         name="js_i18n"),
 
     url(r'^$', csrf_exempt(views.MultiseekFormPage.as_view(
