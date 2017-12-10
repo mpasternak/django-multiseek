@@ -2,15 +2,10 @@ version: '3'
 
 services:
   db: 
-    image: postgres:9.6
-    ports:
-      - "5432"
+    image: postgres:latest
 
   selenium:
-    image: selenium/standalone-firefox-debug:3.7.1
-    ports:
-      - "4444:4444"
-      - "5900:5900"
+    image: selenium/standalone-firefox:latest
 
   test:
     image: python:3.6
@@ -19,8 +14,6 @@ services:
       - TRAVIS_JOB_ID
       - TRAVIS_BRANCH
       - DJANGO_LIVE_TEST_SERVER_ADDRESS=test
-    ports:
-      - 9500
     volumes:
       - .:/usr/src/app
       - pip_cache:/root/.cache/pip

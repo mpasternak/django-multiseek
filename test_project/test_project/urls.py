@@ -2,25 +2,21 @@ from django.conf import settings
 from django.conf.urls import include, url, static
 
 from django.contrib import admin
-from django.views.i18n import javascript_catalog
+from django.views.i18n import JavaScriptCatalog
+
 from test_app.views import root
 
 admin.autodiscover()
 
-js_info_dict = {
-    'domain': 'djangojs',
-    'packages': ('multiseek',),
-}
 
 urlpatterns = [
     url(r'^$', root),
-    url(r'^multiseek/', include('multiseek.urls', namespace='multiseek')),
+    url(r'^multiseek/', include(('multiseek.urls', 'multiseek'), namespace="multiseek")),
 
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     url(r'^i18n/$',
-        javascript_catalog,
-        js_info_dict,
+        JavaScriptCatalog.as_view(packages=['multiseek']),
         name="js_i18n_catalog")
 
 ] + static.static(settings.STATIC_URL,

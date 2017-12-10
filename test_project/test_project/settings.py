@@ -118,18 +118,18 @@ if django.VERSION > (1,8):
         'django.template.context_processors.i18n'
     ]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-)
+]
 
 if 'test' in sys.argv:
     # XXX IMPORTANT XXX Remove LocaleMiddleware in case of testing
-    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES[:-1]
+    MIDDLEWARE = MIDDLEWARE[:-1]
 
 ROOT_URLCONF = 'test_project.urls'
 

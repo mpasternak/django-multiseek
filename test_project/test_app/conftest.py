@@ -3,7 +3,7 @@ import json
 
 import pytest
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from model_mommy import mommy
 from selenium.webdriver.support.expected_conditions import staleness_of, \
     alert_is_present

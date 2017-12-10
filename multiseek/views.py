@@ -6,7 +6,7 @@ from builtins import str as text
 
 import sys
 from django import shortcuts, http
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.http.response import HttpResponse, Http404, \
@@ -62,7 +62,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
     def get_context_data(self):
         registry = get_registry(self.registry)
 
-        public = self.request.user.is_anonymous()
+        public = self.request.user.is_anonymous is True
 
         fields = registry.get_fields(public)
 
@@ -126,7 +126,7 @@ def load_form(request, search_form_pk):
     except SearchForm.DoesNotExist:
         return HttpResponseNotFound()
 
-    if request.user.is_anonymous() and not sf.public:
+    if request.user.is_anonymous is True and not sf.public:
         return HttpResponseForbidden()
 
     request.session[MULTISEEK_SESSION_KEY] = sf.data
@@ -273,7 +273,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         return _recur(data['form_data'][1:])
 
     def get_context_data(self, **kwargs):
-        public = self.request.user.is_anonymous()
+        public = self.request.user.is_anonymous is True
         report_type = get_registry(self.registry) \
             .get_report_type(self.get_multiseek_data(),
                              only_public=public)

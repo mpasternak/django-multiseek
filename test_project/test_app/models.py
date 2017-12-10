@@ -29,7 +29,7 @@ class Author(models.Model):
 class Book(models.Model):
     title = models.TextField()
     year = models.IntegerField()
-    language = models.ForeignKey(Language)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
     authors = models.ManyToManyField(Author)
     no_editors = models.IntegerField()
     last_updated = models.DateField(auto_now=True)
