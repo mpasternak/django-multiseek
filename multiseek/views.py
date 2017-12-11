@@ -62,7 +62,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
     def get_context_data(self):
         registry = get_registry(self.registry)
 
-        public = self.request.user.is_anonymous is True
+        public = self.request.user.is_anonymous
 
         fields = registry.get_fields(public)
 
