@@ -126,7 +126,7 @@ def load_form(request, search_form_pk):
     except SearchForm.DoesNotExist:
         return HttpResponseNotFound()
 
-    if request.user.is_anonymous is True and not sf.public:
+    if request.user.is_anonymous and not sf.public:
         return HttpResponseForbidden()
 
     request.session[MULTISEEK_SESSION_KEY] = sf.data

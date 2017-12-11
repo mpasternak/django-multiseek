@@ -38,6 +38,6 @@ setup-lo0:
 install-yarn-packages-via-docker:
 	docker run --rm -v `pwd`:/usr/src/app -it node:alpine /bin/sh -c "cd /usr/src/app/test_project && yarn"
 
-tests-via-docker: install-yarn-packages-via-docker
+tests-via-docker: clean install-yarn-packages-via-docker
 	docker-compose up -d
 	docker-compose exec test /bin/bash -c "cd /usr/src/app && pip install tox && tox"
