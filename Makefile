@@ -5,7 +5,7 @@ clean-build: ## remove build artifacts
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
-	rm -rf test_project/splintershots test_project/node_modules test_project/components
+	rm -rf test_project/splintershots test_project/node_modules test_project/components || true
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 
