@@ -5,7 +5,7 @@ services:
     image: postgres:latest
 
   selenium:
-    image: selenium/standalone-firefox:latest
+    image: selenium/standalone-firefox:3.9.1-actinium
 
   test:
     image: python:3.6
