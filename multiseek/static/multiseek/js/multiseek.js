@@ -504,12 +504,14 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
             .attr("class", "multiseekFrame")
             .append([
 
-                $('<div/>')
+                $("<div/>")
+                    .addClass("large-1 small-2 columns")
                     .attr("id", "prev-op-placeholder"),
 
                 $("<fieldset />")
                     .attr("class", "multiseek-fieldset")
                     .append([
+                        
                         $("<div/>")
                             .attr("id", "field-list"),
                         $("<button/>")
