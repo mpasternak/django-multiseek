@@ -1,4 +1,3 @@
-
 if (typeof String.prototype.startsWith != 'function') {
     // see below for better implementation!
     String.prototype.startsWith = function (str) {
@@ -27,17 +26,17 @@ multiseek = {
 };
 
 function installDatePicker(element) {
-      if (element.fdatepicker) {
-          /* Use foundation date picker if available */
-          element.fdatepicker({
-              format: multiseekDateFormat,
-              weekStart: multiseekDateWeekStart,
-              language: djangoLanguageCode
-          });
-      } else {
-          /* Use JQuery datepicker if available */
-          element.datepicker($.datepicker.regional[djangoLanguageCode]);
-      }
+    if (element.fdatepicker) {
+        /* Use foundation date picker if available */
+        element.fdatepicker({
+            format: multiseekDateFormat,
+            weekStart: multiseekDateWeekStart,
+            language: djangoLanguageCode
+        });
+    } else {
+        /* Use JQuery datepicker if available */
+        element.datepicker($.datepicker.regional[djangoLanguageCode]);
+    }
 }
 
 
@@ -301,10 +300,10 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
                 // add extra field
 
                 var element = $("<input/>")
-                                .attr("type", "text")
-                                .attr("id", "value_max")
-                                .attr("placeholder", gettext('today'))
-                                .attr("size", "10");
+                    .attr("type", "text")
+                    .attr("id", "value_max")
+                    .attr("placeholder", gettext('today'))
+                    .attr("size", "10");
 
                 installDatePicker(element);
                 row.append([
@@ -416,7 +415,8 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
             p[this.getWidgetType()]("destroy"); // children().remove();
         } catch (Error) {
 
-        };
+        }
+        ;
 
         p.children().remove();
         var x = p.append("<span/>");
@@ -720,7 +720,8 @@ function formReportType() {
 
 function formAsJSON() {
     return JSON.stringify(
-        {'form_data': $("#frame-0").multiseekFrame("serialize"),
+        {
+            'form_data': $("#frame-0").multiseekFrame("serialize"),
             'ordering': formOrdering(),
             'report_type': formReportType()
         }); // <div id=#frame-0>
@@ -784,7 +785,7 @@ function saveForm(button) {
                 } else if (data.result == 'overwrite-prompt') {
                     if (confirm(form_exists)) {
                         dct['overwrite'] = true;
-                        $.post(url, dct,function (data, textStatus, jqXHR) {
+                        $.post(url, dct, function (data, textStatus, jqXHR) {
                             if (textStatus == 'success') {
                                 if (data.result == 'saved') {
                                     alert(saved);
@@ -794,8 +795,8 @@ function saveForm(button) {
                             } else
                                 alert(error);
                         }).error(function () {
-                                alert(error);
-                            });
+                            alert(error);
+                        });
                         ;
                     }
                 } else
@@ -805,8 +806,8 @@ function saveForm(button) {
                 alert(err);
         }
     ).fail(function () {
-            alert(error);
-        });
+        alert(error);
+    });
 }
 
 function loadForm(select) {
@@ -815,9 +816,9 @@ function loadForm(select) {
     $(select).val('');
 }
 
-window.multiseek.removeFromResults = function(id){
+window.multiseek.removeFromResults = function (id) {
     var elem = $("#multiseek-row-" + id).children(".multiseek-element");
-    var deco =  elem.css("text-decoration");
+    var deco = elem.css("text-decoration");
 
     var css_after = 'line-through';
     var url = '../remove-from-results/' + id
@@ -827,7 +828,7 @@ window.multiseek.removeFromResults = function(id){
         url = '../remove-from-removed-results/' + id;
     }
 
-    $.get(url, function(data){
+    $.get(url, function (data) {
         elem.css("text-decoration", css_after);
     });
 }
