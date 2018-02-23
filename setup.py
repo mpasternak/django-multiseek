@@ -122,8 +122,8 @@ setup(
     long_description=read("README.md"),
     license='MIT',
     keywords='django multiseek',
-    install_requires=["Django>=1.10"] + list(reqs("requirements.txt")),
-    tests_require=["Django>=1.10"] + list(reqs("requirements_dev.txt")),
+    install_requires=["Django>=1.11"] + list(reqs("requirements.txt")),
+    tests_require=["Django>=1.11"] + list(reqs("requirements_dev.txt")),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
