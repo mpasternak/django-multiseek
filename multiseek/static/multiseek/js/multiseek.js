@@ -621,13 +621,14 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                 $("<div/>")
                     .addClass("large-5 small-10 columns")
                     .attr("id", "value-placeholder"),
+
                 $("<div/>")
                     .addClass("large-1 small-2 columns")
                     .append(
                         $("<button/>")
-                            .text("X")
+                            .html("&times;")
                             .attr("id", "close-button")
-                            .addClass('small radius ')
+                            .addClass('button alert tiny round close-button')
                             .data("for-field", id)
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
