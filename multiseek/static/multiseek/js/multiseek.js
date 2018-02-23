@@ -596,7 +596,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     getFieldDOM: function (id) {
         // USES DOM
         return $("<field/>")
-            .addClass("row collapse")
+            .addClass("row")
             .attr("id", id)
             .append([
                 $("<div/>")
