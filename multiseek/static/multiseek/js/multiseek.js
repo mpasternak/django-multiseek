@@ -174,58 +174,27 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
     _create: function () {
         this.element.append(
             $("<div/>")
-                .addClass("row collapse")
+                .addClass("row")
                 .append([
-                    $("<div/>")
-                        .addClass("small-11 columns")
-                        .append(
-                            $("<input data-type=search id='value' type='text' />")
-                                .prop("data-id", null)
-                                .autocomplete({
-                                    minLength: 0,
-                                    source: this.options.url,
-                                    change: $.proxy(function (evt, ui) {
-                                        if (ui.item == null) {
-                                            alert(gettext("Please select value from the dropdown."));
-                                            this.element.children().first().val('');
-                                            this.element.children().first().focus();
-                                        }
-
-                                        $(evt.target).attr("data-id", null);
-                                    }, this),
-                                    select: function (evt, ui) {
-
-                                        $(evt.target).prop("data-id", ui.item.id);
-                                    }
-                                })
-                        ),
-                    $("<div/>")
-                        .addClass("small-1 columns")
-                        .append(
-                            $("<span/>")
-                                .addClass("postfix")
-                                .text("X")
-                                .click($.proxy(function () {
-                                    this.element.find("#value").first().val('').focus();
-                                }, this))
-                        )
+                    $("<select/>")
+                        .attr("data-autocomplete-light-url", this.options.url)
+                        .attr("data-autocomplete-light-function", "select2")
+                        .attr("data-autocomplete-light-language", djangoLanguageCode)
+                        .attr("data-html", "")
+                        .attr("data-placeholder", gettext("Enter something..."))
                 ])
         );
-
-        this.element.find("#value").focus(function (evt) {
-            $(evt.target).autocomplete("search");
-        });
     },
 
     getValue: function () {
-        return this.element.find("#value").first().prop("data-id");
+        return this.element.find("select").val();
     },
 
     setValue: function (value) {
         value = $.parseJSON(value);
-        var elem = this.element.find("#value").first();
-        elem.prop("data-id", value[0]);
-        elem.val(value[1]);
+        var select = this.element.find("select");
+        var option = new Option(value[1], value[0], true, true);
+        select.append(option).trigger('change');
     }
 });
 
@@ -511,7 +480,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                 $("<fieldset />")
                     .attr("class", "multiseek-fieldset")
                     .append([
-                        
+
                         $("<div/>")
                             .attr("id", "field-list"),
                         $("<button/>")
