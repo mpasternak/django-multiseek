@@ -1,4 +1,3 @@
-
 if (typeof String.prototype.startsWith != 'function') {
     // see below for better implementation!
     String.prototype.startsWith = function (str) {
@@ -27,17 +26,17 @@ multiseek = {
 };
 
 function installDatePicker(element) {
-      if (element.fdatepicker) {
-          /* Use foundation date picker if available */
-          element.fdatepicker({
-              format: multiseekDateFormat,
-              weekStart: multiseekDateWeekStart,
-              language: djangoLanguageCode
-          });
-      } else {
-          /* Use JQuery datepicker if available */
-          element.datepicker($.datepicker.regional[djangoLanguageCode]);
-      }
+    if (element.fdatepicker) {
+        /* Use foundation date picker if available */
+        element.fdatepicker({
+            format: multiseekDateFormat,
+            weekStart: multiseekDateWeekStart,
+            language: djangoLanguageCode
+        });
+    } else {
+        /* Use JQuery datepicker if available */
+        element.datepicker($.datepicker.regional[djangoLanguageCode]);
+    }
 }
 
 
@@ -175,58 +174,27 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
     _create: function () {
         this.element.append(
             $("<div/>")
-                .addClass("row collapse")
+                .addClass("row")
                 .append([
-                    $("<div/>")
-                        .addClass("small-11 columns")
-                        .append(
-                            $("<input data-type=search id='value' type='text' />")
-                                .prop("data-id", null)
-                                .autocomplete({
-                                    minLength: 0,
-                                    source: this.options.url,
-                                    change: $.proxy(function (evt, ui) {
-                                        if (ui.item == null) {
-                                            alert(gettext("Please select value from the dropdown."));
-                                            this.element.children().first().val('');
-                                            this.element.children().first().focus();
-                                        }
-
-                                        $(evt.target).attr("data-id", null);
-                                    }, this),
-                                    select: function (evt, ui) {
-
-                                        $(evt.target).prop("data-id", ui.item.id);
-                                    }
-                                })
-                        ),
-                    $("<div/>")
-                        .addClass("small-1 columns")
-                        .append(
-                            $("<span/>")
-                                .addClass("postfix")
-                                .text("X")
-                                .click($.proxy(function () {
-                                    this.element.find("#value").first().val('').focus();
-                                }, this))
-                        )
+                    $("<select/>")
+                        .attr("data-autocomplete-light-url", this.options.url)
+                        .attr("data-autocomplete-light-function", "select2")
+                        .attr("data-autocomplete-light-language", djangoLanguageCode)
+                        .attr("data-html", "")
+                        .attr("data-placeholder", gettext("Enter something..."))
                 ])
         );
-
-        this.element.find("#value").focus(function (evt) {
-            $(evt.target).autocomplete("search");
-        });
     },
 
     getValue: function () {
-        return this.element.find("#value").first().prop("data-id");
+        return this.element.find("select").val();
     },
 
     setValue: function (value) {
         value = $.parseJSON(value);
-        var elem = this.element.find("#value").first();
-        elem.prop("data-id", value[0]);
-        elem.val(value[1]);
+        var select = this.element.find("select");
+        var option = new Option(value[1], value[0], true, true);
+        select.append(option).trigger('change');
     }
 });
 
@@ -301,10 +269,10 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
                 // add extra field
 
                 var element = $("<input/>")
-                                .attr("type", "text")
-                                .attr("id", "value_max")
-                                .attr("placeholder", gettext('today'))
-                                .attr("size", "10");
+                    .attr("type", "text")
+                    .attr("id", "value_max")
+                    .attr("placeholder", gettext('today'))
+                    .attr("size", "10");
 
                 installDatePicker(element);
                 row.append([
@@ -416,7 +384,8 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
             p[this.getWidgetType()]("destroy"); // children().remove();
         } catch (Error) {
 
-        };
+        }
+        ;
 
         p.children().remove();
         var x = p.append("<span/>");
@@ -504,12 +473,14 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
             .attr("class", "multiseekFrame")
             .append([
 
-                $('<div/>')
+                $("<div/>")
+                    .addClass("large-1 small-2 columns")
                     .attr("id", "prev-op-placeholder"),
 
                 $("<fieldset />")
                     .attr("class", "multiseek-fieldset")
                     .append([
+
                         $("<div/>")
                             .attr("id", "field-list"),
                         $("<button/>")
@@ -596,7 +567,7 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
     getFieldDOM: function (id) {
         // USES DOM
         return $("<field/>")
-            .addClass("row collapse")
+            .addClass("row")
             .attr("id", id)
             .append([
                 $("<div/>")
@@ -619,13 +590,14 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                 $("<div/>")
                     .addClass("large-5 small-10 columns")
                     .attr("id", "value-placeholder"),
+
                 $("<div/>")
                     .addClass("large-1 small-2 columns")
                     .append(
                         $("<button/>")
-                            .text("X")
+                            .html("&times;")
                             .attr("id", "close-button")
-                            .addClass('small radius ')
+                            .addClass('button alert tiny round close-button')
                             .data("for-field", id)
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
@@ -720,7 +692,8 @@ function formReportType() {
 
 function formAsJSON() {
     return JSON.stringify(
-        {'form_data': $("#frame-0").multiseekFrame("serialize"),
+        {
+            'form_data': $("#frame-0").multiseekFrame("serialize"),
             'ordering': formOrdering(),
             'report_type': formReportType()
         }); // <div id=#frame-0>
@@ -784,7 +757,7 @@ function saveForm(button) {
                 } else if (data.result == 'overwrite-prompt') {
                     if (confirm(form_exists)) {
                         dct['overwrite'] = true;
-                        $.post(url, dct,function (data, textStatus, jqXHR) {
+                        $.post(url, dct, function (data, textStatus, jqXHR) {
                             if (textStatus == 'success') {
                                 if (data.result == 'saved') {
                                     alert(saved);
@@ -794,8 +767,8 @@ function saveForm(button) {
                             } else
                                 alert(error);
                         }).error(function () {
-                                alert(error);
-                            });
+                            alert(error);
+                        });
                         ;
                     }
                 } else
@@ -805,8 +778,8 @@ function saveForm(button) {
                 alert(err);
         }
     ).fail(function () {
-            alert(error);
-        });
+        alert(error);
+    });
 }
 
 function loadForm(select) {
@@ -815,9 +788,9 @@ function loadForm(select) {
     $(select).val('');
 }
 
-window.multiseek.removeFromResults = function(id){
+window.multiseek.removeFromResults = function (id) {
     var elem = $("#multiseek-row-" + id).children(".multiseek-element");
-    var deco =  elem.css("text-decoration");
+    var deco = elem.css("text-decoration");
 
     var css_after = 'line-through';
     var url = '../remove-from-results/' + id
@@ -827,7 +800,7 @@ window.multiseek.removeFromResults = function(id){
         url = '../remove-from-removed-results/' + id;
     }
 
-    $.get(url, function(data){
+    $.get(url, function (data) {
         elem.css("text-decoration", css_after);
     });
 }

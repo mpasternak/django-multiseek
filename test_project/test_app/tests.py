@@ -194,6 +194,16 @@ def test_remove_last_field(multiseek_page):
     alert.accept()
 
 
+def select_select2_autocomplete(browser, element, value):
+    element.click()
+    time.sleep(0.1)
+    active = element.parent.switch_to.active_element
+    active.send_keys(value)
+    time.sleep(0.1)
+    element.parent.switch_to.active_element.send_keys(Keys.ENTER)
+    time.sleep(0.2)
+
+
 @pytest.mark.django_db
 def test_autocomplete_field(multiseek_page):
     assert Language.objects.count()
@@ -202,17 +212,18 @@ def test_autocomplete_field(multiseek_page):
     field['type'].find_by_value(
         text(multiseek_registry.AuthorQueryObject.label)).click()
 
-    valueWidget = multiseek_page.browser.find_by_id("value")
-    valueWidget.type('smit')
-    valueWidget.type(Keys.ARROW_DOWN)
-    valueWidget.type(Keys.RETURN)
+    element = multiseek_page.browser.find_by_css(".select2-container")
+    select_select2_autocomplete(
+        multiseek_page.browser,
+        element,
+        "Smith")
 
     got = multiseek_page.serialize()
     expect = [None,
               make_field(
                   multiseek_registry.AuthorQueryObject,
                   text(EQUAL),
-                  Author.objects.filter(last_name='Smith')[0].pk,
+                  str(Author.objects.filter(last_name='Smith')[0].pk),
                   prev_op=None)]
 
     assert got == expect
@@ -322,7 +333,7 @@ def test_add_field_autocomplete(multiseek_page):
         '[1,"John Smith"]')
 
     value = multiseek_page.get_field_value("field-1")
-    assert value == 1
+    assert value == "1"
 
 
 @pytest.mark.django_db
@@ -375,7 +386,7 @@ def test_refresh_bug(multiseek_page):
 @pytest.mark.django_db
 def test_frame_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
-    multiseek_page.browser.find_by_text("X")[1].click()
+    multiseek_page.browser.find_by_id("close-button").click()
     multiseek_page.browser.find_by_id("sendQueryButton").click()
 
     with multiseek_page.browser.get_iframe('if') as iframe:

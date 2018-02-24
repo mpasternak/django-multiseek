@@ -5,31 +5,36 @@
     <title>{% block title %}{% endblock %}</title>
     {% compress css %}
         <link rel="stylesheet" href="{% static 'multiseek/css/style.css' %}"/>
-        <link rel="stylesheet"
-              href="{% static 'datetimepicker/dist/DateTimePicker.css' %}"/>
+        <link rel="stylesheet" href="{% static 'datetimepicker/dist/DateTimePicker.css' %}"/>
     {% endcompress %}
     {% compress js %}
-        <script src="{% static 'jquery/dist/jquery.js' %}"
-                type="text/javascript"></script>
-        <script src="{% static 'jqueryui/jquery-ui.js' %}"
-                type="text/javascript"></script>
+        <script src="{% static 'jquery/dist/jquery.js' %}" type="text/javascript"></script>
+        <script src="{% static 'jqueryui/jquery-ui.js' %}" type="text/javascript"></script>
         <script src="{% static 'datetimepicker/dist/DateTimePicker.js' %}"></script>
     {% endcompress %}
     {# I'm unsure how to parametryze this for LANGUAGE_CODE with default #}
     {# Django templating engine, in Jinja2 I'd use {% set ...  %} #}
     <!--<script src="{% static '' %}"></script>-->
 
+    {% block dal_includes %}
+    <link rel="stylesheet" type="text/css" href="{% static "autocomplete_light/vendor/select2/dist/css/select2.css" %}"></link>
+    <link rel="stylesheet" type="text/css" href="{% static "autocomplete_light/select2.css" %}"></link>
+    <script src="{% static "autocomplete_light/jquery.init.js" %}"></script>
+    <script src="{% static "autocomplete_light/autocomplete.init.js" %}"></script>
+    <script src="{% static "autocomplete_light/vendor/select2/dist/js/select2.full.js" %}"></script>
+    <script src="{% static "autocomplete_light/vendor/select2/dist/js/i18n/pl.js" %}"></script>
+    <script src="{% static "autocomplete_light/forward.js" %}"></script>
+    <script src="{% static "autocomplete_light/select2.js" %}"></script>
+    {% endblock %}
+
     {% if request.GET.foundation == "1" %}
         <script src="{% static 'foundation-sites/js/vendor/modernizr.js' %}"/>
         <script src="{% static 'foundation-sites/js/vendor/fastclick.js' %}"/>
         <script src="{% static 'foundation-sites/js/foundation.min.js' %}"></script>
         <script src="{% static 'foundation-datepicker/js/foundation-datepicker.js' %}"></script>
-        <link rel="stylesheet"
-              href="{% static 'foundation-datepicker/css/foundation-datepicker.css' %}"/>
-        <link rel="stylesheet"
-              href="{% static 'foundation-sites/css/foundation.css' %}"/>
-        <link rel="stylesheet"
-              href="{% static 'font-awesome/css/font-awesome.min.css' %}"/>
+        <link rel="stylesheet" href="{% static 'foundation-datepicker/css/foundation-datepicker.css' %}"/>
+        <link rel="stylesheet" href="{% static 'foundation-sites/css/foundation.css' %}"/>
+        <link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.min.css' %}"/>
     {% else %}
         <style>
             div.columns {

@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from multiseek.logic import Ordering, ReportType, DateQueryObject, \
@@ -18,6 +19,9 @@ class AuthorQueryObject(AutocompleteQueryObject):
     model = Author
     field_name = "authors"
     search_fields = ['first_name', 'last_name']
+
+    def get_url(self):
+        return reverse("author-autocomplete")
 
 
 class YearQueryObject(RangeQueryObject):
