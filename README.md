@@ -4,10 +4,16 @@ django-multiseek
 [![Build Status](https://travis-ci.org/mpasternak/django-multiseek.svg?branch=master)](https://travis-ci.org/mpasternak/django-multiseek)
 [![Coverage Status](https://coveralls.io/repos/github/mpasternak/django-multiseek/badge.svg?branch=master)](https://coveralls.io/github/mpasternak/django-multiseek?branch=master)
 
-Graphical query builder for Django. 
+Graphical query builder for Django.
+
+Depends on:
+* Django,
+* django-autocomplete-light,
+* jQuery,
+* optionally, Foundation 6 theme is supported. 
 
 Supported configurations: 
-* Django 1.11
+* Django 1.11, 2.0
 * Python 3.6
 
 django-multiseek's purpose is to enable end-user of the web page to build a query form and query the database using multiple parameters.
