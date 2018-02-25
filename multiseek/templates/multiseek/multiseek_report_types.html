@@ -2,18 +2,18 @@
 
 {% block report_type %}
     {% if report_types %}
-        <table>
-            <tr>
-                <td>
-                    {% trans "Report type: " %}</td>
-                <td>
-                    <select name="{{ MULTISEEK_REPORT_TYPE }}">
-                        {% for t in report_types %}
-                            <option value="{{ forloop.counter0 }}">{{ t.label }}</option>
-                        {% endfor %}
-                    </select></td>
-            </tr>
-        </table>
+        <div class="grid-x">
+            <div class="large-1 cell">
+                {% trans "Report type: " %}
+            </div>
+            <div class="large-1 cell">
+                <select name="{{ MULTISEEK_REPORT_TYPE }}">
+                    {% for t in report_types %}
+                        <option value="{{ forloop.counter0 }}">{{ t.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
         <script type="text/javascript">
             /* Update results window with change of report type */
             $("select[name={{ MULTISEEK_REPORT_TYPE }}]").change(function () {
