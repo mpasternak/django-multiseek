@@ -9,6 +9,7 @@ import json
 import re
 from datetime import timedelta, datetime
 from dateutil.parser import parse
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.utils import html
 try:
@@ -270,6 +271,9 @@ class AutocompleteQueryObject(QueryObject):
             self.url = url
 
     def get_url(self):
+        if self.url is None:
+            raise ImproperlyConfigured(
+                "Please specify the autocomplete URL for %r" % self)
         return self.url
 
     @classmethod
