@@ -84,8 +84,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'test_project.finders.YarnFinder',
-    'compressor.finders.CompressorFinder',
-
 )
 
 # Make this unique, and don't share it with anybody.
