@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from decimal import Decimal
 import decimal
@@ -9,7 +9,9 @@ import json
 import re
 from datetime import timedelta, datetime
 from dateutil.parser import parse
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import html
 try:
     from django.db.models.options import get_verbose_name
@@ -265,26 +267,22 @@ class AutocompleteQueryObject(QueryObject):
 
         if model is not None:
             self.model = model
-            self.url = '/multiseek/autocomplete/' + str(model.__name__)
 
         if url is not None:
             self.url = url
 
-        self._cache = {}
-
     def get_url(self):
-        if self.url:
-            return self.url
-        return '/multiseek/autocomplete/%s/' % self.model.__name__
+        if self.url is None:
+            raise ImproperlyConfigured(
+                "Please specify the autocomplete URL for %r" % self)
+
+        return reverse(self.url)
 
     @classmethod
     def get_label(cls, model):
         return text(model)
 
     def value_from_web(self, value):
-        if value in self._cache:
-            return self._cache[value]
-
         # The value should be an integer:
         try:
             value_i = int(value)
@@ -296,7 +294,6 @@ class AutocompleteQueryObject(QueryObject):
         except self.model.DoesNotExist:
             return
 
-        self._cache[value] = ret
         return ret
 
     def value_to_web(self, value):
@@ -305,32 +302,6 @@ class AutocompleteQueryObject(QueryObject):
         except self.model.DoesNotExist:
             return json.dumps([None, ''])
         return json.dumps([value, self.get_label(model)])
-
-    def get_autocomplete_query(self, data):
-        """This function should return an iterable, like a QuerySet. This
-         iterable, in turn, will be used by JQuery UI widget on the web.
-
-        :param data: string passed from web request.
-        """
-
-        def args(fld, elem):
-            return {fld + "__icontains": elem}
-
-        if data:
-            # split by comma, space, etc.
-            data = data.split(" ")
-
-            ret = Q(**args(self.search_fields[0], data[0]))
-            for f, v in zip(self.search_fields[1:], data[1:]):
-                ret = ret & Q(**args(f, v))
-            return self.model.objects.filter(ret)
-
-        return self.model.objects.all()
-
-    def get_autocomplete_label(self, elem):
-        """This function returns a label for the elem, this label in turn
-        will be used by JQuery UI widget."""
-        return text(elem)
 
 
 class DateQueryObject(QueryObject):

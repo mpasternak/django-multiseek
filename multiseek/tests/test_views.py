@@ -30,6 +30,10 @@ def setup_anonymous_session(request):
     return request
 
 
+class MockupAutocompleteQueryObject(AutocompleteQueryObject):
+    def get_url(self):
+        return "/LOL/"
+
 class RegistryMixin:
 
     def setUp(self):
@@ -38,7 +42,7 @@ class RegistryMixin:
             StringQueryObject('foo'),
             StringQueryObject('bar'),
             ValueListQueryObject(field_name='baz', values=['a', 'b', 'c']),
-            AutocompleteQueryObject(field_name='quux', url='/LOL/', model=Author)
+            MockupAutocompleteQueryObject(field_name='quux', model=Author)
             )
 
         self.request = setup_anonymous_session(RequestFactory().get('/'))

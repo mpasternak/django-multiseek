@@ -94,6 +94,10 @@ else:
 def reqs(f):
     for elem in open(f).readlines():
         elem = elem.strip()
+
+        if not elem:
+            continue
+        
         if elem.find("#egg=")>0:
             ign, egg = elem.split("#egg=")
             yield egg
@@ -101,12 +105,13 @@ def reqs(f):
         
         if elem.startswith("#") or elem.startswith("-r"):
             continue
+        
         yield elem
 
         
 setup(
     name='django-multiseek',
-    version='0.9.31',
+    version='0.9.32',
     description='Build a form to seek records using multiple parameters',
     author=u'Michał Pasternak',
     author_email='michal.dtz@gmail.com',
@@ -122,8 +127,8 @@ setup(
     long_description=read("README.md"),
     license='MIT',
     keywords='django multiseek',
-    install_requires=["Django>=1.10"] + list(reqs("requirements.txt")),
-    tests_require=["Django>=1.10"] + list(reqs("requirements_dev.txt")),
+    install_requires=["Django>=1.11"] + list(reqs("requirements.txt")),
+    tests_require=["Django>=1.11"] + list(reqs("requirements_dev.txt")),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',

@@ -1,4 +1,3 @@
-
 if (typeof String.prototype.startsWith != 'function') {
     // see below for better implementation!
     String.prototype.startsWith = function (str) {
@@ -27,17 +26,17 @@ multiseek = {
 };
 
 function installDatePicker(element) {
-      if (element.fdatepicker) {
-          /* Use foundation date picker if available */
-          element.fdatepicker({
-              format: multiseekDateFormat,
-              weekStart: multiseekDateWeekStart,
-              language: djangoLanguageCode
-          });
-      } else {
-          /* Use JQuery datepicker if available */
-          element.datepicker($.datepicker.regional[djangoLanguageCode]);
-      }
+    if (element.fdatepicker) {
+        /* Use foundation date picker if available */
+        element.fdatepicker({
+            format: multiseekDateFormat,
+            weekStart: multiseekDateWeekStart,
+            language: djangoLanguageCode
+        });
+    } else {
+        /* Use JQuery datepicker if available */
+        element.datepicker($.datepicker.regional[djangoLanguageCode]);
+    }
 }
 
 
@@ -61,9 +60,28 @@ $.widget("multiseek.multiseekBase", {
         if (action == "enable") {
             if (ph.children().length == 0)
                 ph.first().append(this.getPrevOperationDOM());
-        } else if (action == "disable")
-            ph.first().remove()
-        else
+        } else if (action == "disable") {
+
+            ph.first().fadeOut(function(){
+                var nxt = ph.parent().next();
+
+                if (nxt.hasClass("large-2")) {
+                    nxt.removeClass("large-2");
+                    nxt.addClass("large-3");
+                    // ph.parent().remove();
+                    ph.parent().hide();
+                };
+
+                var nxt = ph.first().next();
+                if (nxt.hasClass("large-11")) {
+                    nxt.removeClass("large-11 small-10");
+                    nxt.addClass("large-12 small-12");
+                }
+
+                ph.first().remove()
+            });
+
+        } else
             return ph.first().children("#prev-op");
     },
 
@@ -133,23 +151,23 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
         this.element.append(
             $("<div/>")
-                .addClass("row collapse")
+                .addClass("grid-x grid-margin-x")
                 .append([
                     $("<div/>")
-                        .addClass("large-1 small-1 columns multiseek-range-field-label")
+                        .addClass("large-1 small-1 cell multiseek-range-field-label")
                         .text(gettext("from")),
 
                     $("<div/>")
-                        .addClass("large-5 small-5 columns")
+                        .addClass("large-5 small-5 cell")
                         .append([
                             $("<input type=text id=value_min size=4 />")]),
 
                     $("<div/>")
-                        .addClass("large-1 small-1 columns multiseek-range-field-label")
+                        .addClass("large-1 small-1 cell multiseek-range-field-label")
                         .text(gettext("to")),
 
                     $("<div/>")
-                        .addClass("large-5 small-5 columns")
+                        .addClass("large-5 small-5 cell")
                         .append([
                             $("<input type=text id=value_max size=4 />")])
                 ])
@@ -175,58 +193,27 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
     _create: function () {
         this.element.append(
             $("<div/>")
-                .addClass("row collapse")
+                .addClass("row")
                 .append([
-                    $("<div/>")
-                        .addClass("small-11 columns")
-                        .append(
-                            $("<input data-type=search id='value' type='text' />")
-                                .prop("data-id", null)
-                                .autocomplete({
-                                    minLength: 0,
-                                    source: this.options.url,
-                                    change: $.proxy(function (evt, ui) {
-                                        if (ui.item == null) {
-                                            alert(gettext("Please select value from the dropdown."));
-                                            this.element.children().first().val('');
-                                            this.element.children().first().focus();
-                                        }
-
-                                        $(evt.target).attr("data-id", null);
-                                    }, this),
-                                    select: function (evt, ui) {
-
-                                        $(evt.target).prop("data-id", ui.item.id);
-                                    }
-                                })
-                        ),
-                    $("<div/>")
-                        .addClass("small-1 columns")
-                        .append(
-                            $("<span/>")
-                                .addClass("postfix")
-                                .text("X")
-                                .click($.proxy(function () {
-                                    this.element.find("#value").first().val('').focus();
-                                }, this))
-                        )
+                    $("<select/>")
+                        .attr("data-autocomplete-light-url", this.options.url)
+                        .attr("data-autocomplete-light-function", "select2")
+                        .attr("data-autocomplete-light-language", djangoLanguageCode)
+                        .attr("data-html", "")
+                        .attr("data-placeholder", gettext("Enter something..."))
                 ])
         );
-
-        this.element.find("#value").focus(function (evt) {
-            $(evt.target).autocomplete("search");
-        });
     },
 
     getValue: function () {
-        return this.element.find("#value").first().prop("data-id");
+        return this.element.find("select").val();
     },
 
     setValue: function (value) {
         value = $.parseJSON(value);
-        var elem = this.element.find("#value").first();
-        elem.prop("data-id", value[0]);
-        elem.val(value[1]);
+        var select = this.element.find("select");
+        var option = new Option(value[1], value[0], true, true);
+        select.append(option).trigger('change');
     }
 });
 
@@ -301,10 +288,10 @@ $.widget("multiseek.multiseekDateValue", $.multiseek.multiseekBaseValue, {
                 // add extra field
 
                 var element = $("<input/>")
-                                .attr("type", "text")
-                                .attr("id", "value_max")
-                                .attr("placeholder", gettext('today'))
-                                .attr("size", "10");
+                    .attr("type", "text")
+                    .attr("id", "value_max")
+                    .attr("placeholder", gettext('today'))
+                    .attr("size", "10");
 
                 installDatePicker(element);
                 row.append([
@@ -416,7 +403,8 @@ $.widget("multiseek.multiseekField", $.multiseek.multiseekBase, {
             p[this.getWidgetType()]("destroy"); // children().remove();
         } catch (Error) {
 
-        };
+        }
+        ;
 
         p.children().remove();
         var x = p.append("<span/>");
@@ -498,23 +486,22 @@ $.multiseek.multiseekField.prototype.options = {
 $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
     makeFrameDOM: function (element) {
-        // USES DOM
-        element
-            .attr("id", "frame-" + multiseek.frame_counter)
-            .attr("class", "multiseekFrame")
-            .append([
+        var div = $("<div/>")
+                    .addClass("large-1 small-2 cell")
+                    .attr("id", "prev-op-placeholder");
 
-                $('<div/>')
-                    .attr("id", "prev-op-placeholder"),
-
-                $("<fieldset />")
-                    .attr("class", "multiseek-fieldset")
+        var fieldset = $("<fieldset />")
+                    .addClass("multiseek-fieldset large-11 small-10 cell")
                     .append([
+
                         $("<div/>")
-                            .attr("id", "field-list"),
+                            .attr("id", "field-list")
+                            .addClass("cell"),
+
                         $("<button/>")
                             .attr("id", "add_field")
-                            .addClass("small")
+                            .attr("type", "button")
+                            .addClass("button small")
                             .text(gettext("Add field"))
                             .click($.proxy(function (evt) {
                                 evt.preventDefault();
@@ -523,15 +510,26 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                         " ",
                         $("<button/>")
                             .attr("id", "add_frame")
-                            .addClass("small")
+                            .attr("type", "button")
+                            .addClass("button small")
                             .text(gettext("Add frame"))
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
                                     this.addFrameViaButton();
                                 }, this
                             ))
-                    ])
-            ]);
+                    ]);
+
+        if (!multiseek.frame_counter) {
+            div = "";
+            fieldset.addClass("large-12 small-12")
+        } else
+            fieldset.addClass("large-11 small-10")
+
+        element
+            .attr("id", "frame-" + multiseek.frame_counter)
+            .attr("class", "multiseekFrame grid-x grid-padding-x grid-margin-y")
+            .append([div, fieldset]);
     },
 
     _create: function () {
@@ -558,11 +556,18 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         var for_removal = this.fieldList().find("#" + id);
 
         var next = for_removal.next();
-        for_removal.remove()
-        next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
 
-        if (this.empty() && this.element.attr("id") != "frame-0")
-            this.removeSelf();
+        var that = this;
+
+        for_removal.slideUp(function() {
+            for_removal.remove();
+
+            next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
+
+            if (that.empty() && that.element.attr("id") != "frame-0")
+                that.removeSelf();
+        });
+
     },
 
     parentFrame: function () {
@@ -585,47 +590,60 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         }
 
         var next = fld.next();
-        fld.remove();
-        next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
 
-        // remove frame if empty
-        if (this.empty())
-            this.removeSelf();
+        var that = this;
+        fld.slideUp(null, function () {
+            fld.remove();
+            next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
+
+            // remove frame if empty
+            if (that.empty())
+                that.removeSelf();
+
+        });
     },
 
-    getFieldDOM: function (id) {
-        // USES DOM
-        return $("<field/>")
-            .addClass("row collapse")
-            .attr("id", id)
-            .append([
-                $("<div/>")
-                    .addClass("large-1 small-2 columns")
+    getFieldDOM: function (id, has_elements) {
+        var div = $("<div/>")
+                    .addClass("large-1 small-2 cell")
                     .append(
                         $('<div/>').attr("id", "prev-op-placeholder")
-                    ),
+                    );
 
+        var oplen = "large-2 small-6";
+        if (!has_elements){
+            div = "";
+            oplen = "large-3 small-7"
+        }
+
+        return $("<field/>")
+            .addClass("grid-margin-x grid-x")
+            .attr("id", id)
+            .append([
+                div,
                 $("<div/>")
-                    .addClass("large-3 small-6 small columns")
+                    .addClass(oplen + " cell")
                     .append(
                         $("<select/>")
                             .attr("id", "type")
                     ),
                 $("<div/>")
-                    .addClass("large-2 small-4 columns")
+                    .addClass("large-2 small-4 cell")
                     .append(
                         $("<select/>")
                             .attr("id", "op")),
                 $("<div/>")
-                    .addClass("large-5 small-10 columns")
+                    .addClass("large-6 small-10 cell")
                     .attr("id", "value-placeholder"),
+
                 $("<div/>")
-                    .addClass("large-1 small-2 columns")
+                    .addClass("large-1 small-2 cell")
                     .append(
                         $("<button/>")
-                            .text("X")
+                            .html("&times;")
                             .attr("id", "close-button")
-                            .addClass('small radius ')
+                            .attr("type", "button")
+                            .addClass('button alert small')
                             .data("for-field", id)
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
@@ -640,8 +658,10 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         var has_elements = this.fieldList().children().length;
         var elem;
 
-        elem = this.getFieldDOM(id);
+        elem = this.getFieldDOM(id, has_elements);
         this.fieldList().append(elem);
+        $(elem).hide();
+        $(elem).slideDown();
 
         var fld = $("#" + id);
         fld.multiseekField();
@@ -664,7 +684,9 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                 .attr("id", id)
         );
         var fr = $("#" + id);
+        fr.hide();
         fr.multiseekFrame();
+        fr.slideDown();
         if (has_elements) {
             fr.multiseekFrame("prevOperation", "enable");
             if (prevOpValue)
@@ -680,17 +702,20 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
     },
 
-    serialize: function () {
+    serialize: function (level = 0) {
         var ret = [];
 
-        ret.push(this.getPrevOperationValue());
+        if (level!=0)
+            ret.push(this.getPrevOperationValue());
+        else
+            ret.push(null);
 
         this.fieldList().children().each($.proxy(function (no, elem) {
             if ($(elem).attr("id").startsWith("field")) {
-                ret.push($(elem).multiseekField("serialize"));
+                ret.push($(elem).multiseekField("serialize", level + 1));
                 return;
             }
-            ret.push($(elem).multiseekFrame("serialize"));
+            ret.push($(elem).multiseekFrame("serialize", level + 1));
         }, this));
 
         return ret;
@@ -720,7 +745,8 @@ function formReportType() {
 
 function formAsJSON() {
     return JSON.stringify(
-        {'form_data': $("#frame-0").multiseekFrame("serialize"),
+        {
+            'form_data': $("#frame-0").multiseekFrame("serialize"),
             'ordering': formOrdering(),
             'report_type': formReportType()
         }); // <div id=#frame-0>
@@ -784,7 +810,7 @@ function saveForm(button) {
                 } else if (data.result == 'overwrite-prompt') {
                     if (confirm(form_exists)) {
                         dct['overwrite'] = true;
-                        $.post(url, dct,function (data, textStatus, jqXHR) {
+                        $.post(url, dct, function (data, textStatus, jqXHR) {
                             if (textStatus == 'success') {
                                 if (data.result == 'saved') {
                                     alert(saved);
@@ -794,8 +820,8 @@ function saveForm(button) {
                             } else
                                 alert(error);
                         }).error(function () {
-                                alert(error);
-                            });
+                            alert(error);
+                        });
                         ;
                     }
                 } else
@@ -805,8 +831,8 @@ function saveForm(button) {
                 alert(err);
         }
     ).fail(function () {
-            alert(error);
-        });
+        alert(error);
+    });
 }
 
 function loadForm(select) {
@@ -815,9 +841,9 @@ function loadForm(select) {
     $(select).val('');
 }
 
-window.multiseek.removeFromResults = function(id){
+window.multiseek.removeFromResults = function (id) {
     var elem = $("#multiseek-row-" + id).children(".multiseek-element");
-    var deco =  elem.css("text-decoration");
+    var deco = elem.css("text-decoration");
 
     var css_after = 'line-through';
     var url = '../remove-from-results/' + id
@@ -827,7 +853,7 @@ window.multiseek.removeFromResults = function(id){
         url = '../remove-from-removed-results/' + id;
     }
 
-    $.get(url, function(data){
+    $.get(url, function (data) {
         elem.css("text-decoration", css_after);
     });
 }

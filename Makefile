@@ -4,6 +4,7 @@ clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and 
 clean-build: ## remove build artifacts
 	rm -fr build/
 	rm -fr dist/
+	rm -rf test_project/static test_project/bower_components .cache .pytest_cache
 	rm -fr .eggs/
 	rm -rf test_project/splintershots test_project/node_modules test_project/components > /dev/null || true
 	find . -name '*.egg-info' -exec rm -fr {} +
@@ -24,7 +25,10 @@ release: clean ## package and upload a release
 	python setup.py sdist upload
 	python setup.py bdist_wheel upload
 
-tests:
+assets:
+	yarn
+
+tests: assets
 	pip install tox
 	tox
 

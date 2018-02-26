@@ -143,8 +143,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
-    'compressor',
     'test_app',
     'multiseek',
 )

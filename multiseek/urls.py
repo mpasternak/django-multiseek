@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.i18n import JavaScriptCatalog
 
 from multiseek import views
-from multiseek.views import load_form, MultiseekModelRouter
+from multiseek.views import load_form
 
 
 urlpatterns = [
@@ -49,10 +49,5 @@ urlpatterns = [
 
    url(r'^load_form/(?P<search_form_pk>\d+)',
         load_form,
-        name="load_form"),
-
-    url(r'^autocomplete/(?P<model>.*)/$', MultiseekModelRouter.as_view(
-        registry=settings.MULTISEEK_REGISTRY
-    ))
-
+        name="load_form")
 ]

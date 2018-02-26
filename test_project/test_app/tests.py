@@ -171,15 +171,19 @@ def test_serialize_form(multiseek_page):
                        u'value': u'', u'prev_op': None}]
                 ]
 
-    assert multiseek_page.serialize() == expected
+    serialized = multiseek_page.serialize()
+    assert serialized == expected
 
     for n in range(1, 6):
         field = multiseek_page.get_field('field-%i' % n)
         field['close-button'].click()
+    time.sleep(2)
 
     expected = [None, {u'field': u'Year', u'operator': u'in range',
                        u'value': u'[1999,2000]', u'prev_op': None}]
-    assert multiseek_page.serialize() == expected
+    serialized = multiseek_page.serialize()
+
+    assert serialized == expected
 
 
 @pytest.mark.django_db
@@ -194,6 +198,16 @@ def test_remove_last_field(multiseek_page):
     alert.accept()
 
 
+def select_select2_autocomplete(browser, element, value):
+    element.click()
+    time.sleep(0.1)
+    active = element.parent.switch_to.active_element
+    active.send_keys(value)
+    time.sleep(0.1)
+    element.parent.switch_to.active_element.send_keys(Keys.ENTER)
+    time.sleep(0.2)
+
+
 @pytest.mark.django_db
 def test_autocomplete_field(multiseek_page):
     assert Language.objects.count()
@@ -202,17 +216,18 @@ def test_autocomplete_field(multiseek_page):
     field['type'].find_by_value(
         text(multiseek_registry.AuthorQueryObject.label)).click()
 
-    valueWidget = multiseek_page.browser.find_by_id("value")
-    valueWidget.type('smit')
-    valueWidget.type(Keys.ARROW_DOWN)
-    valueWidget.type(Keys.RETURN)
+    element = multiseek_page.browser.find_by_css(".select2-container")
+    select_select2_autocomplete(
+        multiseek_page.browser,
+        element,
+        "Smith")
 
     got = multiseek_page.serialize()
     expect = [None,
               make_field(
                   multiseek_registry.AuthorQueryObject,
                   text(EQUAL),
-                  Author.objects.filter(last_name='Smith')[0].pk,
+                  str(Author.objects.filter(last_name='Smith')[0].pk),
                   prev_op=None)]
 
     assert got == expect
@@ -322,7 +337,7 @@ def test_add_field_autocomplete(multiseek_page):
         '[1,"John Smith"]')
 
     value = multiseek_page.get_field_value("field-1")
-    assert value == 1
+    assert value == "1"
 
 
 @pytest.mark.django_db
@@ -375,7 +390,7 @@ def test_refresh_bug(multiseek_page):
 @pytest.mark.django_db
 def test_frame_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
-    multiseek_page.browser.find_by_text("X")[1].click()
+    multiseek_page.browser.find_by_id("close-button").click()
     multiseek_page.browser.find_by_id("sendQueryButton").click()
 
     with multiseek_page.browser.get_iframe('if') as iframe:
@@ -457,9 +472,12 @@ def test_form_save_anon_form_save_anonymous(multiseek_page):
 def test_form_save_anon_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
     multiseek_page.browser.find_by_id("add_field").click()
-    multiseek_page.get_field("field-1")['close-button'].type(Keys.SPACE)
-    assert len([x for x in multiseek_page.browser.find_by_tag("select") if
-                x['id'] == 'prev-op']) == 1
+    field1 = multiseek_page.get_field("field-1")
+    field1['close-button'].click()
+    time.sleep(1)
+    selects = multiseek_page.browser.find_by_tag("select")
+    prevops = [x for x in selects if x['id'] == 'prev-op']
+    assert len(prevops) == 1
 
 
 @pytest.mark.django_db

@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 import json
 from builtins import str as text
@@ -289,44 +289,6 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         return get_registry(self.registry).get_query_for_model(
             self.get_multiseek_data(),
             self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
-
-
-class MultiseekModelRouter(View):
-    registry = None
-
-    def get(self, request, model, *args, **kw):
-        registry = get_registry(self.registry)
-        for field in registry.fields:
-            if field.type == AUTOCOMPLETE:
-                if model == field.model.__name__:
-                    return MultiseekModelAutocomplete(original=field).get(request)
-        raise Http404
-
-
-class MultiseekModelAutocomplete(View):
-    # TODO: JSONResponseMixin
-    qobj = None
-    max_items = 10
-
-    def get_queryset(self, request):
-        return self.qobj.model.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        q = request.GET.get('term', '')
-        if sys.version_info < (3, 0):
-            q = q.encode('utf-8')
-
-        qset = self.original.get_autocomplete_query(q)
-
-        ret = []
-        for elem in qset[:self.max_items]:
-            ret.append(
-                {'id': elem.pk,
-                 'label': self.original.get_autocomplete_label(elem),
-                 'value': self.original.get_autocomplete_label(elem)})
-
-        return HttpResponse(json.dumps(ret),
-                            content_type='application/json')
 
 
 JSON_OK = HttpResponse(json.dumps({'status':"OK"}), content_type='application/json')
