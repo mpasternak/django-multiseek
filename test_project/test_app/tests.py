@@ -171,15 +171,19 @@ def test_serialize_form(multiseek_page):
                        u'value': u'', u'prev_op': None}]
                 ]
 
-    assert multiseek_page.serialize() == expected
+    serialized = multiseek_page.serialize()
+    assert serialized == expected
 
     for n in range(1, 6):
         field = multiseek_page.get_field('field-%i' % n)
         field['close-button'].click()
+    time.sleep(2)
 
     expected = [None, {u'field': u'Year', u'operator': u'in range',
                        u'value': u'[1999,2000]', u'prev_op': None}]
-    assert multiseek_page.serialize() == expected
+    serialized = multiseek_page.serialize()
+
+    assert serialized == expected
 
 
 @pytest.mark.django_db
@@ -468,9 +472,12 @@ def test_form_save_anon_form_save_anonymous(multiseek_page):
 def test_form_save_anon_bug(multiseek_page):
     multiseek_page.browser.find_by_id("add_frame").click()
     multiseek_page.browser.find_by_id("add_field").click()
-    multiseek_page.get_field("field-1")['close-button'].type(Keys.SPACE)
-    assert len([x for x in multiseek_page.browser.find_by_tag("select") if
-                x['id'] == 'prev-op']) == 1
+    field1 = multiseek_page.get_field("field-1")
+    field1['close-button'].click()
+    time.sleep(1)
+    selects = multiseek_page.browser.find_by_tag("select")
+    prevops = [x for x in selects if x['id'] == 'prev-op']
+    assert len(prevops) == 1
 
 
 @pytest.mark.django_db

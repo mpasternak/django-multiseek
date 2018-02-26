@@ -2,10 +2,6 @@
 # yarn lockfile v1
 
 
-datetimepicker@^0.1.38:
-  version "0.1.38"
-  resolved "https://registry.yarnpkg.com/datetimepicker/-/datetimepicker-0.1.38.tgz#19a2ec5f8909035b6dce39fa2cd71eb87a437a18"
-
 font-awesome@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
@@ -32,3 +28,7 @@ jqueryui@^1.11.1:
 what-input@^4.1.3:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/what-input/-/what-input-4.3.1.tgz#b8ea7554ba1d9171887c4c6addf28185fec3d31d"
+
+what-input@^5.0.5:
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/what-input/-/what-input-5.0.5.tgz#6f5fd14baef0354cae7c3ceaa949886a86a456d9"

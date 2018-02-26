@@ -146,7 +146,6 @@ INSTALLED_APPS = (
     'dal',
     'dal_select2',
     'django.contrib.admin',
-    'compressor',
     'test_app',
     'multiseek',
 )

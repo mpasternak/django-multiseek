@@ -60,9 +60,28 @@ $.widget("multiseek.multiseekBase", {
         if (action == "enable") {
             if (ph.children().length == 0)
                 ph.first().append(this.getPrevOperationDOM());
-        } else if (action == "disable")
-            ph.first().remove()
-        else
+        } else if (action == "disable") {
+
+            ph.first().fadeOut(function(){
+                var nxt = ph.parent().next();
+
+                if (nxt.hasClass("large-2")) {
+                    nxt.removeClass("large-2");
+                    nxt.addClass("large-3");
+                    // ph.parent().remove();
+                    ph.parent().hide();
+                };
+
+                var nxt = ph.first().next();
+                if (nxt.hasClass("large-11")) {
+                    nxt.removeClass("large-11 small-10");
+                    nxt.addClass("large-12 small-12");
+                }
+
+                ph.first().remove()
+            });
+
+        } else
             return ph.first().children("#prev-op");
     },
 
@@ -132,23 +151,23 @@ $.widget("multiseek.multiseekRangeValue", $.multiseek.multiseekBaseValue, {
     _create: function () {
         this.element.append(
             $("<div/>")
-                .addClass("row collapse")
+                .addClass("grid-x grid-margin-x")
                 .append([
                     $("<div/>")
-                        .addClass("large-1 small-1 columns multiseek-range-field-label")
+                        .addClass("large-1 small-1 cell multiseek-range-field-label")
                         .text(gettext("from")),
 
                     $("<div/>")
-                        .addClass("large-5 small-5 columns")
+                        .addClass("large-5 small-5 cell")
                         .append([
                             $("<input type=text id=value_min size=4 />")]),
 
                     $("<div/>")
-                        .addClass("large-1 small-1 columns multiseek-range-field-label")
+                        .addClass("large-1 small-1 cell multiseek-range-field-label")
                         .text(gettext("to")),
 
                     $("<div/>")
-                        .addClass("large-5 small-5 columns")
+                        .addClass("large-5 small-5 cell")
                         .append([
                             $("<input type=text id=value_max size=4 />")])
                 ])
@@ -467,25 +486,22 @@ $.multiseek.multiseekField.prototype.options = {
 $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
     makeFrameDOM: function (element) {
-        // USES DOM
-        element
-            .attr("id", "frame-" + multiseek.frame_counter)
-            .attr("class", "multiseekFrame")
-            .append([
+        var div = $("<div/>")
+                    .addClass("large-1 small-2 cell")
+                    .attr("id", "prev-op-placeholder");
 
-                $("<div/>")
-                    .addClass("large-1 small-2 columns")
-                    .attr("id", "prev-op-placeholder"),
-
-                $("<fieldset />")
-                    .attr("class", "multiseek-fieldset")
+        var fieldset = $("<fieldset />")
+                    .addClass("multiseek-fieldset large-11 small-10 cell")
                     .append([
 
                         $("<div/>")
-                            .attr("id", "field-list"),
+                            .attr("id", "field-list")
+                            .addClass("cell"),
+
                         $("<button/>")
                             .attr("id", "add_field")
-                            .addClass("small")
+                            .attr("type", "button")
+                            .addClass("button small")
                             .text(gettext("Add field"))
                             .click($.proxy(function (evt) {
                                 evt.preventDefault();
@@ -494,15 +510,26 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                         " ",
                         $("<button/>")
                             .attr("id", "add_frame")
-                            .addClass("small")
+                            .attr("type", "button")
+                            .addClass("button small")
                             .text(gettext("Add frame"))
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
                                     this.addFrameViaButton();
                                 }, this
                             ))
-                    ])
-            ]);
+                    ]);
+
+        if (!multiseek.frame_counter) {
+            div = "";
+            fieldset.addClass("large-12 small-12")
+        } else
+            fieldset.addClass("large-11 small-10")
+
+        element
+            .attr("id", "frame-" + multiseek.frame_counter)
+            .attr("class", "multiseekFrame grid-x grid-padding-x grid-margin-y")
+            .append([div, fieldset]);
     },
 
     _create: function () {
@@ -529,11 +556,18 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         var for_removal = this.fieldList().find("#" + id);
 
         var next = for_removal.next();
-        for_removal.remove()
-        next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
 
-        if (this.empty() && this.element.attr("id") != "frame-0")
-            this.removeSelf();
+        var that = this;
+
+        for_removal.slideUp(function() {
+            for_removal.remove();
+
+            next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
+
+            if (that.empty() && that.element.attr("id") != "frame-0")
+                that.removeSelf();
+        });
+
     },
 
     parentFrame: function () {
@@ -556,48 +590,60 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         }
 
         var next = fld.next();
-        fld.remove();
-        next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
 
-        // remove frame if empty
-        if (this.empty())
-            this.removeSelf();
+        var that = this;
+        fld.slideUp(null, function () {
+            fld.remove();
+            next.multiseekBase().multiseekBase("enableOrDisablePrevOp");
+
+            // remove frame if empty
+            if (that.empty())
+                that.removeSelf();
+
+        });
     },
 
-    getFieldDOM: function (id) {
-        // USES DOM
-        return $("<field/>")
-            .addClass("row")
-            .attr("id", id)
-            .append([
-                $("<div/>")
-                    .addClass("large-1 small-2 columns")
+    getFieldDOM: function (id, has_elements) {
+        var div = $("<div/>")
+                    .addClass("large-1 small-2 cell")
                     .append(
                         $('<div/>').attr("id", "prev-op-placeholder")
-                    ),
+                    );
 
+        var oplen = "large-2 small-6";
+        if (!has_elements){
+            div = "";
+            oplen = "large-3 small-7"
+        }
+
+        return $("<field/>")
+            .addClass("grid-margin-x grid-x")
+            .attr("id", id)
+            .append([
+                div,
                 $("<div/>")
-                    .addClass("large-3 small-6 small columns")
+                    .addClass(oplen + " cell")
                     .append(
                         $("<select/>")
                             .attr("id", "type")
                     ),
                 $("<div/>")
-                    .addClass("large-2 small-4 columns")
+                    .addClass("large-2 small-4 cell")
                     .append(
                         $("<select/>")
                             .attr("id", "op")),
                 $("<div/>")
-                    .addClass("large-5 small-10 columns")
+                    .addClass("large-6 small-10 cell")
                     .attr("id", "value-placeholder"),
 
                 $("<div/>")
-                    .addClass("large-1 small-2 columns")
+                    .addClass("large-1 small-2 cell")
                     .append(
                         $("<button/>")
                             .html("&times;")
                             .attr("id", "close-button")
-                            .addClass('button alert tiny round close-button')
+                            .attr("type", "button")
+                            .addClass('button alert small')
                             .data("for-field", id)
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
@@ -612,8 +658,10 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         var has_elements = this.fieldList().children().length;
         var elem;
 
-        elem = this.getFieldDOM(id);
+        elem = this.getFieldDOM(id, has_elements);
         this.fieldList().append(elem);
+        $(elem).hide();
+        $(elem).slideDown();
 
         var fld = $("#" + id);
         fld.multiseekField();
@@ -636,7 +684,9 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                 .attr("id", id)
         );
         var fr = $("#" + id);
+        fr.hide();
         fr.multiseekFrame();
+        fr.slideDown();
         if (has_elements) {
             fr.multiseekFrame("prevOperation", "enable");
             if (prevOpValue)
@@ -652,17 +702,20 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
     },
 
-    serialize: function () {
+    serialize: function (level = 0) {
         var ret = [];
 
-        ret.push(this.getPrevOperationValue());
+        if (level!=0)
+            ret.push(this.getPrevOperationValue());
+        else
+            ret.push(null);
 
         this.fieldList().children().each($.proxy(function (no, elem) {
             if ($(elem).attr("id").startsWith("field")) {
-                ret.push($(elem).multiseekField("serialize"));
+                ret.push($(elem).multiseekField("serialize", level + 1));
                 return;
             }
-            ret.push($(elem).multiseekFrame("serialize"));
+            ret.push($(elem).multiseekFrame("serialize", level + 1));
         }, this));
 
         return ret;
