@@ -7,7 +7,8 @@ export PYTHONPATH=..:$PYTHONPATH
 export DJANGO_SETTINGS_MODULE=test_project.settings
 export PYTHONIOENCODING=utf_8
 
-python manage.py compress --force -v0
+yarn
+
 python manage.py collectstatic --noinput -v0
 
 py.test --cov=../multiseek --junitxml=../junit.xml test_app/tests.py ../multiseek

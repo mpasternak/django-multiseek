@@ -1,11 +1,11 @@
 {% load i18n %}
 
 {% block buttons %}
-    <button onclick="submitEvent(this); return false;" id="sendQueryButton">
+    <button type="button" class="button" onclick="submitEvent(this); return false;" id="sendQueryButton">
         {% trans "Send query" %}
     </button>
 
-    <button onclick="resetForm(this); return false;" id="resetFormButton">
+    <button type="button" class="button alert" onclick="resetForm(this); return false;" id="resetFormButton">
         {% trans "Reset form" %}
     </button>
 
@@ -22,9 +22,6 @@
             forms.
         {% endblocktrans %}
         <br/>
-        {% blocktrans %}
-            You can also <a href="?foundation=1">access Foundation 6 themed version</a> of this page.
-        {% endblocktrans %}
     {% endif %}
 
     <select name="load" onchange="loadForm(this);" id="formsSelector">

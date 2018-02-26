@@ -9,7 +9,9 @@ import json
 import re
 from datetime import timedelta, datetime
 from dateutil.parser import parse
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import html
 try:
     from django.db.models.options import get_verbose_name
@@ -270,7 +272,11 @@ class AutocompleteQueryObject(QueryObject):
             self.url = url
 
     def get_url(self):
-        return self.url
+        if self.url is None:
+            raise ImproperlyConfigured(
+                "Please specify the autocomplete URL for %r" % self)
+
+        return reverse(self.url)
 
     @classmethod
     def get_label(cls, model):
