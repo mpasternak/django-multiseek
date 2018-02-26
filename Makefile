@@ -26,7 +26,8 @@ release: clean ## package and upload a release
 	python setup.py bdist_wheel upload
 
 assets:
-	yarn
+	cd test_project && yarn
+	cd test_project && python manage.py collectstatic --noinput
 
 tests: assets
 	pip install tox
