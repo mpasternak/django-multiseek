@@ -46,7 +46,7 @@ $.widget("multiseek.multiseekBase", {
     getPrevOperationDOM: function () {
         return $("<select />")
             .attr("id", "prev-op")
-            .css("display", "inline")
+            .addClass("multiseek-prev-op")
             .append([
                 $("<option/>").html(gettext("and")).attr("value", "and"),
                 $("<option/>").html(gettext("or")).attr("value", "or"),
@@ -200,7 +200,7 @@ $.widget("multiseek.multiseekAutocompleteValue", $.multiseek.multiseekBaseValue,
                         .attr("data-autocomplete-light-function", "select2")
                         .attr("data-autocomplete-light-language", djangoLanguageCode)
                         .attr("data-html", "")
-                        .attr("data-placeholder", gettext("Enter something..."))
+                        .attr("data-placeholder", gettext("Click and begin typing to look up..."))
                 ])
         );
     },
@@ -501,23 +501,36 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                         $("<button/>")
                             .attr("id", "add_field")
                             .attr("type", "button")
-                            .addClass("button small")
-                            .text(gettext("Add field"))
+                            .addClass("button")
+                            .addClass("multiseek-add-field-button")
                             .click($.proxy(function (evt) {
                                 evt.preventDefault();
                                 this.addFieldViaButton();
-                            }, this)),
+                            }, this))
+                            .append([
+                                $("<i/>")
+                                    .addClass("fi-plus"),
+                                " ",
+                                gettext("Add field")
+                            ])
+                        ,
                         " ",
                         $("<button/>")
                             .attr("id", "add_frame")
                             .attr("type", "button")
-                            .addClass("button small")
-                            .text(gettext("Add frame"))
+                            .addClass("button")
+                            .addClass("multiseek-add-frame-button")
                             .click($.proxy(function (evt) {
                                     evt.preventDefault();
                                     this.addFrameViaButton();
                                 }, this
                             ))
+                            .append([
+                                $("<i/>")
+                                    .addClass("fi-tablet-landscape"),
+                                " ",
+                                gettext("Add frame")
+                            ])
                     ]);
 
         if (!multiseek.frame_counter) {
@@ -630,12 +643,15 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                     .append(
                         $("<select/>")
                             .attr("id", "type")
+                            .addClass("multiseek-type")
                     ),
                 $("<div/>")
                     .addClass("large-2 small-4 cell")
                     .append(
                         $("<select/>")
-                            .attr("id", "op")),
+                            .attr("id", "op")
+                            .addClass("multiseek-op")
+                    ),
                 $("<div/>")
                     .addClass("large-6 small-10 cell")
                     .attr("id", "value-placeholder"),
