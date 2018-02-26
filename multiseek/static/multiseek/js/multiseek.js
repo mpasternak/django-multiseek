@@ -529,6 +529,10 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
         element
             .attr("id", "frame-" + multiseek.frame_counter)
             .attr("class", "multiseekFrame grid-x grid-padding-x grid-margin-y")
+            // Explicit setting of display: flex is needed so the
+            // slideDown animation won't set display: block, thus
+            // breaking the layout
+            .css("display", "flex")
             .append([div, fieldset]);
     },
 
