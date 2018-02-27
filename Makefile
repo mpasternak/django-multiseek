@@ -26,7 +26,8 @@ release: clean ## package and upload a release
 	python setup.py bdist_wheel upload
 
 assets:
-	yarn
+	cd test_project && yarn
+	cd test_project && python manage.py collectstatic --noinput
 
 tests: assets
 	pip install tox
@@ -45,3 +46,6 @@ install-yarn-packages-via-docker:
 tests-via-docker: clean install-yarn-packages-via-docker
 	docker-compose up -d
 	docker-compose exec test /bin/bash -c "cd /usr/src/app && pip install tox && tox"
+
+update-messages:
+	cd multiseek && django-admin.py makemessages -d django -d djangojs -a
