@@ -491,12 +491,16 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                     .attr("id", "prev-op-placeholder");
 
         var fieldset = $("<fieldset />")
-                    .addClass("multiseek-fieldset large-11 small-10 cell")
-                    .append([
+            .addClass("multiseek-fieldset large-11 small-10 cell")
+            .append([
 
-                        $("<div/>")
-                            .attr("id", "field-list")
-                            .addClass("cell"),
+                $("<div/>")
+                    .attr("id", "field-list")
+                    .addClass("cell"),
+
+                $("<div/>")
+                    .addClass("button-group")
+                    .append([
 
                         $("<button/>")
                             .attr("id", "add_field")
@@ -514,7 +518,6 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                                 gettext("Add field")
                             ])
                         ,
-                        " ",
                         $("<button/>")
                             .attr("id", "add_frame")
                             .attr("type", "button")
@@ -531,7 +534,8 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
                                 " ",
                                 gettext("Add frame")
                             ])
-                    ]);
+                    ])
+            ]);
 
         if (!multiseek.frame_counter) {
             div = "";
