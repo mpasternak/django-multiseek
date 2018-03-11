@@ -726,8 +726,12 @@ $.widget("multiseek.multiseekFrame", $.multiseek.multiseekBase, {
 
     },
 
-    serialize: function (level = 0) {
+    serialize: function (level) {
         var ret = [];
+
+        // Default arguments ECMAScript 5 style
+        if (level === undefined)
+            level = 0;
 
         if (level!=0)
             ret.push(this.getPrevOperationValue());
