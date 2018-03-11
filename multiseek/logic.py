@@ -666,8 +666,11 @@ class MultiseekRegistry:
         if type(data) != dict:
             data = {'form_data': data}
 
+        query = None
         if 'form_data' in data:
             query = self.get_query(data['form_data'])
+
+        if query is not None:
             retval = self.model.objects.filter(query)
         else:
             retval = self.model.objects.all()
