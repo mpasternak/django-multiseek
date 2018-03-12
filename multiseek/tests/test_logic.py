@@ -19,6 +19,8 @@ from builtins import str as text
 test_json = json.dumps({'form_data': [None,
     dict(field='foo', operator=text(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]})
 
+test_buggy_json = json.dumps({'form_data': [None]})
+
 def py3k_test_string(s):
     if six.PY3:
         return s.replace("u'", "'").replace('u"', '"').replace(", u'", ", '")
@@ -94,6 +96,7 @@ class TestAutocompleteQueryObject(TestCase):
     def test_value_to_web_bug(self):
         q = AutocompleteQueryObject('fo', model=SearchForm)
         self.assertEquals(q.value_to_web(1), '[null, ""]')
+
 
 class TestRangeQueryObject(TestCase):
     def test_value_from_web(self):
@@ -216,6 +219,10 @@ class TestMultiseekRegistry(TestCase):
         self.registry.model = MagicMock()
         self.registry.get_query_for_model(json.loads(test_json))
         self.registry.get_query_for_model(None)
+
+    def test_get_query_for_model_bug(self):
+        self.registry.model = MagicMock()
+        self.registry.get_query_for_model(json.loads(test_buggy_json))
 
     def test_recreate_form(self):
         op = text(EQUALITY_OPS_ALL[0])

@@ -670,10 +670,9 @@ class MultiseekRegistry:
         if 'form_data' in data:
             query = self.get_query(data['form_data'])
 
+        retval = self.model.objects.all()
         if query is not None:
             retval = self.model.objects.filter(query)
-        else:
-            retval = self.model.objects.all()
 
         if removed_manually:
             retval = retval.exclude(pk__in=removed_manually)
