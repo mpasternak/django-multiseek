@@ -30,8 +30,8 @@ assets:
 	cd test_project && python manage.py collectstatic --noinput
 
 tests: assets
-	pip install tox
-	tox
+	pip install detox
+	detox
 
 
 # target: setup-lo0
