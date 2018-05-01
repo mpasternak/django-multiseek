@@ -168,8 +168,7 @@ class QueryObject(object):
 
         """
 
-        # By default we return True here, feel free to override this
-        # in subclasses.
+        # By default we return True here
         return True
 
     def value_for_description(self, value):
