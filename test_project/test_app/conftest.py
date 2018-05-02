@@ -218,8 +218,7 @@ def multiseek_page(browser, live_server, initial_data):
 
 @pytest.fixture
 def multiseek_admin_page(multiseek_page, admin_user):
-    while "log in, then come back" in multiseek_page.browser.html:
-        multiseek_page.login(admin_user.username, "password")
+    multiseek_page.login(admin_user.username, "password")
     return multiseek_page
 
 
