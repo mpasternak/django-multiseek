@@ -216,6 +216,7 @@ def multiseek_page(browser, live_server, initial_data):
     yield page
     page.browser.quit()
 
+
 @pytest.fixture
 def multiseek_admin_page(multiseek_page, admin_user):
     multiseek_page.login(admin_user.username, "password")

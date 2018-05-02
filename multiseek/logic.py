@@ -117,6 +117,12 @@ class ParseError(Exception):
     pass
 
 
+def eventually_callable(obj):
+    if callable(obj):
+        return obj()
+    return obj
+
+
 class QueryObject(object):
     """This is a Query Object!
 
@@ -216,7 +222,8 @@ class QueryObject(object):
         if self.public:
             return True
 
-        if request is not None and request.user.is_authenticated is True:
+        if request is not None and \
+                eventually_callable(request.user.is_authenticated) is True:
             return True
 
         return False
@@ -498,7 +505,8 @@ class ReportType:
         if self.public:
             return True
 
-        if request is not None and request.user.is_authenticated is True:
+        if request is not None and \
+                eventually_callable(request.user.is_authenticated) is True:
             return True
 
         return False
