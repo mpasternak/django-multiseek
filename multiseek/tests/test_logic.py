@@ -135,6 +135,18 @@ class TestIntegerQueryObject(TestCase):
             py3k_test_string("(AND: (u'foo__lte', 123))"))
 
 
+class _user:
+    def return_true(self):
+        return True
+
+    is_authenticated = property(return_true)
+
+
+class FakeRequest:
+
+    def __init__(self):
+        self.user = _user()
+
 class TestMultiseekRegistry(TestCase):
     def setUp(self):
         self.registry = MultiseekRegistry()
@@ -160,7 +172,7 @@ class TestMultiseekRegistry(TestCase):
             1)
 
         self.assertEquals(
-            len(self.registry.field_by_type(RANGE, public=False)),
+            len(self.registry.field_by_type(RANGE, FakeRequest())),
             2)
 
     def test_extract(self):
@@ -168,7 +180,7 @@ class TestMultiseekRegistry(TestCase):
             self.registry.extract('field_name'), ['foo', 'bar'])
 
         self.assertEquals(
-            self.registry.extract('field_name', public=False),
+            self.registry.extract('field_name', FakeRequest()),
             ['foo', 'bar', 'quux'])
 
     def test_parse_field(self):

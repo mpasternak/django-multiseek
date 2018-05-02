@@ -1,18 +1,18 @@
 # -*- encoding: utf-8 -*-
 
 
-from decimal import Decimal
 import decimal
 import importlib
-
 import json
-import re
 from datetime import timedelta, datetime
+from decimal import Decimal
+
 from dateutil.parser import parse
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import html
+
 try:
     from django.db.models.options import get_verbose_name
 except ImportError:
@@ -117,6 +117,12 @@ class ParseError(Exception):
     pass
 
 
+def eventually_callable(obj):
+    if callable(obj):
+        return obj()
+    return obj
+
+
 class QueryObject(object):
     """This is a Query Object!
 
@@ -129,8 +135,6 @@ class QueryObject(object):
     label = None
     type = None
     ops = None
-
-    # By default, all QueryObjects are available for non-logged in users.
     public = True
 
     def __init__(self, field_name=None, label=None, public=None):
@@ -168,8 +172,7 @@ class QueryObject(object):
 
         """
 
-        # By default we return True here, feel free to override this
-        # in subclasses.
+        # By default we return True here
         return True
 
     def value_for_description(self, value):
@@ -206,6 +209,24 @@ class QueryObject(object):
             return ~ret
 
         return ret
+
+    def enabled(self, request=None):
+        """This function can be used to conditionally enable some
+        QueryObjects, depending on the logged user or site
+        configuration.
+
+        By default, all QueryObjects are available for non-logged in users.
+
+        :type request: django.http.request.HttpRequest
+        """
+        if self.public:
+            return True
+
+        if request is not None and \
+                eventually_callable(request.user.is_authenticated) is True:
+            return True
+
+        return False
 
 
 class StringQueryObject(QueryObject):
@@ -260,10 +281,9 @@ class AutocompleteQueryObject(QueryObject):
     url = None
 
     def __init__(
-            self, field_name=None, label=None, model=None, url=None,
-            public=None):
+            self, field_name=None, label=None, model=None, url=None):
         super(AutocompleteQueryObject, self).__init__(
-            field_name, label, public=public)
+            field_name, label)
 
         if model is not None:
             self.model = model
@@ -441,9 +461,9 @@ class ValueListQueryObject(QueryObject):
     ops = [EQUAL, DIFFERENT]
     values = None
 
-    def __init__(self, field_name=None, label=None, values=None, public=None):
+    def __init__(self, field_name=None, label=None, values=None):
         super(ValueListQueryObject, self).__init__(
-            field_name, label, public=public)
+            field_name, label)
         if values is not None:
             self.values = values
 
@@ -472,10 +492,24 @@ class BooleanQueryObject(QueryObject):
 Ordering = namedtuple("Ordering", ["field", "label"])
 
 
-class ReportType(namedtuple("ReportType", "id label public")):
-    def __new__(cls, id, label, public=True):
-        return super(ReportType, cls).__new__(cls, id, label, public)
+class ReportType:
+    def __init__(self, id, label, public=True):
+        self.id = id
+        self.label = label
+        self.public = public
 
+    def enabled(self, request=None):
+        """
+        :type request: django.http.request.HttpRequest
+        """
+        if self.public:
+            return True
+
+        if request is not None and \
+                eventually_callable(request.user.is_authenticated) is True:
+            return True
+
+        return False
 
 class _FrameInfo:
     frame = None
@@ -489,6 +523,7 @@ def get_ordering_key_name(no):
     key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
     key_dir = key + "_dir"
     return key, key_dir
+
 
 class MultiseekRegistry:
     """This is a base class for multiseek registry. A registry is a list
@@ -531,12 +566,8 @@ class MultiseekRegistry:
             if desc is True:
                 self.default_ordering[key_dir] = "1"
 
-    def get_fields(self, public=True):
-        """Returns a list of fields, by default returning only public fields.
-        """
-        if public:
-            return [x for x in self.fields if x.public]
-        return self.fields
+    def get_fields(self, request=None):
+        return [x for x in self.fields if x.enabled(request)]
 
     def get_field_by_name(self, name):
         for field in self.fields:
@@ -559,16 +590,16 @@ class MultiseekRegistry:
         assert (len(self.field_by_name.keys()) == len(self.fields)), \
             "All fields must have unique names"
 
-    def field_by_type(self, type, public=True):
+    def field_by_type(self, type, request=None):
         """Return a list of fields by type.
         """
-        return [field for field in self.get_fields(public) if
-                field.type == type]
+        fields = self.get_fields(request)
+        return [field for field in fields if field.type == type]
 
-    def extract(self, attr, public=True):
+    def extract(self, attr, request=None):
         """Extract an attribute out of every field.
         """
-        return [getattr(field, attr) for field in self.get_fields(public)]
+        return [getattr(field, attr) for field in self.get_fields(request)]
 
     def parse_field(self, field):
         """Parse a field (from JSON)
@@ -633,14 +664,12 @@ class MultiseekRegistry:
         """
         return self.get_query_recursive(data)
 
-    def get_report_types(self, only_public=False):
-        if only_public:
-            return [x for x in self.report_types if x.public]
-        return self.report_types
+    def get_report_types(self, request=None):
+        return [x for x in self.report_types if x.enabled(request)]
 
-    def get_report_type(self, data, only_public=False):
+    def get_report_type(self, data, request=None):
         default_retval = ''
-        report_types = self.get_report_types(only_public=only_public)
+        report_types = self.get_report_types(request)
 
         if report_types:
             default_retval = self.report_types[0].id
