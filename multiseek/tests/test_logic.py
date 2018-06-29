@@ -4,6 +4,7 @@ import json
 from unittest import TestCase
 
 import pytest
+from django.contrib.contenttypes.models import ContentType
 from mock import MagicMock
 
 from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
@@ -91,6 +92,11 @@ class TestAutocompleteQueryObject(TestCase):
         q.model.objects.get.return_value = True
 
         self.assertEquals(q.value_to_web(1), '[1, "True"]')
+
+    def test_value_to_web_None(self):
+        q = AutocompleteQueryObject('foo')
+        q.model = ContentType
+        self.assertEquals(q.value_to_web('null'), '[null, ""]')
 
     @pytest.mark.django_db
     def test_value_to_web_bug(self):
