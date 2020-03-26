@@ -21,10 +21,6 @@ from django.utils.translation import ugettext_lazy as _
 from collections import namedtuple
 from builtins import str as text
 
-import six
-if six.PY3:
-    unicode = str
-
 MULTISEEK_REPORT_TYPE = '_ms_report_type'
 MULTISEEK_ORDERING_PREFIX = "order_"
 
@@ -241,7 +237,7 @@ class StringQueryObject(QueryObject):
         return True
 
     def value_from_web(self, value):
-        if type(value) == str or type(value) == unicode:
+        if type(value) == str:
             return value
         if type(value) == bytes:
             return value.decode("utf-8")
@@ -863,7 +859,7 @@ def get_registry(registry):
     :rtype: MultiseekRegistry
     """
 
-    if type(registry) is str or type(registry) is unicode:
+    if type(registry) == str:
         if registry not in _cached_registry:
             m = importlib.import_module(registry).registry
             _cached_registry[registry] = m

@@ -7,7 +7,6 @@ from builtins import str as text
 
 import pytest
 from django.contrib.auth.models import User
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from model_mommy import mommy
 from selenium.webdriver.common.keys import Keys
@@ -48,9 +47,6 @@ class wait_until_no_alert(wait_for_alert):
 
 FRAME = "frame-0"
 FIELD = 'field-0'
-
-if six.PY3:
-    unicode = str
 
 
 @pytest.mark.django_db

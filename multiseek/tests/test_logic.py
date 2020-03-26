@@ -14,7 +14,6 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
 from multiseek.models import SearchForm
 from multiseek.util import make_field
-import six
 from builtins import str as text
 
 test_json = json.dumps({'form_data': [None,
@@ -23,9 +22,7 @@ test_json = json.dumps({'form_data': [None,
 test_buggy_json = json.dumps({'form_data': [None]})
 
 def py3k_test_string(s):
-    if six.PY3:
-        return s.replace("u'", "'").replace('u"', '"').replace(", u'", ", '")
-    return s
+    return s.replace("u'", "'").replace('u"', '"').replace(", u'", ", '")
 
 class TestQueryObject(TestCase):
     def setUp(self):
