@@ -14,7 +14,7 @@ class TestModels(TransactionTestCase):
         s2 = baker.make(SearchForm, owner=u, public=True, name='B')
 
         res = SearchForm.objects.get_for_user(AnonymousUser())
-        self.assertEquals(list(res), [s2])
+        self.assertEqual(list(res), [s2])
 
         res = SearchForm.objects.get_for_user(u)
-        self.assertEquals(list(res), [s1, s2])
+        self.assertEqual(list(res), [s1, s2])
