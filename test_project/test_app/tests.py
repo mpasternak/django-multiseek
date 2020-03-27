@@ -7,8 +7,8 @@ from builtins import str as text
 
 import pytest
 from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
-from model_mommy import mommy
+from django.utils.translation import gettext_lazy as _
+from model_bakery import baker
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.expected_conditions import alert_is_present
 from selenium.webdriver.support.wait import WebDriverWait
@@ -452,7 +452,7 @@ def test_form_save_anon_initial(multiseek_page):
 
 @pytest.mark.django_db
 def test_form_save_anon_initial_with_data(multiseek_page):
-    mommy.make(SearchForm, public=True)
+    baker.make(SearchForm, public=True)
     multiseek_page.browser.reload()
     elem = multiseek_page.browser.find_by_id("formsSelector")
     assert elem.visible

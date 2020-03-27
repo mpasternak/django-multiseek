@@ -17,7 +17,7 @@ try:
     from django.db.models.options import get_verbose_name
 except ImportError:
     from django.utils.text import camel_case_to_spaces as get_verbose_name
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from collections import namedtuple
 from builtins import str as text
 

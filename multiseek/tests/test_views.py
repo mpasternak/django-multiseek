@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.test import TestCase
 from django.test.client import RequestFactory
 from mock import MagicMock
-from model_mommy import mommy
+from model_bakery import baker
 
 from multiseek.logic import create_registry, StringQueryObject, \
     ValueListQueryObject, AutocompleteQueryObject, EQUALITY_OPS_ALL, EQUAL
@@ -141,14 +141,14 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
             self.msp.get_context_data(),
             dict(result=text(ERR_FORM_NAME)))
 
-        sf = mommy.make(SearchForm, name='foo')
+        sf = baker.make(SearchForm, name='foo')
         self.request.POST['name'] = 'foo'
         self.assertEquals(
             self.msp.get_context_data(),
             dict(result=OVERWRITE_PROMPT))
 
         self.request.POST['overwrite'] = 'true'
-        self.request.user = mommy.make(User)
+        self.request.user = baker.make(User)
         self.assertEquals(
             self.msp.get_context_data()['result'],
             'saved') # dict(result=SAVED, pk=1))

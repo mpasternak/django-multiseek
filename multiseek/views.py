@@ -12,7 +12,7 @@ from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.http.response import HttpResponse, Http404, \
     HttpResponseServerError, \
     HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _, ugettext_lazy
+from django.utils.translation import gettext_lazy as _, gettext_lazy
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView
 from django.views.generic.base import View
@@ -224,7 +224,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         data = self.get_multiseek_data()
         registry = get_registry(self.registry)
 
-        ugettext_lazy("andnot") # Leave this line.
+        gettext_lazy("andnot") # Leave this line.
 
         def _recur(d):
             cur = 0
@@ -235,7 +235,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                 if type(d[cur]) == list:
                     if d[cur][0] != None:
                         ret += ' <b>' + text(
-                            ugettext_lazy(d[cur][0])).upper() + '</b> '
+                            gettext_lazy(d[cur][0])).upper() + '</b> '
                     ret += '(' + _recur(d[cur][1:]) + ')'
                 else:
                     f = registry.get_field_by_name(d[cur]['field'])
@@ -250,7 +250,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                         if 'prev_op' in d[cur] and d[cur]['prev_op'] != None:
                             tmp = d[cur]['prev_op']
                             ret += ' <b>' + text(
-                                ugettext_lazy(tmp)).upper() + '</b> '
+                                gettext_lazy(tmp)).upper() + '</b> '
 
 
                         ret += '%s %s %s' % (d[cur]['field'].lower(),
