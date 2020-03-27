@@ -41,10 +41,10 @@ setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
 
 install-yarn-packages:
-    cd /usr/src/app/test_project && yarn
+	cd /usr/src/app/test_project && yarn
 
 tests: install-yarn-packages
-    pip install tox && tox
+	pip install tox && tox
 
 update-messages:
 	cd multiseek && django-admin.py makemessages -d django -d djangojs -a
