@@ -15,7 +15,7 @@ from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, \
 from .models import Language, Author, Book
 import datetime
 from builtins import str as text
-
+from django.utils.translation import gettext_lazy as _
 
 class wait_for_page_load(object):
     def __init__(self, browser):
@@ -234,8 +234,8 @@ def splinter_firefox_profile_preferences():
 
 @pytest.fixture
 def initial_data():
-    eng = baker.make(Language, name="english", description="English language")
-    baker.make(Language, name="polish", description="Polish language")
+    eng = baker.make(Language, name=_("english"), description="English language")
+    baker.make(Language, name=_("polish"), description="Polish language")
     a1 = baker.make(Author, last_name="Smith", first_name="John")
     a2 = baker.make(Author, last_name="Kovalsky", first_name="Ian")
     b1 = baker.make(Book, title="A book with a title", year=2013, language=eng,
@@ -255,4 +255,17 @@ def initial_data():
     for a in range(0, 50):
         b3 = baker.make(Book, title="Book no %i" % a, year=1999, language=fr)
         b3.authors.add(a3)
-                   
+
+
+# https://github.com/pytest-dev/pytest-splinter/issues/143
+@pytest.fixture(scope='session')
+def splinter_browser_class(request):
+    from pytest_splinter.plugin import Browser
+
+    def FixedBrowser(driver_name, *args, **kwargs):
+        if driver_name == "remote":
+            kwargs.pop('firefox_profile')
+            kwargs.pop('moz:firefoxOptions')
+        return Browser(driver_name, *args, **kwargs)
+
+    return FixedBrowser
