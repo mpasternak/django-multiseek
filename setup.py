@@ -21,7 +21,7 @@ class compile_translations(Command):
 
     def run(self):
         curdir = os.getcwd()
-        os.chdir(os.path.realpath('multiseek'))
+        os.chdir(os.path.join(os.path.dirname(__file__), 'multiseek'))
         from django.core.management import call_command
         call_command('compilemessages')
         os.chdir(curdir)
@@ -86,12 +86,14 @@ if 'sdist' in sys.argv:
 else:
     # Always try to build messages, fail if django not present
     # (I hate incomplete releases)
-    dir = os.getcwd()
-    os.chdir(os.path.join(dir, 'multiseek'))
+    cwd = os.getcwd()
+    os.chdir(os.path.join(os.path.dirname(__file__),'multiseek'))
+    del os.environ['DJANGO_SETTINGS_MODULE']
     os.system('django-admin.py compilemessages')
-    os.chdir(dir)
+    os.chdir(cwd)
 
 def reqs(f):
+    f = os.path.join(os.path.dirname(__file__), f)
     for elem in open(f).readlines():
         elem = elem.strip()
 
