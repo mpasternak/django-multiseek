@@ -10,7 +10,7 @@ pytest-pythonpath
 
 mock
 model_bakery
-psycopg2
+psycopg2-binary
 
 bumpversion
 tox
