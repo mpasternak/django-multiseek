@@ -4,6 +4,7 @@ import json
 from unittest import TestCase
 
 import pytest
+from django.contrib.contenttypes.models import ContentType
 from mock import MagicMock
 
 from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
@@ -13,16 +14,15 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
 from multiseek.models import SearchForm
 from multiseek.util import make_field
-import six
 from builtins import str as text
 
 test_json = json.dumps({'form_data': [None,
     dict(field='foo', operator=text(EQUALITY_OPS_ALL[0]), value='foo', prev_op=None)]})
 
+test_buggy_json = json.dumps({'form_data': [None]})
+
 def py3k_test_string(s):
-    if six.PY3:
-        return s.replace("u'", "'").replace('u"', '"').replace(", u'", ", '")
-    return s
+    return s.replace("u'", "'").replace('u"', '"').replace(", u'", ", '")
 
 class TestQueryObject(TestCase):
     def setUp(self):
@@ -32,12 +32,12 @@ class TestQueryObject(TestCase):
         self.q = MyQueryObject()
 
     def test_value_from_web(self):
-        self.assertEquals(123, self.q.value_from_web(123))
+        self.assertEqual(123, self.q.value_from_web(123))
 
 
     def test_query_for(self):
         res = self.q.query_for("foobar", DIFFERENT)
-        self.assertEquals(
+        self.assertEqual(
             py3k_test_string("(NOT (AND: (u'foo', u'foobar')))"),
             str(res))
 
@@ -63,7 +63,7 @@ class TestStringQueryObject(TestCase):
 
         for param, result in args:
             res = self.q.real_query("foobar", param)
-            self.assertEquals(
+            self.assertEqual(
                 str(res),
                 py3k_test_string(result))
 
@@ -79,30 +79,36 @@ class TestAutocompleteQueryObject(TestCase):
 
         q.model = MagicMock()
         q.model.objects.get.return_value = True
-        self.assertEquals(q.value_from_web(None), None)
-        self.assertEquals(q.value_from_web('foo'), None)
-        self.assertEquals(q.value_from_web(1), True)
+        self.assertEqual(q.value_from_web(None), None)
+        self.assertEqual(q.value_from_web('foo'), None)
+        self.assertEqual(q.value_from_web(1), True)
 
     def test_value_to_web(self):
         q = AutocompleteQueryObject('foo')
         q.model = MagicMock()
         q.model.objects.get.return_value = True
 
-        self.assertEquals(q.value_to_web(1), '[1, "True"]')
+        self.assertEqual(q.value_to_web(1), '[1, "True"]')
+
+    def test_value_to_web_None(self):
+        q = AutocompleteQueryObject('foo')
+        q.model = ContentType
+        self.assertEqual(q.value_to_web('null'), '[null, ""]')
 
     @pytest.mark.django_db
     def test_value_to_web_bug(self):
         q = AutocompleteQueryObject('fo', model=SearchForm)
-        self.assertEquals(q.value_to_web(1), '[null, ""]')
+        self.assertEqual(q.value_to_web(1), '[null, ""]')
+
 
 class TestRangeQueryObject(TestCase):
     def test_value_from_web(self):
         r = RangeQueryObject('foo')
-        self.assertEquals(r.value_from_web("[1,2]"), [1, 2])
-        self.assertEquals(r.value_from_web('["1","2"]'), [1, 2])
-        self.assertEquals(r.value_from_web("[1,2,3]"), None)
-        self.assertEquals(r.value_from_web('["foo","bar"]'), None)
-        self.assertEquals(r.value_from_web('123'), None)
+        self.assertEqual(r.value_from_web("[1,2]"), [1, 2])
+        self.assertEqual(r.value_from_web('["1","2"]'), [1, 2])
+        self.assertEqual(r.value_from_web("[1,2,3]"), None)
+        self.assertEqual(r.value_from_web('["foo","bar"]'), None)
+        self.assertEqual(r.value_from_web('123'), None)
 
         self.assertRaises(
             UnknownOperation, r.real_query, [1, 2], 'foo')
@@ -121,16 +127,28 @@ class TestRangeQueryObject(TestCase):
 class TestIntegerQueryObject(TestCase):
     def test_value_from_web(self):
         r = IntegerQueryObject('foo')
-        self.assertEquals(r.value_from_web('123'), 123)
+        self.assertEqual(r.value_from_web('123'), 123)
 
         self.assertRaises(
             UnknownOperation, r.real_query, 123, 'foo')
 
         res = r.real_query(123, text(LESSER_OR_EQUAL))
-        self.assertEquals(
+        self.assertEqual(
             str(res),
             py3k_test_string("(AND: (u'foo__lte', 123))"))
 
+
+class _user:
+    def return_true(self):
+        return True
+
+    is_authenticated = property(return_true)
+
+
+class FakeRequest:
+
+    def __init__(self):
+        self.user = _user()
 
 class TestMultiseekRegistry(TestCase):
     def setUp(self):
@@ -152,20 +170,20 @@ class TestMultiseekRegistry(TestCase):
             AssertionError, self.registry.add_field, StringQueryObject('foo'))
 
     def test_field_by_type(self):
-        self.assertEquals(
+        self.assertEqual(
             len(self.registry.field_by_type(STRING)),
             1)
 
-        self.assertEquals(
-            len(self.registry.field_by_type(RANGE, public=False)),
+        self.assertEqual(
+            len(self.registry.field_by_type(RANGE, FakeRequest())),
             2)
 
     def test_extract(self):
-        self.assertEquals(
+        self.assertEqual(
             self.registry.extract('field_name'), ['foo', 'bar'])
 
-        self.assertEquals(
-            self.registry.extract('field_name', public=False),
+        self.assertEqual(
+            self.registry.extract('field_name', FakeRequest()),
             ['foo', 'bar', 'quux'])
 
     def test_parse_field(self):
@@ -186,7 +204,7 @@ class TestMultiseekRegistry(TestCase):
         res = self.registry.parse_field(
             dict(field='foo', operator=EQUALITY_OPS_ALL[0], value='foo', prev_op=None))
 
-        self.assertEquals(str(res),
+        self.assertEqual(str(res),
                           py3k_test_string("(AND: (u'foo', u'foo'))"))
 
     def test_get_recursive_list(self):
@@ -202,13 +220,13 @@ class TestMultiseekRegistry(TestCase):
         input[2]['prev_op'] = OR
 
         res = self.registry.get_query_recursive(input)
-        self.assertEquals(
+        self.assertEqual(
             str(res),
             py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))"))
 
     def test_get_query(self):
         gq = self.registry.get_query(json.loads(test_json)['form_data'])
-        self.assertEquals(
+        self.assertEqual(
             str(gq),
             py3k_test_string("(AND: (u'foo', u'foo'))"))
 
@@ -216,6 +234,10 @@ class TestMultiseekRegistry(TestCase):
         self.registry.model = MagicMock()
         self.registry.get_query_for_model(json.loads(test_json))
         self.registry.get_query_for_model(None)
+
+    def test_get_query_for_model_bug(self):
+        self.registry.model = MagicMock()
+        self.registry.get_query_for_model(json.loads(test_buggy_json))
 
     def test_recreate_form(self):
         op = text(EQUALITY_OPS_ALL[0])
@@ -259,7 +281,7 @@ $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
 \t\t\t$("input[name=order_1_dir]").next().toggleClass("checked", true)
 \t\t}\n""" % dict(equal=EQUAL)
 
-        self.assertEquals(ex, res)
+        self.assertEqual(ex, res)
 
     def     test_create_registry(self):
         create_registry(None, StringQueryObject('foo'))
@@ -268,7 +290,7 @@ $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
         r = get_registry('test_app.multiseek_registry')
         from test_app.multiseek_registry import registry
 
-        self.assertEquals(r, registry)
+        self.assertEqual(r, registry)
 
     def test_bug_3(self):
         f = self.registry.fields[0]

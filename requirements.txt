@@ -1,2 +1,2 @@
 python-dateutil==2.6.1
-django-autocomplete-light==3.3.0rc5
+django-autocomplete-light==3.5.1

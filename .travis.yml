@@ -1,14 +1,14 @@
-services: 
-  - docker
+addons:
+  - firefox: latest
 
-env:
-  - DJANGO=110
+language: python
 
 before_install:
-  - make install-yarn-packages-via-docker
-
-install:
-  - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}  
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
+  - mkdir geckodriver
+  - tar -xzf geckodriver-v0.26.0-linux64.tar.gz -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver
 
 script:
-  - make tests-via-docker
+  - make travis-tests
+

@@ -12,7 +12,7 @@ from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.http.response import HttpResponse, Http404, \
     HttpResponseServerError, \
     HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _, ugettext_lazy
+from django.utils.translation import gettext_lazy as _, gettext_lazy
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView
 from django.views.generic.base import View
@@ -62,9 +62,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
     def get_context_data(self):
         registry = get_registry(self.registry)
 
-        public = self.request.user.is_anonymous
-
-        fields = registry.get_fields(public)
+        fields = registry.get_fields(self.request)
 
         js_fields = json.dumps([text(x.label) for x in fields])
         js_ops = json.dumps(dict(
@@ -75,7 +73,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         js_autocompletes = json.dumps(
             dict([(text(field.label), reverse_or_just_url(field.get_url()))
                   for field in registry.field_by_type(
-                    AUTOCOMPLETE, public)]))
+                    AUTOCOMPLETE, self.request)]))
 
         def get_values(values):
             if callable(values):
@@ -85,7 +83,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         js_value_lists = json.dumps(
             dict([
                 (text(field.label), [text(x) for x in get_values(field.values)])
-                for field in registry.field_by_type(VALUE_LIST, public)]))
+                for field in registry.field_by_type(VALUE_LIST, self.request)]))
 
         initialize_empty_form = True
         form_data = self.request.session.get(MULTISEEK_SESSION_KEY, {})
@@ -106,7 +104,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             initialize_empty_form=initialize_empty_form,
             order_boxes=registry.order_boxes,
             ordering=registry.ordering,
-            report_types=registry.get_report_types(only_public=public),
+            report_types=registry.get_report_types(self.request),
             saved_forms=SearchForm.objects.get_for_user(self.request.user),
             MULTISEEK_ORDERING_PREFIX=MULTISEEK_ORDERING_PREFIX,
             MULTISEEK_REPORT_TYPE=MULTISEEK_REPORT_TYPE)
@@ -226,7 +224,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         data = self.get_multiseek_data()
         registry = get_registry(self.registry)
 
-        ugettext_lazy("andnot") # Leave this line.
+        gettext_lazy("andnot") # Leave this line.
 
         def _recur(d):
             cur = 0
@@ -237,7 +235,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                 if type(d[cur]) == list:
                     if d[cur][0] != None:
                         ret += ' <b>' + text(
-                            ugettext_lazy(d[cur][0])).upper() + '</b> '
+                            gettext_lazy(d[cur][0])).upper() + '</b> '
                     ret += '(' + _recur(d[cur][1:]) + ')'
                 else:
                     f = registry.get_field_by_name(d[cur]['field'])
@@ -252,7 +250,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                         if 'prev_op' in d[cur] and d[cur]['prev_op'] != None:
                             tmp = d[cur]['prev_op']
                             ret += ' <b>' + text(
-                                ugettext_lazy(tmp)).upper() + '</b> '
+                                gettext_lazy(tmp)).upper() + '</b> '
 
 
                         ret += '%s %s %s' % (d[cur]['field'].lower(),
@@ -273,10 +271,8 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         return _recur(data['form_data'][1:])
 
     def get_context_data(self, **kwargs):
-        public = self.request.user.is_anonymous is True
         report_type = get_registry(self.registry) \
-            .get_report_type(self.get_multiseek_data(),
-                             only_public=public)
+            .get_report_type(self.get_multiseek_data(), self.request)
         description = self.describe_multiseek_data()
         removed_ids = self.get_removed_records()
 
