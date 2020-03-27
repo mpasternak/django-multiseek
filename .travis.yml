@@ -1,14 +1,5 @@
-services: 
-  - docker
-
-env:
-  - DJANGO=110
-
-before_install:
-  - make install-yarn-packages-via-docker
-
-install:
-  - export TOXENV=py${TRAVIS_PYTHON_VERSION//./}-django${DJANGO}  
+addons:
+  - firefox: latest
 
 script:
-  - make tests-via-docker
+  - make tests

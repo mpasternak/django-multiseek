@@ -255,17 +255,3 @@ def initial_data():
     for a in range(0, 50):
         b3 = baker.make(Book, title="Book no %i" % a, year=1999, language=fr)
         b3.authors.add(a3)
-
-
-# https://github.com/pytest-dev/pytest-splinter/issues/143
-@pytest.fixture(scope='session')
-def splinter_browser_class(request):
-    from pytest_splinter.plugin import Browser
-
-    def FixedBrowser(driver_name, *args, **kwargs):
-        if driver_name == "remote":
-            kwargs.pop('firefox_profile')
-            kwargs.pop('moz:firefoxOptions')
-        return Browser(driver_name, *args, **kwargs)
-
-    return FixedBrowser
