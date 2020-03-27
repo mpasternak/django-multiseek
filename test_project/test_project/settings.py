@@ -38,7 +38,10 @@ TIME_ZONE = 'America/Chicago'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+
+# As long as I don't have "labels" for fields defined in JavaScript, I need to
+# use single language because tests give weird results... my bad (mpasternak)
+LANGUAGE_CODE = 'pl'
 
 SITE_ID = 1
 
