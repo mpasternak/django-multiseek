@@ -30,8 +30,8 @@ assets:
 	cd test_project && python manage.py collectstatic --noinput
 
 tests: assets
-	pip install tox
-	tox
+	pip install detox
+	detox
 
 
 # target: setup-lo0
@@ -40,12 +40,11 @@ tests: assets
 setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
 
-install-yarn-packages-via-docker:
-	docker run --rm -v `pwd`:/usr/src/app -it node:alpine /bin/sh -c "cd /usr/src/app/test_project && yarn"
+install-yarn-packages:
+	cd test_project && yarn
 
-tests-via-docker: clean install-yarn-packages-via-docker
-	docker-compose up -d
-	docker-compose exec test /bin/bash -c "cd /usr/src/app && pip install tox && tox"
+travis-tests: install-yarn-packages
+	pip install tox && tox
 
 update-messages:
 	cd multiseek && django-admin.py makemessages -d django -d djangojs -a
