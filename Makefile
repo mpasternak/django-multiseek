@@ -43,7 +43,7 @@ setup-lo0:
 install-yarn-packages:
 	cd test_project && yarn
 
-tests: install-yarn-packages
+travis-tests: install-yarn-packages
 	pip install tox && tox
 
 update-messages:

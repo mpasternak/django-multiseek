@@ -2,4 +2,4 @@ addons:
   - firefox: latest
 
 script:
-  - make tests
+  - make travis-tests
