@@ -1,5 +1,7 @@
 addons:
   - firefox: latest
 
+language: python
+
 script:
   - make travis-tests
