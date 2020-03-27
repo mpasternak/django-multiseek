@@ -70,7 +70,7 @@ class TestViews(RegistryMixin, TestCase):
         self.assertEqual(ret['js_value_lists'], '{"baz": ["a", "b", "c"]}')
         self.assertEqual(
             ret['js_init'],
-            u"$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');\n")
+            u"$('#frame-0').multiseekFrame('addField', 'foo', 'równy', 'foo', 'or');\n")
 
     def test_reset_form(self):
         self.request.session[MULTISEEK_SESSION_KEY] = '123'
