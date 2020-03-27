@@ -228,7 +228,8 @@ def splinter_firefox_profile_preferences():
     return {
         "browser.startup.homepage": "about:blank",
         "startup.homepage_welcome_url": "about:blank",
-        "startup.homepage_welcome_url.additional": "about:blank"
+        "startup.homepage_welcome_url.additional": "about:blank",
+        "intl.accept_languages": "en-us"
     }
 
 
