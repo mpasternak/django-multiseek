@@ -10,4 +10,6 @@ before_install:
   - export PATH=$PATH:$PWD/geckodriver
 
 script:
+  - echo $PATH
+  - geckodriver --version
   - make travis-tests
