@@ -16,5 +16,7 @@ before_script:
 
 script:
   - echo $PATH
+  - echo $DISPLAY
+  - firefox & 
   - geckodriver --version
   - make travis-tests
