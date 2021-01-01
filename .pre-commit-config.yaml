@@ -1,0 +1,40 @@
+repos:
+    - repo: https://github.com/myint/autoflake
+      rev: 'v1.4'
+      hooks:
+        - id: autoflake
+          args: ['--in-place', '--remove-all-unused-imports', '--remove-unused-variables']
+
+    - repo: https://github.com/pre-commit/mirrors-autopep8
+      rev: 'v1.5.4'
+      hooks:
+        - id: autopep8
+          args: ['--in-place', '-aaa',]
+
+    - repo: https://github.com/hadialqattan/pycln
+      rev: '0.0.1-beta.1'
+      hooks:
+        - id: pycln
+
+    - repo: https://github.com/pre-commit/mirrors-isort
+      rev: 'v5.7.0'  # Use the revision sha / tag you want to point at
+      hooks:
+        - id: isort
+          args: ["--profile", "black"]
+
+    - repo: https://github.com/psf/black
+      rev: '20.8b1'
+      hooks:
+        -   id: black
+
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: 'v3.4.0'
+      hooks:
+        -   id: check-yaml
+        -   id: end-of-file-fixer
+        -   id: trailing-whitespace
+
+    - repo: https://gitlab.com/pycqa/flake8
+      rev: '3.8.4'
+      hooks:
+        -   id: flake8
