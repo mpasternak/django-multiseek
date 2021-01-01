@@ -5,7 +5,7 @@
   "dependencies": {
     "foundation-datepicker": "^1.5.6",
     "foundation-sites": "^6.4.4-rc1",
-    "jquery": "^3.3.1",
+    "jquery": "^3.5.0",
     "jqueryui": "^1.11.1",
     "select2": "^4.0.13",
     "what-input": "^5.0.5"
