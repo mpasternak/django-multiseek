@@ -249,7 +249,7 @@ def test_autocomplete_field(multiseek_page):
     ).click()
 
     element = multiseek_page.browser.find_by_css(".select2-container")
-    select_select2_autocomplete(multiseek_page.browser, element[0], "Smith")
+    select_select2_autocomplete(multiseek_page.browser, element, "Smith")
 
     got = multiseek_page.serialize()
     expect = [
