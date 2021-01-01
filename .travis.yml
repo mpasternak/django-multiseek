@@ -13,6 +13,9 @@ before_install:
   - tar -xzf geckodriver-v0.28.0-linux64.tar.gz -C geckodriver
   - export PATH=$PATH:$PWD/geckodriver
 
-script:
-  - make travis-tests
+install:
+  - pip install tox-travis
+  - cd test_project && yarn
+
+script: tox
 
