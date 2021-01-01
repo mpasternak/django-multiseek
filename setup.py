@@ -92,7 +92,7 @@ else:
         del os.environ['DJANGO_SETTINGS_MODULE']
     except KeyError:
         pass
-    
+
     os.system('django-admin.py compilemessages')
     os.chdir(cwd)
 

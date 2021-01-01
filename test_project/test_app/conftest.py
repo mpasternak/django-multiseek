@@ -17,17 +17,7 @@ import datetime
 from builtins import str as text
 from django.utils.translation import gettext_lazy as _
 
-class wait_for_page_load(object):
-    def __init__(self, browser):
-        self.browser = browser
-
-    def __enter__(self):
-        self.old_page = self.browser.find_by_tag('html')[0]._element
-
-    def __exit__(self, *_):
-        WebDriverWait(self.browser, 10).until(
-            staleness_of(self.old_page)
-        )
+from .testutil import wait_for_page_load
 
 
 class SplinterLoginMixin:
@@ -84,7 +74,7 @@ class MultiseekWebPage(SplinterLoginMixin):
 
         for elem in ['type', 'op', 'prev-op', 'close-button']:
             try:
-                e = element.find_by_id(elem)[0]
+                e = element.find_by_id(elem, wait_time=0)[0]
             except ElementDoesNotExist as x:
                 # prev-op may be None
                 if elem != 'prev-op':
@@ -184,9 +174,11 @@ class MultiseekWebPage(SplinterLoginMixin):
     def save_form_as(self, name):
         self.click_save_button()
         WebDriverWait(self.browser, 10).until(alert_is_present())
-        with self.browser.get_alert() as alert:
-            alert.fill_with(name)
-            alert.accept()
+
+        alert = self.browser.driver.switch_to.alert
+        alert.fill_with(name)
+        alert.accept()
+
         WebDriverWait(self.browser, 10).until_not(alert_is_present())
 
     def count_elements_in_form_selector(self, name):

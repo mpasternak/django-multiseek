@@ -820,9 +820,16 @@ function saveForm(button) {
         return;
     }
 
+    setTimeout(function(){saveFormRest1(dct);}, 500);
+}
+
+function saveFormRest1(dct) {
     dct.public = confirm(
         gettext("Should the form be available for every user of this website?"));
+    setTimeout(function(){saveFormRest2(dct);}, 500);
+}
 
+function saveFormRest2(dct) {
     var url = multiseek.SAVE_FORM_URL;
     var error = gettext('There was a server-side error. The form was NOT saved.');
     var saved = gettext('Form was saved.');
