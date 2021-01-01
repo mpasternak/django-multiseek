@@ -31,7 +31,7 @@ assets:
 
 tests: assets
 	pip install detox
-	detox
+	detox -n 2
 
 
 # target: setup-lo0

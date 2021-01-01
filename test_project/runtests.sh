@@ -9,4 +9,4 @@ export PYTHONIOENCODING=utf_8
 
 python manage.py collectstatic --noinput -v0
 
-py.test --cov=../multiseek --junitxml=../junit.xml test_app/tests.py ../multiseek
+py.test --splinter-headless --cov=../multiseek --junitxml=../junit.xml test_app/tests.py ../multiseek
