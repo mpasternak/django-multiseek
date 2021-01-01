@@ -88,7 +88,11 @@ else:
     # (I hate incomplete releases)
     cwd = os.getcwd()
     os.chdir(os.path.join(os.path.dirname(__file__),'multiseek'))
-    del os.environ['DJANGO_SETTINGS_MODULE']
+    try:
+        del os.environ['DJANGO_SETTINGS_MODULE']
+    except KeyError:
+        pass
+    
     os.system('django-admin.py compilemessages')
     os.chdir(cwd)
 
