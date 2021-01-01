@@ -840,15 +840,15 @@ function saveFormRest2(dct) {
             if (textStatus == 'success') {
 
                 if (data.result == 'saved') {
-                    alert(saved);
                     updateFormSelector(data.pk, dct['name']);
+                    setTimeout(function(){alert(saved);}, 500);
                 } else if (data.result == 'overwrite-prompt') {
                     if (confirm(form_exists)) {
                         dct['overwrite'] = true;
                         $.post(url, dct, function (data, textStatus, jqXHR) {
                             if (textStatus == 'success') {
                                 if (data.result == 'saved') {
-                                    alert(saved);
+                                    setTimeout(function(){alert(saved);}, 500);
                                     updateFormSelector(data.pk, dct['name']);
                                 } else
                                     alert(data.result);
