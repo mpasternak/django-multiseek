@@ -41,6 +41,8 @@ EQUAL_FEMALE = _("equals (female geder)")  # u"równa"
 EQUAL_NONE = _("equals (no gender)")    # u'równe'
 EQUAL_BOTH = _("equals (both genders)")    #u'równy/a'
 
+EQUAL_ALL = EQUAL, EQUAL_FEMALE, EQUAL_NONE, EQUAL_BOTH
+
 GREATER = _("greater, than")
 GREATER_FEMALE = _("greater, than (female gender)")
 GREATER_NONE = _("greater, than (no gender)")
@@ -418,7 +420,7 @@ class AbstractNumberQueryObject(QueryObject):
         return True
 
     def real_query(self, value, operation):
-        if operation in [text(x) for x in EQUALITY_OPS_ALL]:
+        if operation in [text(x) for x in EQUAL_ALL]:
             return Q(**{self.field_name: value})
         elif operation in [text(x) for x in DIFFERENT_ALL]:
             return ~Q(**{self.field_name: value})
