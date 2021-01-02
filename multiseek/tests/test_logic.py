@@ -11,7 +11,8 @@ from multiseek.logic import UnknownOperation, AutocompleteQueryObject, \
     RangeQueryObject, RANGE_OPS, StringQueryObject, QueryObject, DIFFERENT, \
     NOT_CONTAINS, NOT_STARTS_WITH, MultiseekRegistry, STRING, ParseError, \
     UnknownField, EQUALITY_OPS_ALL, OR, AND, create_registry, get_registry, \
-    EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX
+    EQUAL, IntegerQueryObject, LESSER_OR_EQUAL, RANGE, ReportType, Ordering, MULTISEEK_ORDERING_PREFIX, \
+    AbstractNumberQueryObject
 from multiseek.models import SearchForm
 from multiseek.util import make_field
 from builtins import str as text
@@ -100,6 +101,13 @@ class TestAutocompleteQueryObject(TestCase):
         q = AutocompleteQueryObject('fo', model=SearchForm)
         self.assertEqual(q.value_to_web(1), '[null, ""]')
 
+class TestAbstractNumberQueryObject(TestCase):
+    def test_real_query(self):
+        a = AbstractNumberQueryObject('f')
+        b = a.real_query(10, DIFFERENT)
+        assert str(b) == "(NOT (AND: ('f', 10)))"
+        b = a.real_query(10, EQUAL)
+        assert str(b) == "(AND: ('f', 10))"
 
 class TestRangeQueryObject(TestCase):
     def test_value_from_web(self):

@@ -4,48 +4,54 @@
 import json
 from builtins import str as text
 
-import sys
-from django import shortcuts, http
-from django.urls import reverse
+from django import http, shortcuts
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
-from django.http.response import HttpResponse, Http404, \
-    HttpResponseServerError, \
-    HttpResponseRedirect
-from django.utils.translation import gettext_lazy as _, gettext_lazy
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
-from django.views.generic import TemplateView, ListView
-from django.views.generic.base import View
+from django.views.generic import ListView, TemplateView
 
 from multiseek.logic import MULTISEEK_REPORT_TYPE
 from multiseek.models import SearchForm
-from .logic import VALUE_LIST, AUTOCOMPLETE, AND, OR, get_registry, \
-    UnknownOperation, ParseError, UnknownField, MULTISEEK_ORDERING_PREFIX
 
-SAVED = 'saved'
-OVERWRITE_PROMPT = 'overwrite-prompt'
+from .logic import (
+    AND,
+    AUTOCOMPLETE,
+    MULTISEEK_ORDERING_PREFIX,
+    OR,
+    VALUE_LIST,
+    ParseError,
+    UnknownField,
+    UnknownOperation,
+    get_registry,
+)
+
+SAVED = "saved"
+OVERWRITE_PROMPT = "overwrite-prompt"
 
 ERR_FORM_NAME = _("Form name must not be empty")
 ERR_LOADING_DATA = _("Error while loading form data")
 ERR_PARSING_DATA = _("Error while parsing form data")
 ERR_NO_FORM_DATA = _("No form data provided")
 
-MULTISEEK_SESSION_KEY = 'multiseek_json'
-MULTISEEK_SESSION_KEY_REMOVED = 'multiseek_json_removed'
+MULTISEEK_SESSION_KEY = "multiseek_json"
+MULTISEEK_SESSION_KEY_REMOVED = "multiseek_json_removed"
 
 
 def reverse_or_just_url(s):
-    if s.startswith('/'):
+    if s.startswith("/"):
         return s
     return reverse(s)
 
 
-LAST_FIELD_REMOVE_MESSAGE = \
-    _("The ability to remove the last field has been disabled.")
+LAST_FIELD_REMOVE_MESSAGE = _("The ability to remove the last field has been disabled.")
 
 
 def user_allowed_to_save_forms(user):
-    if hasattr(user, 'is_staff'):
+    if hasattr(user, "is_staff"):
         return user.is_staff
 
 
@@ -65,15 +71,19 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         fields = registry.get_fields(self.request)
 
         js_fields = json.dumps([text(x.label) for x in fields])
-        js_ops = json.dumps(dict(
-            [(text(f.label), [text(x) for x in f.ops]) for f in fields]))
-        js_types = json.dumps(
-            dict([(text(f.label), f.type) for f in fields]))
+        js_ops = json.dumps(
+            dict([(text(f.label), [text(x) for x in f.ops]) for f in fields])
+        )
+        js_types = json.dumps(dict([(text(f.label), f.type) for f in fields]))
 
         js_autocompletes = json.dumps(
-            dict([(text(field.label), reverse_or_just_url(field.get_url()))
-                  for field in registry.field_by_type(
-                    AUTOCOMPLETE, self.request)]))
+            dict(
+                [
+                    (text(field.label), reverse_or_just_url(field.get_url()))
+                    for field in registry.field_by_type(AUTOCOMPLETE, self.request)
+                ]
+            )
+        )
 
         def get_values(values):
             if callable(values):
@@ -81,9 +91,13 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             return values
 
         js_value_lists = json.dumps(
-            dict([
-                (text(field.label), [text(x) for x in get_values(field.values)])
-                for field in registry.field_by_type(VALUE_LIST, self.request)]))
+            dict(
+                [
+                    (text(field.label), [text(x) for x in get_values(field.values)])
+                    for field in registry.field_by_type(VALUE_LIST, self.request)
+                ]
+            )
+        )
 
         initialize_empty_form = True
         form_data = self.request.session.get(MULTISEEK_SESSION_KEY, {})
@@ -92,22 +106,30 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
             initialize_empty_form = False
         js_init = registry.recreate_form(form_data)
 
-        js_removed = ",".join('"%(x)s"' % dict(x=x) for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
+        js_removed = ",".join(
+            '"%(x)s"' % dict(x=x)
+            for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
+        )
         return dict(
-            js_fields=js_fields, js_ops=js_ops, js_types=js_types,
-            js_autocompletes=js_autocompletes, js_value_lists=js_value_lists,
-            js_and=AND, js_or=OR, js_init=js_init,
+            js_fields=js_fields,
+            js_ops=js_ops,
+            js_types=js_types,
+            js_autocompletes=js_autocompletes,
+            js_value_lists=js_value_lists,
+            js_and=AND,
+            js_or=OR,
+            js_init=js_init,
             js_remove_message=LAST_FIELD_REMOVE_MESSAGE,
             js_removed=js_removed,
-            user_allowed_to_save_forms=user_allowed_to_save_forms(
-                self.request.user),
+            user_allowed_to_save_forms=user_allowed_to_save_forms(self.request.user),
             initialize_empty_form=initialize_empty_form,
             order_boxes=registry.order_boxes,
             ordering=registry.ordering,
             report_types=registry.get_report_types(self.request),
             saved_forms=SearchForm.objects.get_for_user(self.request.user),
             MULTISEEK_ORDERING_PREFIX=MULTISEEK_ORDERING_PREFIX,
-            MULTISEEK_REPORT_TYPE=MULTISEEK_REPORT_TYPE)
+            MULTISEEK_REPORT_TYPE=MULTISEEK_REPORT_TYPE,
+        )
 
 
 @never_cache
@@ -137,7 +159,8 @@ class JSONResponseMixin(object):
 
     def get_json_response(self, content, **httpresponse_kwargs):
         return http.HttpResponse(
-            content, content_type='application/json', **httpresponse_kwargs)
+            content, content_type="application/json", **httpresponse_kwargs
+        )
 
     def convert_context_to_json(self, context):
         return json.dumps(context)
@@ -153,10 +176,10 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
 
     @transaction.atomic
     def get_context_data(self):
-        _json = self.request.POST.get('json')
+        _json = self.request.POST.get("json")
         name = self.request.POST.get("name")
-        public = self.request.POST.get("public") == 'true'
-        overwrite = self.request.POST.get('overwrite') == 'true'
+        public = self.request.POST.get("public") == "true"
+        overwrite = self.request.POST.get("overwrite") == "true"
 
         if not _json:
             return dict(result=text(ERR_NO_FORM_DATA))
@@ -186,7 +209,8 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
 
         else:
             obj = SearchForm.objects.create(
-                name=name, public=public, data=_json, owner=self.request.user)
+                name=name, public=public, data=_json, owner=self.request.user
+            )
 
         return dict(result=SAVED, pk=obj.pk)
 
@@ -196,8 +220,8 @@ class MultiseekResults(MultiseekPageMixin, ListView):
     _json_cache = None
 
     def post(self, request, *args, **kwargs):
-        if 'json' in request.POST:
-            j = request.POST['json']
+        if "json" in request.POST:
+            j = request.POST["json"]
             session = request.session
             session[MULTISEEK_SESSION_KEY] = j
             session.save()
@@ -211,7 +235,9 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             if self._json_cache is None:
                 self._json_cache = {}
             if self._json_cache.get("ordering") is None:
-                self._json_cache['ordering'] = get_registry(self.registry).default_ordering
+                self._json_cache["ordering"] = get_registry(
+                    self.registry
+                ).default_ordering
         return self._json_cache
 
     def get_removed_records(self):
@@ -224,70 +250,73 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         data = self.get_multiseek_data()
         registry = get_registry(self.registry)
 
-        gettext_lazy("andnot") # Leave this line.
+        gettext_lazy("andnot")  # Leave this line.
 
         def _recur(d):
             cur = 0
-            ret = ''
+            ret = ""
 
             while cur < len(d):
 
-                if type(d[cur]) == list:
-                    if d[cur][0] != None:
-                        ret += ' <b>' + text(
-                            gettext_lazy(d[cur][0])).upper() + '</b> '
-                    ret += '(' + _recur(d[cur][1:]) + ')'
+                if isinstance(d[cur], list):
+                    if d[cur][0] is not None:
+                        ret += " <b>" + text(gettext_lazy(d[cur][0])).upper() + "</b> "
+                    ret += "(" + _recur(d[cur][1:]) + ")"
                 else:
-                    f = registry.get_field_by_name(d[cur]['field'])
+                    f = registry.get_field_by_name(d[cur]["field"])
 
-                    impacts_query = f.impacts_query(
-                        d[cur]['operator'], d[cur]['value'])
+                    impacts_query = f.impacts_query(d[cur]["operator"], d[cur]["value"])
 
-                    value = f.value_for_description(d[cur]['value'])
+                    value = f.value_for_description(d[cur]["value"])
 
                     if impacts_query:
 
-                        if 'prev_op' in d[cur] and d[cur]['prev_op'] != None:
-                            tmp = d[cur]['prev_op']
-                            ret += ' <b>' + text(
-                                gettext_lazy(tmp)).upper() + '</b> '
+                        if "prev_op" in d[cur] and d[cur]["prev_op"] is not None:
+                            tmp = d[cur]["prev_op"]
+                            ret += " <b>" + text(gettext_lazy(tmp)).upper() + "</b> "
 
-
-                        ret += '%s %s %s' % (d[cur]['field'].lower(),
-                                             d[cur]['operator'],
-                                             value)
+                        ret += "%s %s %s" % (
+                            d[cur]["field"].lower(),
+                            d[cur]["operator"],
+                            value,
+                        )
 
                 cur += 1
 
             return ret
 
-
-
         if data is None:
-            return ''
-        if not data.get('form_data'):
-            return ''
+            return ""
+        if not data.get("form_data"):
+            return ""
 
-        return _recur(data['form_data'][1:])
+        return _recur(data["form_data"][1:])
 
     def get_context_data(self, **kwargs):
-        report_type = get_registry(self.registry) \
-            .get_report_type(self.get_multiseek_data(), self.request)
+        report_type = get_registry(self.registry).get_report_type(
+            self.get_multiseek_data(), self.request
+        )
         description = self.describe_multiseek_data()
         removed_ids = self.get_removed_records()
 
         return super(ListView, self).get_context_data(
-            report_type=report_type, description=description,
-            removed_ids=removed_ids, **kwargs)
+            report_type=report_type,
+            description=description,
+            removed_ids=removed_ids,
+            **kwargs
+        )
 
     def get_queryset(self):
-        # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to wówczas błąd podnoś i to samo w klasie MultiseekFormPage
+        # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to
+        # wówczas błąd podnoś i to samo w klasie MultiseekFormPage
         return get_registry(self.registry).get_query_for_model(
             self.get_multiseek_data(),
-            self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []))
+            self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []),
+        )
 
 
-JSON_OK = HttpResponse(json.dumps({'status':"OK"}), content_type='application/json')
+JSON_OK = HttpResponse(json.dumps({"status": "OK"}), content_type="application/json")
+
 
 def manually_add_or_remove(request, pk, add=True):
     data = request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
@@ -332,4 +361,4 @@ def remove_from_removed_by_hand(request, pk):
 @never_cache
 def reenable_removed_by_hand(request):
     request.session[MULTISEEK_SESSION_KEY_REMOVED] = []
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER') or '..')
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER") or "..")

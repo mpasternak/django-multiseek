@@ -30,13 +30,12 @@ assets:
 	cd test_project && python manage.py collectstatic --noinput
 
 tests: assets
-	pip install detox
-	detox
+	tox -p 2
 
 
 # target: setup-lo0
 # Configures loopback interafce so the Selenium Docker container can access
-# Django's LiveServer. Used on macOS. 
+# Django's LiveServer. Used on macOS.
 setup-lo0:
 	sudo ifconfig lo0 alias 192.168.13.37
 
