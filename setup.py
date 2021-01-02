@@ -2,15 +2,14 @@
 
 import os
 import sys
-
-from setuptools import setup, Command
 from distutils.command.build import build as _build
+
+from setuptools import Command, setup
 from setuptools.command.install_lib import install_lib as _install_lib
-from distutils.cmd import Command
 
 
 class compile_translations(Command):
-    description = 'compile message catalogs to MO files via django compilemessages'
+    description = "compile message catalogs to MO files via django compilemessages"
     user_options = []
 
     def initialize_options(self):
@@ -21,21 +20,21 @@ class compile_translations(Command):
 
     def run(self):
         curdir = os.getcwd()
-        os.chdir(os.path.join(os.path.dirname(__file__), 'multiseek'))
+        os.chdir(os.path.join(os.path.dirname(__file__), "multiseek"))
         from django.core.management import call_command
-        call_command('compilemessages')
+
+        call_command("compilemessages")
         os.chdir(curdir)
 
 
 class build(_build):
-    sub_commands = [('compile_translations', None)] + _build.sub_commands
+    sub_commands = [("compile_translations", None)] + _build.sub_commands
 
 
 class install_lib(_install_lib):
     def run(self):
-        self.run_command('compile_translations')
+        self.run_command("compile_translations")
         _install_lib.run(self)
-
 
 
 # Utility function to read the README file.
@@ -64,22 +63,23 @@ class RunTests(Command):
         sys.path.append(testproj_dir)
         from django.core.management import execute_manager
 
-        os.environ["DJANGO_SETTINGS_MODULE"] = 'test_project.settings'
+        os.environ["DJANGO_SETTINGS_MODULE"] = "test_project.settings"
         settings_file = os.environ["DJANGO_SETTINGS_MODULE"]
-        settings_mod = __import__(settings_file, {}, {}, [''])
-        execute_manager(settings_mod, argv=[
-            __file__, "test", "multiseek", "--traceback"])
+        settings_mod = __import__(settings_file, {}, {}, [""])
+        execute_manager(
+            settings_mod, argv=[__file__, "test", "multiseek", "--traceback"]
+        )
         os.chdir(this_dir)
 
 
-if 'sdist' in sys.argv:
+if "sdist" in sys.argv:
     # clear compiled mo files before building the distribution
-    walk = os.walk(os.path.join(os.getcwd(), 'multiseek/locale'))
+    walk = os.walk(os.path.join(os.getcwd(), "multiseek/locale"))
     for dirpath, dirnames, filenames in walk:
         if not filenames:
             continue
 
-        for fn in ['django.mo', 'djangojs.mo']:
+        for fn in ["django.mo", "djangojs.mo"]:
             if fn in filenames:
                 os.unlink(os.path.join(dirpath, fn))
 
@@ -87,14 +87,15 @@ else:
     # Always try to build messages, fail if django not present
     # (I hate incomplete releases)
     cwd = os.getcwd()
-    os.chdir(os.path.join(os.path.dirname(__file__),'multiseek'))
+    os.chdir(os.path.join(os.path.dirname(__file__), "multiseek"))
     try:
-        del os.environ['DJANGO_SETTINGS_MODULE']
+        del os.environ["DJANGO_SETTINGS_MODULE"]
     except KeyError:
         pass
 
-    os.system('django-admin.py compilemessages')
+    os.system("django-admin.py compilemessages")
     os.chdir(cwd)
+
 
 def reqs(f):
     f = os.path.join(os.path.dirname(__file__), f)
@@ -103,54 +104,60 @@ def reqs(f):
 
         if not elem:
             continue
-        
-        if elem.find("#egg=")>0:
+
+        if elem.find("#egg=") > 0:
             ign, egg = elem.split("#egg=")
             yield egg
             continue
-        
+
         if elem.startswith("#") or elem.startswith("-r"):
             continue
-        
+
         yield elem
 
-        
+
 setup(
-    name='django-multiseek',
-    version='0.9.40',
-    description='Build a form to seek records using multiple parameters',
-    author=u'Michał Pasternak',
-    author_email='michal.dtz@gmail.com',
-    url='http://TODO',
-    packages=['multiseek'],
-    package_data={'multiseek': [
-        'locale/*/LC_MESSAGES/*',
-        'static/multiseek/*.js',
-        'static/multiseek/*.css',
-        'templates/multiseek/*.html']},
+    name="django-multiseek",
+    version="0.9.41",
+    description="Build a form to seek records using multiple parameters",
+    author=u"Michał Pasternak",
+    author_email="michal.dtz@gmail.com",
+    url="http://TODO",
+    packages=["multiseek"],
+    package_data={
+        "multiseek": [
+            "locale/*/LC_MESSAGES/*",
+            "static/multiseek/*.js",
+            "static/multiseek/*.css",
+            "templates/multiseek/*.html",
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
     long_description=read("README.md"),
-    license='MIT',
-    keywords='django multiseek',
+    license="MIT",
+    keywords="django multiseek",
     install_requires=["Django>=1.11"] + list(reqs("requirements.txt")),
     tests_require=["Django>=1.11"] + list(reqs("requirements_dev.txt")),
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Web Environment',
-        'Framework :: Django',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Software Development :: Libraries :: Python Modules',
+        "Development Status :: 4 - Beta",
+        "Environment :: Web Environment",
+        "Framework :: Django",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass={'build': build, 'install_lib': install_lib,
-              'compile_translations': compile_translations,
-              'test': RunTests},
+    cmdclass={
+        "build": build,
+        "install_lib": install_lib,
+        "compile_translations": compile_translations,
+        "test": RunTests,
+    },
 )
