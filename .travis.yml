@@ -18,4 +18,3 @@ install:
   - cd test_project && yarn
 
 script: tox
-

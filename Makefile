@@ -43,7 +43,7 @@ install-yarn-packages:
 	cd test_project && yarn
 
 travis-tests: install-yarn-packages
-	pip install tox && tox
+	pip install tox && tox -e py36
 
 update-messages:
 	cd multiseek && django-admin.py makemessages -d django -d djangojs -a
