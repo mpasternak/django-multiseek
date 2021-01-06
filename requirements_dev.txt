@@ -1,8 +1,5 @@
 coveralls
-
 selenium
-# splinter
-https://github.com/mpasternak/splinter/archive/0.13.0-dev.zip#egg=splinter==0.13.0-dev
 
 pytest-django
 pytest-splinter
@@ -15,4 +12,3 @@ psycopg2-binary
 
 bumpversion
 tox
-
