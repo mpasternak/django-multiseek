@@ -366,7 +366,7 @@ class DateQueryObject(QueryObject):
             ret = Q(
                 **{
                     self.field_name + "__gte": value[0],
-                    self.field_name + "__lt": value[1],
+                    self.field_name + "__lt": value[1] + timedelta(days=1),
                 }
             )
         elif operation in EQUALITY_OPS_ALL:
