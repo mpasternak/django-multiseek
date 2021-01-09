@@ -4,7 +4,7 @@
 import decimal
 import importlib
 import json
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from dateutil.parser import parse
@@ -17,11 +17,13 @@ try:
     from django.db.models.options import get_verbose_name
 except ImportError:
     from django.utils.text import camel_case_to_spaces as get_verbose_name
-from django.utils.translation import gettext_lazy as _
-from collections import namedtuple
-from builtins import str as text
 
-MULTISEEK_REPORT_TYPE = '_ms_report_type'
+from builtins import str as text
+from collections import namedtuple
+
+from django.utils.translation import gettext_lazy as _
+
+MULTISEEK_REPORT_TYPE = "_ms_report_type"
 MULTISEEK_ORDERING_PREFIX = "order_"
 
 AND = "and"
@@ -34,12 +36,12 @@ DECIMAL = "decimal"
 AUTOCOMPLETE = "autocomplete"
 RANGE = "range"
 DATE = "date"
-VALUE_LIST = 'value-list'
+VALUE_LIST = "value-list"
 
-EQUAL = _("equals")         # u"równy"
+EQUAL = _("equals")  # u"równy"
 EQUAL_FEMALE = _("equals (female geder)")  # u"równa"
-EQUAL_NONE = _("equals (no gender)")    # u'równe'
-EQUAL_BOTH = _("equals (both genders)")    #u'równy/a'
+EQUAL_NONE = _("equals (no gender)")  # u'równe'
+EQUAL_BOTH = _("equals (both genders)")  # u'równy/a'
 
 EQUAL_ALL = EQUAL, EQUAL_FEMALE, EQUAL_NONE, EQUAL_BOTH
 
@@ -56,49 +58,60 @@ LESSER_OPS_ALL = [LESSER, LESSER_FEMALE, LESSER_NONE]
 GREATER_OR_EQUAL = _("greater or equal to")
 GREATER_OR_EQUAL_FEMALE = _("greater or equal to(female gender)")
 GREATER_OR_EQUAL_NONE = _("greater or equal to (no gender)")
-GREATER_OR_EQUAL_OPS_ALL = [GREATER_OR_EQUAL, GREATER_OR_EQUAL_FEMALE,
-                            GREATER_OR_EQUAL_NONE]
+GREATER_OR_EQUAL_OPS_ALL = [
+    GREATER_OR_EQUAL,
+    GREATER_OR_EQUAL_FEMALE,
+    GREATER_OR_EQUAL_NONE,
+]
 
 LESSER_OR_EQUAL = _("lesser or equal to")
 LESSER_OR_EQUAL_FEMALE = _("lesser or equal to (female gender)")
 LESSER_OR_EQUAL_NONE = _("lesser or equal to (no gender)")
-LESSER_OR_EQUAL_OPS_ALL = [LESSER_OR_EQUAL, LESSER_OR_EQUAL_FEMALE,
-                           LESSER_OR_EQUAL_NONE]
+LESSER_OR_EQUAL_OPS_ALL = [
+    LESSER_OR_EQUAL,
+    LESSER_OR_EQUAL_FEMALE,
+    LESSER_OR_EQUAL_NONE,
+]
 
-DIFFERENT = _("differs")        # u"różny"
-DIFFERENT_FEMALE = _("differs (female gender)") # u'różna'
-DIFFERENT_NONE = _("differs (no gender)")   # u'różne'
-DIFFERENT_BOTH = _("differs (both gender)")   # u'różny/a'
+DIFFERENT = _("differs")  # u"różny"
+DIFFERENT_FEMALE = _("differs (female gender)")  # u'różna'
+DIFFERENT_NONE = _("differs (no gender)")  # u'różne'
+DIFFERENT_BOTH = _("differs (both gender)")  # u'różny/a'
 
-CONTAINS = _("contains")        # u"zawiera"
-NOT_CONTAINS = _("not contains")    # u"nie zawiera"
+CONTAINS = _("contains")  # u"zawiera"
+NOT_CONTAINS = _("not contains")  # u"nie zawiera"
 STARTS_WITH = _("starts with")  # u"zaczyna się od"
 NOT_STARTS_WITH = _("not starts with")  # u"nie zaczyna się od"
 
-IN_RANGE = _("in range")              # u'zawiera się w'
-NOT_IN_RANGE = _("outside range")      # u'nie zawiera się w'
+IN_RANGE = _("in range")  # u'zawiera się w'
+NOT_IN_RANGE = _("outside range")  # u'nie zawiera się w'
 
-STRING_OPS = [CONTAINS, NOT_CONTAINS,
-              EQUAL, DIFFERENT,
-              STARTS_WITH, NOT_STARTS_WITH]
+STRING_OPS = [CONTAINS, NOT_CONTAINS, EQUAL, DIFFERENT, STARTS_WITH, NOT_STARTS_WITH]
 
 INTEGER_OPS_MALE = [EQUAL, DIFFERENT, GREATER, LESSER]
-INTEGER_OPS_FEMALE = [EQUAL_FEMALE, DIFFERENT_FEMALE, GREATER_FEMALE,
-                      LESSER_FEMALE]
+INTEGER_OPS_FEMALE = [EQUAL_FEMALE, DIFFERENT_FEMALE, GREATER_FEMALE, LESSER_FEMALE]
 INTEGER_OPS_NONE = [EQUAL_NONE, DIFFERENT_NONE, GREATER_NONE, LESSER_NONE]
 INTEGER_OPS_ALL = INTEGER_OPS_FEMALE + INTEGER_OPS_MALE + INTEGER_OPS_NONE
 
 RANGE_OPS = [IN_RANGE, NOT_IN_RANGE]
-DATE_OPS = [EQUAL_FEMALE, DIFFERENT_FEMALE, GREATER_FEMALE,
-            GREATER_OR_EQUAL_FEMALE, LESSER_FEMALE, LESSER_OR_EQUAL_FEMALE,
-            IN_RANGE, NOT_IN_RANGE]
+DATE_OPS = [
+    EQUAL_FEMALE,
+    DIFFERENT_FEMALE,
+    GREATER_FEMALE,
+    GREATER_OR_EQUAL_FEMALE,
+    LESSER_FEMALE,
+    LESSER_OR_EQUAL_FEMALE,
+    IN_RANGE,
+    NOT_IN_RANGE,
+]
 EQUALITY_OPS_MALE = [EQUAL, DIFFERENT]
 EQUALITY_OPS_FEMALE = [EQUAL_FEMALE, DIFFERENT_FEMALE]
 EQUALITY_OPS_NONE = [EQUAL_NONE, DIFFERENT_NONE]
 EQUALITY_OPS_BOTH = [EQUAL_BOTH, DIFFERENT_BOTH]
 
-EQUALITY_OPS_ALL = EQUALITY_OPS_MALE + EQUALITY_OPS_FEMALE + \
-                   EQUALITY_OPS_NONE + EQUALITY_OPS_BOTH
+EQUALITY_OPS_ALL = (
+    EQUALITY_OPS_MALE + EQUALITY_OPS_FEMALE + EQUALITY_OPS_NONE + EQUALITY_OPS_BOTH
+)
 
 DIFFERENT_ALL = DIFFERENT, DIFFERENT_FEMALE, DIFFERENT_NONE, DIFFERENT_BOTH
 
@@ -220,8 +233,10 @@ class QueryObject(object):
         if self.public:
             return True
 
-        if request is not None and \
-                eventually_callable(request.user.is_authenticated) is True:
+        if (
+            request is not None
+            and eventually_callable(request.user.is_authenticated) is True
+        ):
             return True
 
         return False
@@ -233,15 +248,17 @@ class StringQueryObject(QueryObject):
     empty_value_description = _("(empty)")
 
     def impacts_query(self, operator, value):
-        if operator in [CONTAINS, NOT_CONTAINS, STARTS_WITH, NOT_STARTS_WITH] \
-                and not value:
+        if (
+            operator in [CONTAINS, NOT_CONTAINS, STARTS_WITH, NOT_STARTS_WITH]
+            and not value
+        ):
             return False
         return True
 
     def value_from_web(self, value):
-        if type(value) == str:
+        if isinstance(value, str):
             return value
-        if type(value) == bytes:
+        if isinstance(value, bytes):
             return value.decode("utf-8")
 
     def value_for_description(self, value):
@@ -251,8 +268,7 @@ class StringQueryObject(QueryObject):
         return u'"%s"' % html.escape(value)
 
     def real_query(self, value, operation):
-        ret = QueryObject.real_query(
-            self, value, operation, validate_operation=False)
+        ret = QueryObject.real_query(self, value, operation, validate_operation=False)
 
         if ret is not None:
             return ret
@@ -278,10 +294,8 @@ class AutocompleteQueryObject(QueryObject):
     model = None
     url = None
 
-    def __init__(
-            self, field_name=None, label=None, model=None, url=None):
-        super(AutocompleteQueryObject, self).__init__(
-            field_name, label)
+    def __init__(self, field_name=None, label=None, model=None, url=None):
+        super(AutocompleteQueryObject, self).__init__(field_name, label)
 
         if model is not None:
             self.model = model
@@ -292,7 +306,8 @@ class AutocompleteQueryObject(QueryObject):
     def get_url(self):
         if self.url is None:
             raise ImproperlyConfigured(
-                "Please specify the autocomplete URL for %r" % self)
+                "Please specify the autocomplete URL for %r" % self
+            )
 
         return reverse(self.url)
 
@@ -321,7 +336,7 @@ class AutocompleteQueryObject(QueryObject):
             except ValueError:
                 raise self.model.DoesNotExist
         except self.model.DoesNotExist:
-            return json.dumps([None, ''])
+            return json.dumps([None, ""])
         return json.dumps([value, self.get_label(model)])
 
 
@@ -348,12 +363,20 @@ class DateQueryObject(QueryObject):
 
     def real_query(self, value, operation):
         if operation in RANGE_OPS:
-            ret = Q(**{self.field_name + '__gte': value[0],
-                       self.field_name + '__lte': value[1]})
+            ret = Q(
+                **{
+                    self.field_name + "__gte": value[0],
+                    self.field_name + "__lt": value[1] + timedelta(days=1),
+                }
+            )
         elif operation in EQUALITY_OPS_ALL:
-            return Q(**{self.field_name + "__range": (value, value + timedelta(days=1))})
+            return Q(
+                **{self.field_name + "__range": (value, value + timedelta(days=1))}
+            )
         elif operation in DIFFERENT_ALL:
-            return ~Q(**{self.field_name + "__range": (value, value + timedelta(days=1))})
+            return ~Q(
+                **{self.field_name + "__range": (value, value + timedelta(days=1))}
+            )
         elif operation in GREATER_OPS_ALL:
             return Q(**{self.field_name + "__gt": value})
         elif operation in LESSER_OPS_ALL:
@@ -397,8 +420,12 @@ class RangeQueryObject(QueryObject):
             return
 
         if operation in RANGE_OPS:
-            ret = Q(**{self.field_name + '__gte': value[0],
-                       self.field_name + '__lte': value[1]})
+            ret = Q(
+                **{
+                    self.field_name + "__gte": value[0],
+                    self.field_name + "__lte": value[1],
+                }
+            )
         else:
             raise UnknownOperation(operation)
 
@@ -409,13 +436,15 @@ class RangeQueryObject(QueryObject):
 
 
 class AbstractNumberQueryObject(QueryObject):
-    ops = [EQUAL, DIFFERENT, GREATER, LESSER,
-           GREATER_OR_EQUAL, LESSER_OR_EQUAL]
+    ops = [EQUAL, DIFFERENT, GREATER, LESSER, GREATER_OR_EQUAL, LESSER_OR_EQUAL]
 
     def impacts_query(self, operator, value):
-        if value is None and operator in [GREATER, LESSER,
-                                          GREATER_OR_EQUAL,
-                                          LESSER_OR_EQUAL]:
+        if value is None and operator in [
+            GREATER,
+            LESSER,
+            GREATER_OR_EQUAL,
+            LESSER_OR_EQUAL,
+        ]:
             return False
         return True
 
@@ -456,20 +485,20 @@ class DecimalQueryObject(AbstractNumberQueryObject):
             return
 
 
-
 class ValueListQueryObject(QueryObject):
     type = VALUE_LIST
     ops = [EQUAL, DIFFERENT]
     values = None
 
     def __init__(self, field_name=None, label=None, values=None):
-        super(ValueListQueryObject, self).__init__(
-            field_name, label)
+        super(ValueListQueryObject, self).__init__(field_name, label)
         if values is not None:
             self.values = values
 
+
 BOOLEAN_TRUE_LABEL = _("yes")
 BOOLEAN_FALSE_LABEL = _("no")
+
 
 class BooleanQueryObject(QueryObject):
     type = VALUE_LIST
@@ -490,6 +519,7 @@ class BooleanQueryObject(QueryObject):
     def value_for_description(self, value):
         return value
 
+
 Ordering = namedtuple("Ordering", ["field", "label"])
 
 
@@ -506,11 +536,14 @@ class ReportType:
         if self.public:
             return True
 
-        if request is not None and \
-                eventually_callable(request.user.is_authenticated) is True:
+        if (
+            request is not None
+            and eventually_callable(request.user.is_authenticated) is True
+        ):
             return True
 
         return False
+
 
 class _FrameInfo:
     frame = None
@@ -519,6 +552,7 @@ class _FrameInfo:
     def __init__(self, frame=-1, field=0):
         self.frame = frame
         self.field = field
+
 
 def get_ordering_key_name(no):
     key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
@@ -552,8 +586,7 @@ class MultiseekRegistry:
 
     def set_default_ordering(self, *args):
         self.default_ordering = {}
-        ordering_dict = dict(
-            (x.field, no) for no, x in enumerate(self.ordering))
+        ordering_dict = dict((x.field, no) for no, x in enumerate(self.ordering))
 
         for no, elem in enumerate(args):
             key, key_dir = get_ordering_key_name(no)
@@ -582,24 +615,24 @@ class MultiseekRegistry:
         """
         if field.field_name:
             for pfx in [MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE]:
-                assert (not field.field_name.startswith(pfx)), \
+                assert not field.field_name.startswith(pfx), (
                     "Field names cannot start with '" + pfx + "'"
+                )
         self.fields.append(field)
         self.field_by_name = dict([(f.label, f) for f in self.fields])
 
         # Check if every label is unique
-        assert (len(self.field_by_name.keys()) == len(self.fields)), \
-            "All fields must have unique names"
+        assert len(self.field_by_name.keys()) == len(
+            self.fields
+        ), "All fields must have unique names"
 
     def field_by_type(self, type, request=None):
-        """Return a list of fields by type.
-        """
+        """Return a list of fields by type."""
         fields = self.get_fields(request)
         return [field for field in fields if field.type == type]
 
     def extract(self, attr, request=None):
-        """Extract an attribute out of every field.
-        """
+        """Extract an attribute out of every field."""
         return [getattr(field, attr) for field in self.get_fields(request)]
 
     def parse_field(self, field):
@@ -611,38 +644,38 @@ class MultiseekRegistry:
         :rtype: multiseek.logic.QueryObject subclass
         """
         # prev_op key is OPTIONAL
-        for key in ['field', 'operator', 'value']:
+        for key in ["field", "operator", "value"]:
             if key not in field:
                 raise ParseError("Key %s not found in field %r" % (key, field))
 
-        f = self.get_field_by_name(field['field'])
+        f = self.get_field_by_name(field["field"])
         if f is None:
             raise UnknownField("Field type %r not found!" % field)
 
-        if field['operator'] not in [text(x) for x in f.ops]:
+        if field["operator"] not in [text(x) for x in f.ops]:
             raise UnknownOperation(
-                "Operation %r not valid for field %r" % (
-                    field['operator'], field['field']))
+                "Operation %r not valid for field %r"
+                % (field["operator"], field["field"])
+            )
 
-        if field.get('prev_op', None) not in [AND, OR, ANDNOT, None]:
+        if field.get("prev_op", None) not in [AND, OR, ANDNOT, None]:
             raise UnknownOperation("%r" % field)
 
-        if f.impacts_query(field['value'], field['operator']):
-            return f.query_for(field['value'], field['operator'])
+        if f.impacts_query(field["value"], field["operator"]):
+            return f.query_for(field["value"], field["operator"])
 
     def get_query_recursive(self, data):
-        """Recursivley get query, basing on a list of elements.
-        """
+        """Recursivley get query, basing on a list of elements."""
 
         ret = None
 
         for elem in data[1:]:
-            if type(elem) == list:
+            if isinstance(elem, list):
                 qobj = self.get_query_recursive(elem)
                 prev_op = elem[0]
             else:
                 qobj = self.parse_field(elem)
-                prev_op = elem.get('prev_op', None)
+                prev_op = elem.get("prev_op", None)
 
             if ret is None:
                 ret = qobj
@@ -653,33 +686,31 @@ class MultiseekRegistry:
             elif prev_op == OR:
                 ret = ret | qobj
             elif prev_op == ANDNOT:
-                ret = ret & ~Q(qobj);
+                ret = ret & ~Q(qobj)
             else:
-                raise UnknownOperation(
-                    "%s not expected" % elem.get('prev_op', None))
+                raise UnknownOperation("%s not expected" % elem.get("prev_op", None))
 
         return ret
 
     def get_query(self, data):
-        """Return a query for a given JSON.
-        """
+        """Return a query for a given JSON."""
         return self.get_query_recursive(data)
 
     def get_report_types(self, request=None):
         return [x for x in self.report_types if x.enabled(request)]
 
     def get_report_type(self, data, request=None):
-        default_retval = ''
+        default_retval = ""
         report_types = self.get_report_types(request)
 
         if report_types:
             default_retval = self.report_types[0].id
 
-        if data is None or type(data) == list or 'report_type' not in data:
+        if data is None or isinstance(data, list) or "report_type" not in data:
             return default_retval
 
         try:
-            idx = int(data['report_type'])
+            idx = int(data["report_type"])
         except (ValueError, IndexError, TypeError):
             return default_retval
 
@@ -693,12 +724,12 @@ class MultiseekRegistry:
             return self.model.objects.all()
 
         # Fix for pre-0.8 versions
-        if type(data) != dict:
-            data = {'form_data': data}
+        if not isinstance(data, dict):
+            data = {"form_data": data}
 
         query = None
-        if 'form_data' in data:
-            query = self.get_query(data['form_data'])
+        if "form_data" in data:
+            query = self.get_query(data["form_data"])
 
         retval = self.model.objects.all()
         if query is not None:
@@ -709,7 +740,7 @@ class MultiseekRegistry:
 
         sb = []
 
-        ordering  = data.get("ordering")
+        ordering = data.get("ordering")
         if ordering:
             for no, element in enumerate(self.order_boxes):
                 key, key_dir = get_ordering_key_name(no)
@@ -744,28 +775,30 @@ class MultiseekRegistry:
         current_frame = info.frame
 
         for elem in element[1:]:
-            if type(elem) == list:
+            if isinstance(elem, list):
                 result.append(
-                    "$('#frame-%s').multiseekFrame('addFrame', '%s')" % (
-                        current_frame, elem[0]))
+                    "$('#frame-%s').multiseekFrame('addFrame', '%s')"
+                    % (current_frame, elem[0])
+                )
                 result.extend(self.recreate_form_recursive(elem, info))
 
             else:
                 if elem.get("prev_op", None) not in [AND, OR, ANDNOT, None]:
                     raise ParseError("prev_op = %r" % elem.get("prev_op", None))
 
-                prev_op = elem.get('prev_op', None)
-                if prev_op == None or prev_op == 'None':
-                    prev_op = 'null';
+                prev_op = elem.get("prev_op", None)
+                if prev_op is None or prev_op == "None":
+                    prev_op = "null"
                 else:
                     prev_op = "'" + prev_op + "'"
                 s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', %s)"
-                value = self.get_field_by_name(elem['field']).value_to_web(
-                    elem['value'])
+                value = self.get_field_by_name(elem["field"]).value_to_web(
+                    elem["value"]
+                )
 
-                result.append(s % (
-                    current_frame, elem['field'], elem['operator'], value,
-                    prev_op))
+                result.append(
+                    s % (current_frame, elem["field"], elem["operator"], value, prev_op)
+                )
                 info.field += 1
 
         return result
@@ -781,11 +814,11 @@ class MultiseekRegistry:
 
         info = _FrameInfo()
         result = []
-        if type(data) != dict:
+        if not isinstance(data, dict):
             raise ParseError
 
-        if 'form_data' in data:
-            result = self.recreate_form_recursive(data['form_data'], info)
+        if "form_data" in data:
+            result = self.recreate_form_recursive(data["form_data"], info)
         foundation = []
 
         ordering = data.get("ordering")
@@ -798,9 +831,10 @@ class MultiseekRegistry:
                 key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
                 if key in ordering:
                     result.append(
-                        '\t\t'
-                        '$("select[name=%s] option").eq(%s).prop("selected", true)' % (
-                            key, ordering[key]))
+                        "\t\t"
+                        '$("select[name=%s] option").eq(%s).prop("selected", true)'
+                        % (key, ordering[key])
+                    )
                     # foundation.append(
                     #     '\t\t\t'
                     #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % key
@@ -809,20 +843,21 @@ class MultiseekRegistry:
                 if key in ordering:
                     if ordering[key] == "1":
                         result.append(
-                            '\t\t'
-                            '$("input[name=%s]").attr("checked", true)' % key)
+                            "\t\t" '$("input[name=%s]").attr("checked", true)' % key
+                        )
                         foundation.append(
-                            '\t\t\t'
-                            '$("input[name=%s]").next().toggleClass("checked", true)' % key
+                            "\t\t\t"
+                            '$("input[name=%s]").next().toggleClass("checked", true)'
+                            % key
                         )
 
-        if 'report_type' in data:
-            if data['report_type']:
+        if "report_type" in data:
+            if data["report_type"]:
                 result.append(
-                    '\t\t'
+                    "\t\t"
                     '$("select[name=%s] option").eq(%s).prop("selected", true)'
-                    % (
-                        MULTISEEK_REPORT_TYPE, data['report_type']))
+                    % (MULTISEEK_REPORT_TYPE, data["report_type"])
+                )
                 # foundation.append(
                 #     '\t\t\t'
                 #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % MULTISEEK_REPORT_TYPE
@@ -830,10 +865,12 @@ class MultiseekRegistry:
 
         ret = u";\n".join(result) + u";\n"
         if foundation:
-            ret += u"\t\tif (window.Foundation) {\n" + u";\n".join(
-                foundation) + u"\n\t\t}\n"
+            ret += (
+                u"\t\tif (window.Foundation) {\n"
+                + u";\n".join(foundation)
+                + u"\n\t\t}\n"
+            )
         return ret
-
 
 
 def create_registry(model, *args, **kw):
@@ -842,12 +879,12 @@ def create_registry(model, *args, **kw):
     for field in args:
         r.add_field(field)
 
-    known_kwargs =['ordering', 'report_types']
+    known_kwargs = ["ordering", "report_types"]
     for arg in known_kwargs:
         if arg in kw:
             setattr(r, arg, kw.pop(arg))
 
-    if 'default_ordering' in kw:
+    if "default_ordering" in kw:
         r.set_default_ordering(*kw.pop("default_ordering"))
     if kw.keys():
         raise Exception("Unknown kwargs passed")
@@ -856,12 +893,13 @@ def create_registry(model, *args, **kw):
 
 _cached_registry = {}
 
+
 def get_registry(registry):
     """
     :rtype: MultiseekRegistry
     """
 
-    if type(registry) == str:
+    if isinstance(registry, str):
         if registry not in _cached_registry:
             m = importlib.import_module(registry).registry
             _cached_registry[registry] = m
