@@ -115,7 +115,7 @@ def reqs(f):
 
 setup(
     name="django-multiseek",
-    version="0.9.42",
+    version="0.9.43",
     description="Build a form to seek records using multiple parameters",
     author=u"Michał Pasternak",
     author_email="michal.dtz@gmail.com",
