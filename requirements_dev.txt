@@ -1,4 +1,5 @@
 pytest-django
+pytest-xdist
 pytest-splinter
 pytest-cov
 pytest-pythonpath
