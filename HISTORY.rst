@@ -2,6 +2,7 @@
 ------
 
 * fix for DateQueryObject when there was range given
+* fix for ``impacts_query`` parameters passing & test
 
 
 0.9.32

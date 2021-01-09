@@ -167,7 +167,7 @@ class QueryObject(object):
         """
         return value
 
-    def impacts_query(self, operator, value):
+    def impacts_query(self, value, operator):
         """Returns True or False, depending on the operator and value.
 
         For some fields, combination of operator and value does not
@@ -247,7 +247,11 @@ class StringQueryObject(QueryObject):
     ops = STRING_OPS
     empty_value_description = _("(empty)")
 
-    def impacts_query(self, operator, value):
+    def impacts_query(
+        self,
+        value,
+        operator,
+    ):
         if (
             operator in [CONTAINS, NOT_CONTAINS, STARTS_WITH, NOT_STARTS_WITH]
             and not value
@@ -438,14 +442,14 @@ class RangeQueryObject(QueryObject):
 class AbstractNumberQueryObject(QueryObject):
     ops = [EQUAL, DIFFERENT, GREATER, LESSER, GREATER_OR_EQUAL, LESSER_OR_EQUAL]
 
-    def impacts_query(self, operator, value):
-        if value is None and operator in [
-            GREATER,
-            LESSER,
-            GREATER_OR_EQUAL,
-            LESSER_OR_EQUAL,
-        ]:
+    def impacts_query(self, value, operator):
+        value = self.value_from_web(value)
+
+        if value is None:
+            if operator in EQUAL_ALL or operator in DIFFERENT_ALL:
+                return True
             return False
+
         return True
 
     def real_query(self, value, operation):
