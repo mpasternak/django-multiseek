@@ -1,3 +1,8 @@
+0.9.44
+------
+
+* fix parameter passing in ``describe_multiseek_data``
+
 0.9.43
 ------
 
