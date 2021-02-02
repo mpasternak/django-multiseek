@@ -265,15 +265,15 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                 else:
                     f = registry.get_field_by_name(d[cur]["field"])
 
-                    impacts_query = f.impacts_query(d[cur]["operator"], d[cur]["value"])
-
-                    value = f.value_for_description(d[cur]["value"])
+                    impacts_query = f.impacts_query(d[cur]["value"], d[cur]["operator"])
 
                     if impacts_query:
 
                         if "prev_op" in d[cur] and d[cur]["prev_op"] is not None:
                             tmp = d[cur]["prev_op"]
                             ret += " <b>" + text(gettext_lazy(tmp)).upper() + "</b> "
+
+                        value = f.value_for_description(d[cur]["value"])
 
                         ret += "%s %s %s" % (
                             d[cur]["field"].lower(),
