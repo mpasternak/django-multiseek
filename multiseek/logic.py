@@ -120,6 +120,10 @@ class UnknownOperation(Exception):
     pass
 
 
+class QueryMakesNoSense(Exception):
+    pass
+
+
 class UnknownField(Exception):
     pass
 
@@ -587,6 +591,7 @@ class MultiseekRegistry:
         self.field_by_name = {}
         self.default_ordering = {}
         self.report_types = []
+        self.errors = []
 
     def set_default_ordering(self, *args):
         self.default_ordering = {}
@@ -678,8 +683,17 @@ class MultiseekRegistry:
                 qobj = self.get_query_recursive(elem)
                 prev_op = elem[0]
             else:
-                qobj = self.parse_field(elem)
+                try:
+                    qobj = self.parse_field(elem)
+                except (ParseError, UnknownOperation, QueryMakesNoSense) as e:
+                    self.errors.append((e, elem))
+                    continue
+
                 prev_op = elem.get("prev_op", None)
+
+            if qobj is None:
+                self.errors.append((UnknownOperation(), elem))
+                continue
 
             if ret is None:
                 ret = qobj
@@ -698,6 +712,7 @@ class MultiseekRegistry:
 
     def get_query(self, data):
         """Return a query for a given JSON."""
+        self.errors = []
         return self.get_query_recursive(data)
 
     def get_report_types(self, request=None):

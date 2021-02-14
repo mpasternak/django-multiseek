@@ -299,12 +299,15 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         description = self.describe_multiseek_data()
         removed_ids = self.get_removed_records()
 
-        return super(ListView, self).get_context_data(
+        res = super(ListView, self).get_context_data(
             report_type=report_type,
             description=description,
             removed_ids=removed_ids,
             **kwargs
         )
+
+        res["errors"] = get_registry(self.registry).errors
+        return res
 
     def get_queryset(self):
         # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to
