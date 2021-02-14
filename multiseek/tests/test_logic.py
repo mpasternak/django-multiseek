@@ -279,14 +279,16 @@ class TestMultiseekRegistry(TestCase):
             ),
         ]
 
-        self.assertRaises(UnknownOperation, self.registry.get_query_recursive, input)
+        self.registry.get_query(input)
+        self.assertEquals(len(self.registry.errors), 1)
 
         input[2]["prev_op"] = OR
 
-        res = self.registry.get_query_recursive(input)
+        res = self.registry.get_query(input)
         self.assertEqual(
             str(res), py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))")
         )
+        self.assertEquals(len(self.registry.errors), 0)
 
     def test_get_query_errors(self):
         self.registry.get_query(json.loads(test_impossible_json)["form_data"])
