@@ -1,3 +1,8 @@
+0.9.45
+------
+
+* create a placeholder and an exception for form "parse errors"
+
 0.9.44
 ------
 

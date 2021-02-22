@@ -23,6 +23,7 @@ from multiseek.logic import (
     RANGE,
     RANGE_OPS,
     STRING,
+    STRING_OPS,
     AbstractNumberQueryObject,
     AutocompleteQueryObject,
     DecimalQueryObject,
@@ -57,6 +58,21 @@ test_json = json.dumps(
 )
 
 test_buggy_json = json.dumps({"form_data": [None]})
+
+# JSON that's impossible to parse ('text field contains NULL' instead of 'equals NULL')
+test_impossible_json = json.dumps(
+    {
+        "form_data": [
+            None,
+            dict(
+                field="foo",
+                operator=text(STRING_OPS[0]),  # "CONTAINS"
+                value=None,
+                prev_op=None,
+            ),
+        ]
+    }
+)
 
 
 def py3k_test_string(s):
@@ -263,14 +279,21 @@ class TestMultiseekRegistry(TestCase):
             ),
         ]
 
-        self.assertRaises(UnknownOperation, self.registry.get_query_recursive, input)
+        self.registry.get_query(input)
+        self.assertEquals(len(self.registry.errors), 1)
 
         input[2]["prev_op"] = OR
 
-        res = self.registry.get_query_recursive(input)
+        res = self.registry.get_query(input)
         self.assertEqual(
             str(res), py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))")
         )
+        self.assertEquals(len(self.registry.errors), 0)
+
+    def test_get_query_errors(self):
+        self.registry.get_query(json.loads(test_impossible_json)["form_data"])
+        self.assertEqual(len(self.registry.errors), 1)
+        self.assertEqual(self.registry.errors[0][1]["field"], "foo")
 
     def test_get_query(self):
         gq = self.registry.get_query(json.loads(test_json)["form_data"])

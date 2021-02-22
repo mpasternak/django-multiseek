@@ -2,15 +2,23 @@
 {% load i18n %}
 
 {% block content %}
-    {% if description %}
-        {% trans "Query: " %}{{ description|safe }}
+    ha{{ errors }}xx
+    {% if errors %}
+        {% blocktrans %}Errors occured. Please verify if the input form you given is correct.{% endblocktrans %}
+        <ul>
+        {% for elem in errors %}
+        <li>{{ elem }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        {% if description %}
+            {% trans "Query: " %}{{ description|safe }}
+        {% endif %}
+
+        {% for element in object_list %}
+            <li>{{ element }}</li>
+        {% empty %}
+            {% trans "No elements" %}
+        {% endfor %}
     {% endif %}
-
-    {% for element in object_list %}
-        <li>{{ element }}</li>
-    {% empty %}
-        {% trans "No elements" %}
-    {% endfor %}
-
-
 {% endblock %}
