@@ -3,6 +3,7 @@ django-multiseek
 
 [![Build Status](https://travis-ci.org/mpasternak/django-multiseek.svg?branch=master)](https://travis-ci.org/mpasternak/django-multiseek)
 [![Coverage Status](https://coveralls.io/repos/github/mpasternak/django-multiseek/badge.svg?branch=master)](https://coveralls.io/github/mpasternak/django-multiseek?branch=master)
+[![PyPI version](https://badge.fury.io/py/django-multiseek.svg)](https://badge.fury.io/py/django-multiseek)
 
 Graphical query builder for Django. Uses Foundation 6.
 
@@ -11,7 +12,7 @@ Depends on:
 * django-autocomplete-light
 * Foundation 6
 
-Supported configurations: 
+Supported configurations:
 * Django 1.11, 2.0
 * Python 3.6
 
