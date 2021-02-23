@@ -6,6 +6,7 @@ from unittest import TestCase
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from mock import MagicMock
 
 from multiseek.logic import (
@@ -14,7 +15,10 @@ from multiseek.logic import (
     DIFFERENT,
     EQUAL,
     EQUALITY_OPS_ALL,
+    GREATER,
     GREATER_OR_EQUAL,
+    IN_RANGE,
+    LESSER,
     LESSER_OR_EQUAL,
     MULTISEEK_ORDERING_PREFIX,
     NOT_CONTAINS,
@@ -26,6 +30,7 @@ from multiseek.logic import (
     STRING_OPS,
     AbstractNumberQueryObject,
     AutocompleteQueryObject,
+    DateQueryObject,
     DecimalQueryObject,
     IntegerQueryObject,
     MultiseekRegistry,
@@ -395,3 +400,17 @@ def test_impacts_query_StringQueryObject():
     assert a.impacts_query(None, DIFFERENT)
     assert not a.impacts_query(None, CONTAINS)
     assert not a.impacts_query(None, NOT_CONTAINS)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [IN_RANGE, EQUAL, DIFFERENT, GREATER_OR_EQUAL, GREATER, LESSER_OR_EQUAL, LESSER],
+)
+def test_DateQuery_operation(operation):
+    """Test that DateQuery.real_query gives a correct Query for
+    each of operator type"""
+
+    value = timezone.now()
+    if operation == IN_RANGE:
+        value = [value, value]
+    assert DateQueryObject("foo").real_query(value, operation) is not None

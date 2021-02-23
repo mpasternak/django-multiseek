@@ -386,13 +386,13 @@ class DateQueryObject(QueryObject):
                 **{self.field_name + "__range": (value, value + timedelta(days=1))}
             )
         elif operation in GREATER_OPS_ALL:
-            return Q(**{self.field_name + "__gt": value})
+            return Q(**{self.field_name + "__gte": value + timedelta(days=1)})
         elif operation in LESSER_OPS_ALL:
             return Q(**{self.field_name + "__lt": value})
         elif operation in GREATER_OR_EQUAL_OPS_ALL:
             return Q(**{self.field_name + "__gte": value})
         elif operation in LESSER_OR_EQUAL_OPS_ALL:
-            return Q(**{self.field_name + "__lte": value})
+            return Q(**{self.field_name + "__lt": value + timedelta(days=1)})
         else:
             raise UnknownOperation(operation)
 
