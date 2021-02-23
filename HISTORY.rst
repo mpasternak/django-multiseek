@@ -1,3 +1,9 @@
+0.9.46
+------
+
+* better date field handling when using with operators like greater, lesser, greater
+  or equal, lesser or equal
+
 0.9.45
 ------
 
