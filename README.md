@@ -13,8 +13,8 @@ Depends on:
 * Foundation 6
 
 Supported configurations:
-* Django 1.11, 2.0
-* Python 3.6
+* Django 3.2
+* Python 3.8, 3.9, 3.10
 
 django-multiseek's purpose is to enable end-user of the web page to build a query form and query the database using multiple parameters.
 

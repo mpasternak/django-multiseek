@@ -1,3 +1,9 @@
+0.9.47
+------
+
+* use GitHub Actions instead of Travis-CI
+* Django 3.2 support,
+  
 0.9.46
 ------
 
