@@ -1,3 +1,5 @@
+Ability to exchange data between this small GUI of mine and a library like django-ql
+
 Extensibility:
  * themes?
     - date field COULD be themeable
