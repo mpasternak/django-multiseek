@@ -1,5 +1,9 @@
 from django.conf import settings
-from django.conf.urls import include, url, static
+from django.conf.urls import include, static
+try:
+    from django.conf.urls import url
+except ImportError:
+    from django.urls import re_path as url
 
 from django.contrib import admin
 from django.views.i18n import JavaScriptCatalog

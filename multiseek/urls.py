@@ -1,6 +1,10 @@
 # -*- encoding: utf-8 -*-
 
-from django.conf.urls import  url
+try:
+    from django.conf.urls import  url
+except ImportError:
+    from django.urls import re_path as url
+
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.i18n import JavaScriptCatalog

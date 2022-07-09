@@ -736,7 +736,7 @@ def test_bug_2(multiseek_admin_page, initial_data):
 
     SearchForm.objects.create(name="bug-2", owner=user, public=True, data=data)
     multiseek_admin_page.load_form_by_name("bug-2")
-    elements = multiseek_admin_page.browser.find_by_css("[name=prev-op]:visible")
+    elements = multiseek_admin_page.browser.find_by_css("[name=prev-op]")
     for elem in elements:
         if elem.css("visibility") != "hidden":
             assert elem.value == logic.OR
