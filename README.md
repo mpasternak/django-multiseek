@@ -1,7 +1,7 @@
 django-multiseek
 ================
 
-[![Build Status](https://github.com/mpasternak/django-multiseek/actions/workflows/tests.yml/badge.svg)](https://github.com/mpasternak/django-multiseek/action)
+[![Build Status](https://github.com/mpasternak/django-multiseek/actions/workflows/tests.yml/badge.svg)](https://github.com/mpasternak/django-multiseek/actions)
 [![Coverage Status](https://coveralls.io/repos/github/mpasternak/django-multiseek/badge.svg?branch=master)](https://coveralls.io/github/mpasternak/django-multiseek?branch=master)
 [![PyPI version](https://badge.fury.io/py/django-multiseek.svg)](https://badge.fury.io/py/django-multiseek)
 
