@@ -90,7 +90,7 @@ else:
     os.chdir(os.path.join(os.path.dirname(__file__), "multiseek"))
     if "DJANGO_SETTINGS_MODULE" in os.environ:
         del os.environ["DJANGO_SETTINGS_MODULE"]
-    os.system("django-admin.py compilemessages")
+    os.system("django-admin compilemessages")
     os.chdir(cwd)
 
 
