@@ -3,6 +3,8 @@
 
 * use GitHub Actions instead of Travis-CI
 * Django 3.2 support,
+* extract ordering and default queryset generation from ``get_query_for_model``,
+  creating ``get_default_queryset_for_model`` and ``apply_ordering_to_queryset``.
   
 0.9.46
 ------

@@ -738,25 +738,10 @@ class MultiseekRegistry:
         except IndexError:
             return default_retval
 
-    def get_query_for_model(self, data, removed_manually=None):
-        if data is None:
-            return self.model.objects.all()
+    def get_default_queryset_for_model(self):
+        return self.model.objects.all()
 
-        # Fix for pre-0.8 versions
-        if not isinstance(data, dict):
-            data = {"form_data": data}
-
-        query = None
-        if "form_data" in data:
-            query = self.get_query(data["form_data"])
-
-        retval = self.model.objects.all()
-        if query is not None:
-            retval = self.model.objects.filter(query)
-
-        if removed_manually:
-            retval = retval.exclude(pk__in=removed_manually)
-
+    def apply_ordering_to_queryset(self, qs, data):
         sb = []
 
         ordering = data.get("ordering")
@@ -783,9 +768,31 @@ class MultiseekRegistry:
                     sb.append(srt)
 
             if sb:
-                retval = retval.order_by(*sb)
+                qs = qs.order_by(*sb)
 
-        return retval
+        return qs
+
+
+    def get_query_for_model(self, data, removed_manually=None):
+        if data is None:
+            return self.get_default_queryset_for_model()
+
+        # Fix for pre-0.8 versions
+        if not isinstance(data, dict):
+            data = {"form_data": data}
+
+        query = None
+        if "form_data" in data:
+            query = self.get_query(data["form_data"])
+
+        retval = self.get_default_queryset_for_model()
+        if query is not None:
+            retval = retval.filter(query)
+
+        if removed_manually:
+            retval = retval.exclude(pk__in=removed_manually)
+
+        return self.apply_ordering_to_queryset(retval, data)
 
     def recreate_form_recursive(self, element, info):
         result = []
