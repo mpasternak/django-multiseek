@@ -19,7 +19,7 @@ Supported configurations:
 | 4.2    |      +      |      +      |      +      |      +      |
 | 5.1    |      +      |      +      |      +      |      +      |
 | 5.2    |      +      |      +      |      +      |      +      |
-| 6.0    |      +      |      +      |      +      |      +      |
+| 6.0    |             |             |      +      |      +      |
 
 django-multiseek's purpose is to enable end-user of the web page to build a query form and query the database using multiple parameters.
 
