@@ -427,6 +427,9 @@ def test_frame_bug(multiseek_page):
     body_text = frame.locator("body").text_content()
     assert "Server Error (500)" not in body_text
 
+    # Ensure iframe request completes before teardown flushes the DB
+    multiseek_page.page.wait_for_load_state("networkidle")
+
 
 @pytest.mark.django_db
 def test_date_field(multiseek_page):
