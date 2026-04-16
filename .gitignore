@@ -62,3 +62,9 @@ test_app.tests
 test_project/geckodriver.log
 /test_project/db.sqlite3
 junit.xml
+
+# Virtual environments
+.venv/
+
+# uv lock (library — not committed)
+uv.lock
