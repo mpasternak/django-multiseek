@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-multiseek"
-version = "0.9.48"
+version = "0.9.49"
 description = "Build a form to seek records using multiple parameters"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -75,7 +75,7 @@ line-length = 120
 select = ["E", "F", "W"]
 
 [tool.bumpver]
-current_version = "0.9.48"
+current_version = "0.9.49"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 commit = true
