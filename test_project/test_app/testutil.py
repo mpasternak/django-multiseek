@@ -1,55 +1,71 @@
 import time
 
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.expected_conditions import staleness_of
-from selenium.webdriver.support.wait import WebDriverWait
+
+def select_select2_autocomplete(page, container_selector, value):
+    """Select a value from a Select2 autocomplete widget using Playwright."""
+    page.locator(container_selector).click()
+    page.locator(".select2-search__field").fill(value)
+    page.locator(".select2-results__option").first.wait_for(state="visible")
+    page.keyboard.press("Enter")
 
 
-class wait_for_page_load(object):
-    def __init__(self, browser):
-        self.browser = browser
+class SequentialDialogHandler:
+    """Handle a sequence of browser dialogs (alert/confirm/prompt) in Playwright.
 
-    def __enter__(self):
-        self.old_page = self.browser.find_by_tag("html")[0]._element
+    Playwright requires dialog handlers to be registered BEFORE the action
+    that triggers them. This class manages a queue of expected dialog responses.
 
-    def __exit__(self, *_):
-        WebDriverWait(self.browser, 10).until(
-            lambda driver: staleness_of(self.old_page)
-        )
+    Usage:
+        handler = SequentialDialogHandler(page)
+        handler.expect_prompt("form name")  # prompt -> accept with text
+        handler.expect_accept()             # confirm/alert -> accept
+        handler.expect_dismiss()            # confirm -> dismiss
 
+        page.locator("#saveButton").click()  # triggers dialogs
+        handler.wait_for_count(2)            # wait until 2 dialogs handled
+        handler.detach()
+    """
 
-def wait_for(condition_function):
-    start_time = time.time()
-    while time.time() < start_time + 10:
-        if condition_function():
-            return True
+    def __init__(self, page):
+        self.page = page
+        self.handled = []
+        self._pending = []
+        page.on("dialog", self._handle)
+
+    def expect_accept(self):
+        self._pending.append(("accept", None))
+        return self
+
+    def expect_dismiss(self):
+        self._pending.append(("dismiss", None))
+        return self
+
+    def expect_prompt(self, text):
+        self._pending.append(("accept", text))
+        return self
+
+    def _handle(self, dialog):
+        idx = len(self.handled)
+        if idx < len(self._pending):
+            action, text = self._pending[idx]
+            if action == "accept":
+                dialog.accept(text or "")
+            else:
+                dialog.dismiss()
         else:
-            time.sleep(0.1)
-    raise TimeoutError("Timeout waiting for {}".format(condition_function.__name__))
+            # Default: accept unexpected dialogs so they don't block
+            dialog.accept()
+        self.handled.append(dialog)
 
+    def wait_for_count(self, n, timeout=10):
+        deadline = time.time() + timeout
+        while len(self.handled) < n and time.time() < deadline:
+            self.page.wait_for_timeout(100)
+        if len(self.handled) < n:
+            raise TimeoutError(
+                f"Expected {n} dialogs, got {len(self.handled)} "
+                f"after {timeout}s"
+            )
 
-def show_element(browser, element):
-    s = """
-        // console.log('enter---');
-        window.scrollTo(0, 0);
-        var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-        // console.log(viewPortHeight);
-        var elementTop = arguments[0].getBoundingClientRect().top;
-        // console.log(elementTop);
-        if (elementTop < (viewPortHeight/2)*0.5 || elementTop > (viewPortHeight/2)*1.5 ) {
-            // console.log("scrolling");
-            window.scrollTo(0, Math.max(0, elementTop-(viewPortHeight/2)));
-            // console.log(Math.max(0, elementTop-(viewPortHeight/2)));
-        }
-        """
-    return browser.execute_script(s, element._element)
-
-
-def select_select2_autocomplete(browser, element, value):
-    element.click()
-    time.sleep(0.1)
-    active = element.parent.switch_to.active_element
-    active.send_keys(value)
-    time.sleep(0.1)
-    element.parent.switch_to.active_element.send_keys(Keys.ENTER)
-    time.sleep(0.2)
+    def detach(self):
+        self.page.remove_listener("dialog", self._handle)

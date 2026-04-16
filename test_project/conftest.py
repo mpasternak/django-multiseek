@@ -1,13 +1,5 @@
-import pytest
+import os
 
-
-# https://github.com/pytest-dev/pytest-splinter/issues/158
-#  AttributeError: module 'splinter.driver.webdriver.firefox' has no attribute 'WebDriverElement'
-
-
-from pytest_splinter.webdriver_patches import patch_webdriver
-
-
-@pytest.fixture(scope="session")
-def browser_patches():
-    patch_webdriver()
+# pytest-playwright runs inside an async event loop, which triggers Django's
+# async safety check on ORM calls. Allow synchronous ORM usage in tests.
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"

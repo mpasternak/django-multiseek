@@ -6,7 +6,7 @@ clean-build: ## remove build artifacts
 	rm -fr dist/
 	rm -rf test_project/static test_project/bower_components .cache .pytest_cache
 	rm -fr .eggs/
-	rm -rf test_project/splintershots test_project/node_modules test_project/components > /dev/null || true
+	rm -rf test_project/node_modules test_project/components > /dev/null || true
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 

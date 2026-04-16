@@ -1,212 +1,188 @@
-# -*- encoding: utf-8 -*-
 import json
+import datetime
 
 import pytest
 from django.conf import settings
 from django.urls import reverse
 from model_bakery import baker
-from selenium.webdriver.support.expected_conditions import staleness_of, \
-    alert_is_present
-from selenium.webdriver.support.ui import WebDriverWait
-from splinter.exceptions import ElementDoesNotExist
-
-from multiseek.logic import DATE, AUTOCOMPLETE, RANGE, STRING, VALUE_LIST, \
-    get_registry
-from .models import Language, Author, Book
-import datetime
 from builtins import str as text
 from django.utils.translation import gettext_lazy as _
 
-from .testutil import wait_for_page_load
+from multiseek.logic import (
+    DATE,
+    AUTOCOMPLETE,
+    RANGE,
+    STRING,
+    VALUE_LIST,
+    get_registry,
+)
+from .models import Language, Author, Book
+from .testutil import SequentialDialogHandler
 
 
-class SplinterLoginMixin:
-    def login(self, username="admin", password="password"):
-        url = self.browser.url
-        with wait_for_page_load(self.browser):
-            self.browser.visit(self.live_server_url + reverse("admin:login"))
+class MultiseekWebPage:
+    """Helper functions for interacting with the multiseek form web page."""
 
-        self.browser.fill('username', username)
-        self.browser.fill('password', password)
-        with wait_for_page_load(self.browser):
-            self.browser.find_by_css("input[type=submit]").click()
-
-        with wait_for_page_load(self.browser):
-            self.browser.visit(url)
-
-
-class MultiseekWebPage(SplinterLoginMixin):
-    """Helper functions, that take care of the multiseek form web page
-    """
-
-    def __init__(self, registry, browser, live_server_url):
-        self.browser = browser
+    def __init__(self, registry, page, live_server_url):
+        self.page = page
         self.registry = registry
         self.live_server_url = live_server_url
 
+    def login(self, username="admin", password="password"):
+        url = self.page.url
+        self.page.goto(self.live_server_url + reverse("admin:login"))
+        self.page.locator("[name=username]").fill(username)
+        self.page.locator("[name=password]").fill(password)
+        self.page.locator("input[type=submit]").click()
+        self.page.wait_for_load_state("networkidle")
+        self.page.goto(url)
+
     def get_frame(self, id):
-        """Ta funkcja zwraca multiseekową "ramkę" po jej ID
-        """
-        frame = self.browser.find_by_id(id)
-        ret = dict()
-        ret['frame'] = frame[0]
-        fieldset = frame.find_by_tag('fieldset')
-        ret['add_field'] = fieldset.find_by_id("add_field")[0]
-        ret['add_frame'] = fieldset.find_by_id("add_frame")[0]
-        ret['fields'] = fieldset.find_by_id("field-list")[0]
+        frame = self.page.locator(f"#{id}")
+        # Use child combinators to target only THIS frame's buttons,
+        # not those of nested sub-frames (which appear earlier in DOM).
+        buttons = self.page.locator(f"#{id} > fieldset > .button-group")
+        return {
+            "frame": frame,
+            "add_field": buttons.locator("#add_field"),
+            "add_frame": buttons.locator("#add_frame"),
+            "fields": self.page.locator(f"#{id} > fieldset > #field-list"),
+        }
 
-        return ret
-
-    def extract_field_data(self, element):
-        """Ta funkcja zwraca słownik z wartościami dla danego pola w
-        formularzu. Pole - czyli wiersz z kolejnymi selectami:
-
-            pole przeszukiwane, operacja, wartość wyszukiwana,
-            następna operacja, przycisk zamknięcia
-
-        Z pomocniczych wartości, zwracanych w słowniku mamy 'type' czyli
-        tekstowy typ, odpowiadający definicjom w bpp.multiseek.logic.fields.keys()
-
-        Zwracana wartość słownika 'value' może być różna dla różnych typów
-        pól (np dla multiseek.logic.RANGE jest to lista z wartościami z obu pól)
-        """
+    def extract_field_data(self, element_id):
+        element = self.page.locator(f"#{element_id}")
         ret = {}
 
-        for elem in ['type', 'op', 'prev-op', 'close-button']:
-            try:
-                e = element.find_by_id(elem, wait_time=0)[0]
-            except ElementDoesNotExist as x:
-                # prev-op may be None
-                if elem != 'prev-op':
-                    raise x
-                e = None
+        for elem_id in ["type", "op", "prev-op", "close-button"]:
+            loc = element.locator(f"#{elem_id}")
+            if loc.count() > 0:
+                ret[elem_id] = loc.first
+            elif elem_id == "prev-op":
+                ret[elem_id] = None
+            else:
+                raise Exception(f"Element #{elem_id} not found in #{element_id}")
 
-            ret[elem] = e
-
-        selected = ret['type'].value
-        ret['selected'] = selected
+        selected = ret["type"].input_value()
+        ret["selected"] = selected
 
         inner_type = self.registry.field_by_name.get(selected).type
-        ret['inner_type'] = inner_type
+        ret["inner_type"] = inner_type
 
         if inner_type in [STRING, VALUE_LIST]:
-            ret['value_widget'] = element.find_by_id("value")
-
+            ret["value_widget"] = element.locator("#value")
         elif inner_type == RANGE:
-            ret['value_widget'] = [
-                element.find_by_id("value_min"),
-                element.find_by_id("value_max")]
-
+            ret["value_widget"] = [
+                element.locator("#value_min"),
+                element.locator("#value_max"),
+            ]
         elif inner_type == DATE:
-            ret['value_widget'] = [
-                element.find_by_id("value"),
-                element.find_by_id("value_max")]
-
+            ret["value_widget"] = [
+                element.locator("#value"),
+                element.locator("#value_max"),
+            ]
         elif inner_type == AUTOCOMPLETE:
-            ret['value_widget'] = element.find_by_id("value")
-
+            ret["value_widget"] = element.locator("#value")
         else:
             raise NotImplementedError(inner_type)
 
-        code = '$("#%s").multiseekField("getValue")' % element['id']
-        ret['value'] = self.browser.evaluate_script(code)
+        code = f'$("#{element_id}").multiseekField("getValue")'
+        ret["value"] = self.page.evaluate(code)
 
-        if ret['inner_type'] in (DATE, AUTOCOMPLETE, RANGE):
-            if ret['value']:
-                ret['value'] = json.loads(ret['value'])
+        if ret["inner_type"] in (DATE, AUTOCOMPLETE, RANGE):
+            if ret["value"]:
+                ret["value"] = json.loads(ret["value"])
         return ret
 
     def get_field(self, id):
-        field = self.browser.find_by_id(id)
-        if len(field) != 1:
-            raise Exception("field not found")
-        return self.extract_field_data(field[0])
+        loc = self.page.locator(f"#{id}")
+        if loc.count() != 1:
+            raise Exception(f"field #{id} not found")
+        return self.extract_field_data(id)
 
     def serialize(self):
-        """Zwraca wartość funkcji serialize() dla formularza, w postaci
-        listy -- czyli obiekt JSON"""
-        return self.browser.evaluate_script(
-            "$('#frame-0').multiseekFrame('serialize')")
+        return self.page.evaluate(
+            "$('#frame-0').multiseekFrame('serialize')"
+        )
 
     def get_field_value(self, field):
-        return self.browser.evaluate_script(
-            '$("#%s").multiseekField("getValue")' % field)
+        return self.page.evaluate(
+            f'$("#{field}").multiseekField("getValue")'
+        )
 
     def add_frame(self, frame="frame-0", prev_op=None):
         if not prev_op:
-            return self.execute_script(
-                """$("#%s").multiseekFrame('addFrame');""" % frame)
-
-        return self.execute_script("""
-            $("#%s").multiseekFrame('addFrame', '%s');
-        """ % (frame, prev_op))
+            return self.page.evaluate(
+                f"""$("#{frame}").multiseekFrame('addFrame');"""
+            )
+        return self.page.evaluate(
+            f"""$("#{frame}").multiseekFrame('addFrame', '{prev_op}');"""
+        )
 
     def add_field(self, frame, label, op, value):
         code = """
         $("#%(frame)s").multiseekFrame("addField", "%(label)s", "%(op)s", %(value)s);
-        """ % dict(frame=frame,
-                   label=text(label),
-                   op=text(op),
-                   value=json.dumps(value))
-
-        self.browser.execute_script(code)
+        """ % dict(
+            frame=frame,
+            label=text(label),
+            op=text(op),
+            value=json.dumps(value),
+        )
+        self.page.evaluate(code)
 
     def load_form_by_name(self, name):
-        with wait_for_page_load(self.browser):
-            self.browser.reload()
-        select = self.browser.find_by_id("formsSelector")
-        for elem in select.find_by_tag('option'):
-            if elem.text == name:
-                elem.click()
-                break
-        WebDriverWait(self.browser, 10).until(alert_is_present())
-        self.accept_alert()
-        WebDriverWait(self.browser, 10).until_not(alert_is_present())
-        self.browser.reload()
+        self.page.reload()
+        self.page.wait_for_load_state("networkidle")
+
+        handler = SequentialDialogHandler(self.page)
+        handler.expect_accept()  # "Are you sure you want to load?"
+
+        # Selecting the option triggers loadForm() which calls confirm()
+        # and on accept, navigates via location.href -> server redirects back.
+        with self.page.expect_navigation(wait_until="networkidle"):
+            self.page.locator("#formsSelector").select_option(label=name)
+            handler.wait_for_count(1)
+
+        handler.detach()
 
     def reset_form(self):
-        self.browser.find_by_id("resetFormButton").click()
+        self.page.locator("#resetFormButton").click()
 
     def click_save_button(self):
-        button = self.browser.find_by_id("saveFormButton").first
-        button.click()  # type("\n")  # Keys.ENTER)
+        self.page.locator("#saveFormButton").first.click()
 
     def save_form_as(self, name):
+        handler = SequentialDialogHandler(self.page)
+        handler.expect_prompt(name)  # "Enter form name"
         self.click_save_button()
-        WebDriverWait(self.browser, 10).until(alert_is_present())
-
-        alert = self.browser.driver.switch_to.alert
-        alert.fill_with(name)
-        alert.accept()
-
-        WebDriverWait(self.browser, 10).until_not(alert_is_present())
+        handler.wait_for_count(1)
+        handler.detach()
 
     def count_elements_in_form_selector(self, name):
-        select = self.browser.find_by_id("formsSelector")
-        assert select.visible == True
-        passed = 0
-        for option in select.find_by_tag("option"):
-            if option.text == name:
-                passed += 1
-        return passed
+        select = self.page.locator("#formsSelector")
+        assert select.is_visible()
+        options = select.locator("option")
+        count = 0
+        for i in range(options.count()):
+            if options.nth(i).text_content() == name:
+                count += 1
+        return count
 
-    def accept_alert(self):
-        with self.browser.get_alert() as alert:
-            alert.accept()
+    def accept_next_dialog(self):
+        """Register a one-shot handler to accept the next dialog."""
+        self.page.once("dialog", lambda d: d.accept())
 
-    def dismiss_alert(self):
-        with self.browser.get_alert() as alert:
-            alert.dismiss()
+    def dismiss_next_dialog(self):
+        """Register a one-shot handler to dismiss the next dialog."""
+        self.page.once("dialog", lambda d: d.dismiss())
 
 
 @pytest.fixture
-def multiseek_page(browser, live_server, initial_data):
-    browser.visit(live_server + reverse('multiseek:index'))
+def multiseek_page(page, live_server, initial_data):
+    page.goto(live_server.url + reverse("multiseek:index"))
     registry = get_registry(settings.MULTISEEK_REGISTRY)
-    page = MultiseekWebPage(browser=browser, registry=registry,
-                            live_server_url=live_server.url)
-    yield page
-    page.browser.quit()
+    yield MultiseekWebPage(
+        page=page, registry=registry, live_server_url=live_server.url
+    )
 
 
 @pytest.fixture
@@ -215,33 +191,33 @@ def multiseek_admin_page(multiseek_page, admin_user):
     return multiseek_page
 
 
-@pytest.fixture(scope='session')
-def splinter_firefox_profile_preferences():
-    return {
-        "browser.startup.homepage": "about:blank",
-        "startup.homepage_welcome_url": "about:blank",
-        "startup.homepage_welcome_url.additional": "about:blank",
-        "intl.accept_languages": "en-us"
-    }
-
-
 @pytest.fixture
 def initial_data():
     eng = baker.make(Language, name=_("english"), description="English language")
     baker.make(Language, name=_("polish"), description="Polish language")
     a1 = baker.make(Author, last_name="Smith", first_name="John")
     a2 = baker.make(Author, last_name="Kovalsky", first_name="Ian")
-    b1 = baker.make(Book, title="A book with a title", year=2013, language=eng,
-                    no_editors=5, last_updated=datetime.date(2013, 10, 22),
-                    available=True)
-    b2 = baker.make(Book, title="Second book", year=2000, language=eng,
-                    no_editors=5, last_updated=datetime.date(2013, 9, 22),
-                    available=False)
+    b1 = baker.make(
+        Book,
+        title="A book with a title",
+        year=2013,
+        language=eng,
+        no_editors=5,
+        last_updated=datetime.date(2013, 10, 22),
+        available=True,
+    )
+    b2 = baker.make(
+        Book,
+        title="Second book",
+        year=2000,
+        language=eng,
+        no_editors=5,
+        last_updated=datetime.date(2013, 9, 22),
+        available=False,
+    )
 
     b1.authors.add(a1)
     b2.authors.add(a2)
-
-    # Some more books by author 3 so we can test pagination...
 
     a3 = baker.make(Author, last_name="Novak", first_name="Stephan")
     fr = baker.make(Language, name="french", description="French language")
