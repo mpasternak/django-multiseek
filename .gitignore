@@ -62,9 +62,13 @@ test_app.tests
 test_project/geckodriver.log
 /test_project/db.sqlite3
 junit.xml
+.pytest_cache/
+htmlcov/
 
 # Virtual environments
 .venv/
+venv/
+ENV/
 
 # uv lock (library — not committed)
 uv.lock
