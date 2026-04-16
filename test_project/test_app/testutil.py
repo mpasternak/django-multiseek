@@ -5,8 +5,13 @@ def select_select2_autocomplete(page, container_selector, value):
     """Select a value from a Select2 autocomplete widget using Playwright."""
     page.locator(container_selector).click()
     page.locator(".select2-search__field").fill(value)
-    page.locator(".select2-results__option").first.wait_for(state="visible")
+    # Wait for AJAX results to load (not the "Searching..." indicator)
+    page.locator(
+        ".select2-results__option:not(.loading-results)"
+    ).first.wait_for(state="visible")
     page.keyboard.press("Enter")
+    # Wait for dropdown to close, confirming the selection took effect
+    page.locator(".select2-dropdown").wait_for(state="hidden")
 
 
 class SequentialDialogHandler:
