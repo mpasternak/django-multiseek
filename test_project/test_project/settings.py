@@ -74,16 +74,8 @@ STATIC_ROOT = os.path.abspath(
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = ()
-# Additional locations of static files
-
-# List of finder classes that know how to find static files in
-# various locations.
-STATICFILES_FINDERS = (
-    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'test_project.finders.YarnFinder',
+STATICFILES_DIRS = (
+    os.path.join(os.path.dirname(__file__), '..', 'node_modules'),
 )
 
 # Make this unique, and don't share it with anybody.
