@@ -429,9 +429,12 @@ def test_frame_bug(multiseek_page):
 
     # Wait for the iframe's request to fully complete before teardown
     # flushes the DB -- main page networkidle doesn't cover iframe requests.
+    # The extra wait_for_timeout guards against a race where the browser
+    # reports networkidle before the server finishes writing to the DB.
     iframe = multiseek_page.page.frame(name="list_frame")
     if iframe:
         iframe.wait_for_load_state("networkidle")
+    multiseek_page.page.wait_for_timeout(500)
 
 
 @pytest.mark.django_db
