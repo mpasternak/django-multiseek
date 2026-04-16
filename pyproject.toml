@@ -60,7 +60,8 @@ multiseek = [
 ]
 
 [tool.pytest.ini_options]
-rootdir = "test_project"
+testpaths = ["test_project", "multiseek"]
+pythonpath = ["test_project"]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = [
     "--ds=test_project.settings",

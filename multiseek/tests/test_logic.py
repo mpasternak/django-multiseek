@@ -182,7 +182,7 @@ class TestRangeQueryObject(TestCase):
         s2 = "(NOT (AND: (u'foo__lte', 2), (u'foo__gte', 1)))"
         maybe_that = str(res) == py3k_test_string(s2)
 
-        self.assert_(maybe_that or maybe_this)
+        self.assertTrue(maybe_that or maybe_this)
 
 
 class TestIntegerQueryObject(TestCase):
@@ -285,7 +285,7 @@ class TestMultiseekRegistry(TestCase):
         ]
 
         self.registry.get_query(input)
-        self.assertEquals(len(self.registry.errors), 1)
+        self.assertEqual(len(self.registry.errors), 1)
 
         input[2]["prev_op"] = OR
 
@@ -293,7 +293,7 @@ class TestMultiseekRegistry(TestCase):
         self.assertEqual(
             str(res), py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))")
         )
-        self.assertEquals(len(self.registry.errors), 0)
+        self.assertEqual(len(self.registry.errors), 0)
 
     def test_get_query_errors(self):
         self.registry.get_query(json.loads(test_impossible_json)["form_data"])
