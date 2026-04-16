@@ -427,8 +427,11 @@ def test_frame_bug(multiseek_page):
     body_text = frame.locator("body").text_content()
     assert "Server Error (500)" not in body_text
 
-    # Ensure iframe request completes before teardown flushes the DB
-    multiseek_page.page.wait_for_load_state("networkidle")
+    # Wait for the iframe's request to fully complete before teardown
+    # flushes the DB -- main page networkidle doesn't cover iframe requests.
+    iframe = multiseek_page.page.frame(name="list_frame")
+    if iframe:
+        iframe.wait_for_load_state("networkidle")
 
 
 @pytest.mark.django_db
