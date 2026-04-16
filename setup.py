@@ -4,10 +4,13 @@ All package metadata lives in pyproject.toml. This file exists solely to
 ensure ``django-admin compilemessages`` runs during wheel/sdist builds.
 """
 
+import logging
 import os
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py as _build_py
+
+logger = logging.getLogger(__name__)
 
 
 class compile_translations(Command):
@@ -21,12 +24,23 @@ class compile_translations(Command):
         pass
 
     def run(self):
-        curdir = os.getcwd()
-        os.chdir(os.path.join(os.path.dirname(__file__), "multiseek"))
-        from django.core.management import call_command
+        locale_dir = os.path.join(os.path.dirname(__file__), "multiseek")
+        if not os.path.isdir(locale_dir):
+            logger.warning(
+                "multiseek directory not found, skipping compilemessages"
+            )
+            return
 
-        call_command("compilemessages")
-        os.chdir(curdir)
+        curdir = os.getcwd()
+        os.chdir(locale_dir)
+        try:
+            from django.core.management import call_command
+
+            call_command("compilemessages")
+        except Exception as exc:
+            logger.warning("compilemessages failed: %s", exc)
+        finally:
+            os.chdir(curdir)
 
 
 class build_py(_build_py):
