@@ -59,6 +59,16 @@ multiseek = [
     "templates/multiseek/*.html",
 ]
 
+[tool.pytest.ini_options]
+rootdir = "test_project"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = [
+    "--ds=test_project.settings",
+    "--splinter-make-screenshot-on-failure=false",
+    "--splinter-webdriver=firefox",
+    "--splinter-headless",
+]
+
 [tool.ruff]
 target-version = "py310"
 line-length = 120
