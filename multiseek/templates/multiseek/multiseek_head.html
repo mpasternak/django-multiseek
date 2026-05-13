@@ -10,5 +10,10 @@
     multiseekDateFormat = 'yyyy-mm-dd';
     multiseekDateWeekStart = 1;
 
+    // Rendered server-side; reading {{ csrf_token }} also causes Django to
+    // set the csrftoken cookie, so AJAX paths that prefer header-based CSRF
+    // can fall back to it.
+    multiseekCSRFToken = '{{ csrf_token }}';
+
 </script>
 <script src="{% static "multiseek/js/multiseek.js" %}" type="text/javascript"></script>

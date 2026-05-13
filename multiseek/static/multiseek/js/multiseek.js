@@ -787,7 +787,10 @@ function submitEvent(button) {
         method: "post",
         action: "./results/",
         target: "list_frame"
-    }).append($("<input/>").attr('name', 'json').attr({"value": value}));
+    })
+        .append($("<input/>").attr('name', 'json').attr({"value": value}))
+        .append($("<input/>").attr('name', 'csrfmiddlewaretoken')
+            .attr({"value": window.multiseekCSRFToken || ''}));
 
     $("body").append(form);
 
@@ -809,7 +812,8 @@ function updateFormSelector(pk, value) {
 function saveForm(button) {
     var dct = {
         'json': formAsJSON(),
-        'name': prompt(gettext("Form name?"))
+        'name': prompt(gettext("Form name?")),
+        'csrfmiddlewaretoken': window.multiseekCSRFToken || ''
     };
 
     if (dct.name == null)

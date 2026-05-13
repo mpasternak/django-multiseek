@@ -6,7 +6,6 @@ except ImportError:
     from django.urls import re_path as url
 
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from django.views.i18n import JavaScriptCatalog
 
 from multiseek import views
@@ -19,24 +18,24 @@ urlpatterns = [
         JavaScriptCatalog.as_view(packages=['multiseek']),
         name="js_i18n"),
 
-    url(r'^$', csrf_exempt(views.MultiseekFormPage.as_view(
+    url(r'^$', views.MultiseekFormPage.as_view(
         registry=settings.MULTISEEK_REGISTRY,
         template_name="multiseek/index.html"
-    )), name="index"),
+    ), name="index"),
 
     url(r'^results/$',
-        csrf_exempt(views.MultiseekResults.as_view(
+        views.MultiseekResults.as_view(
             registry=settings.MULTISEEK_REGISTRY,
             template_name="multiseek/results.html"
-        )), name="results"),
+        ), name="results"),
 
     url(r'^save_form/$',
-        csrf_exempt(views.MultiseekSaveForm.as_view(
+        views.MultiseekSaveForm.as_view(
             registry=settings.MULTISEEK_REGISTRY
-        )), name="save_form"),
+        ), name="save_form"),
 
     url(r'^reset/$',
-        csrf_exempt(views.reset_form),
+        views.reset_form,
         name="reset"),
 
     url(r'^remove-from-results/(?P<pk>\d+)$',
