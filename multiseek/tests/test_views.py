@@ -234,6 +234,60 @@ class TestMultiseekResults(RegistryMixin, TestCase):
         res = self.mr.describe_multiseek_data()
         self.assertEqual(res, 'foo contains "foobar"')
 
+    def test_describe_multiseek_data_escapes_xss_in_prev_op(self):
+        """Issue #4: prev_op from user JSON must be HTML-escaped before being
+        concatenated into description, which the template renders with `|safe`.
+
+        Pre-fix, gettext_lazy(prev_op).upper() passes through the malicious
+        string, then it's wrapped in <b>...</b> and returned raw.
+        """
+        self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
+            {
+                "form_data": [
+                    None,
+                    {
+                        "field": str(self.registry.fields[0].label),
+                        "operator": str(self.registry.fields[0].ops[0]),
+                        "value": "x",
+                        "prev_op": None,
+                    },
+                    {
+                        "field": str(self.registry.fields[0].label),
+                        "operator": str(self.registry.fields[0].ops[0]),
+                        "value": "y",
+                        "prev_op": "<script>alert(1)</script>",
+                    },
+                ]
+            }
+        )
+        self.mr.post(self.request)
+        res = self.mr.describe_multiseek_data()
+        self.assertNotIn("<script>", res.lower())
+
+    def test_describe_multiseek_data_escapes_xss_in_operator(self):
+        """Issue #4: operator from user JSON must be HTML-escaped.
+
+        StringQueryObject.impacts_query() returns True for any non-empty
+        value paired with any operator string, so an arbitrary operator
+        reaches the description concatenation.
+        """
+        self.request.session[MULTISEEK_SESSION_KEY] = json.dumps(
+            {
+                "form_data": [
+                    None,
+                    {
+                        "field": str(self.registry.fields[0].label),
+                        "operator": "<img src=x onerror=alert(1)>",
+                        "value": "y",
+                        "prev_op": None,
+                    },
+                ]
+            }
+        )
+        self.mr.post(self.request)
+        res = self.mr.describe_multiseek_data()
+        self.assertNotIn("<img", res.lower())
+
 
 class TestCSRFProtection(TestCase):
     """Regression tests for Issue #2.

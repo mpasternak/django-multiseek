@@ -5,6 +5,7 @@ from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
@@ -246,7 +247,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             while cur < len(d):
                 if isinstance(d[cur], list):
                     if d[cur][0] is not None:
-                        ret += " <b>" + str(gettext_lazy(d[cur][0])).upper() + "</b> "
+                        ret += format_html(" <b>{}</b> ", str(gettext_lazy(d[cur][0])).upper())
                     ret += "(" + _recur(d[cur][1:]) + ")"
                 else:
                     f = registry.get_field_by_name(d[cur]["field"])
@@ -256,11 +257,15 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                     if impacts_query:
                         if "prev_op" in d[cur] and d[cur]["prev_op"] is not None:
                             tmp = d[cur]["prev_op"]
-                            ret += " <b>" + str(gettext_lazy(tmp)).upper() + "</b> "
+                            ret += format_html(" <b>{}</b> ", str(gettext_lazy(tmp)).upper())
 
                         value = f.value_for_description(d[cur]["value"])
 
-                        ret += "%s %s %s" % (
+                        # `value` is trusted only if value_for_description returns a
+                        # SafeString (StringQueryObject does, via format_html). Plain
+                        # str gets escaped by format_html as a defense-in-depth pass.
+                        ret += format_html(
+                            "{} {} {}",
                             d[cur]["field"].lower(),
                             d[cur]["operator"],
                             value,

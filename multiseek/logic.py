@@ -9,7 +9,7 @@ from dateutil.parser import parse
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.urls import reverse
-from django.utils import html
+from django.utils.html import format_html
 from django.utils.text import camel_case_to_spaces as get_verbose_name
 from django.utils.translation import gettext_lazy as _
 
@@ -255,7 +255,9 @@ class StringQueryObject(QueryObject):
         value = super().value_for_description(value)
         if not value:
             return self.empty_value_description
-        return '"%s"' % html.escape(value)
+        # Return a SafeString so the description builder can mix it with
+        # other escaped text without double-escaping.
+        return format_html('"{}"', value)
 
     def real_query(self, value, operation):
         ret = QueryObject.real_query(self, value, operation, validate_operation=False)
