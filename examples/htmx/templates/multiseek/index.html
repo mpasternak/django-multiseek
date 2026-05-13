@@ -12,6 +12,46 @@
 
 {% include "htmx_fragments/frame.html" with frame=form_data frame_path="0" frame_prev_op=None is_root=True %}
 
+{% if ordering_options %}
+<fieldset class="ms-ordering">
+    <legend>{% trans "Sort by" %}</legend>
+    <select name="order_index"
+            hx-post="{% url 'htmx_fragments:set_ordering' %}"
+            hx-include="closest .ms-ordering"
+            hx-trigger="change"
+            hx-swap="none">
+        {% for o in ordering_options %}
+            <option value="{{ forloop.counter0 }}" {% if current_order_index|stringformat:"s" == forloop.counter0|stringformat:"s" %}selected{% endif %}>{{ o.label }}</option>
+        {% endfor %}
+    </select>
+    <label>
+        <input type="checkbox"
+               name="order_dir"
+               value="1"
+               {% if current_order_dir == "1" %}checked{% endif %}
+               hx-post="{% url 'htmx_fragments:set_ordering' %}"
+               hx-include="closest .ms-ordering"
+               hx-trigger="change"
+               hx-swap="none">
+        {% trans "descending" %}
+    </label>
+</fieldset>
+{% endif %}
+
+{% if report_types %}
+<fieldset class="ms-report-type">
+    <legend>{% trans "Report type" %}</legend>
+    <select name="report_type"
+            hx-post="{% url 'htmx_fragments:set_report_type' %}"
+            hx-trigger="change"
+            hx-swap="none">
+        {% for rt in report_types %}
+            <option value="{{ forloop.counter0 }}" {% if current_report_type|stringformat:"s" == forloop.counter0|stringformat:"s" %}selected{% endif %}>{{ rt.label }}</option>
+        {% endfor %}
+    </select>
+</fieldset>
+{% endif %}
+
 <div class="ms-actions">
   {% comment %}Send Query: htmx swap of the results fragment into the #multiseek-results div below — same in-page UX as the other variants' iframe. The session is the canonical state so no body is needed.{% endcomment %}
   <button type="button"

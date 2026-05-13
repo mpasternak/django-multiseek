@@ -28,5 +28,7 @@ urlpatterns = [
     path("field-prev-op/<path:elpath>/", views.set_field_prev_op, name="set_field_prev_op"),
     path("autocomplete/<path:elpath>/", views.autocomplete_suggestions, name="autocomplete"),
     path("autocomplete-pick/<path:elpath>/", views.autocomplete_pick, name="autocomplete_pick"),
+    path("ordering/", views.set_ordering, name="set_ordering"),
+    path("report-type/", views.set_report_type, name="set_report_type"),
     path("results/", views.results_fragment, name="results_fragment"),
 ]

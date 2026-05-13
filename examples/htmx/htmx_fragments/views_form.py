@@ -58,6 +58,9 @@ class HtmxMultiseekFormPage(TemplateView):
         form_data = data.get("form_data") or [None]
 
         fields = registry.get_fields(self.request)
+        current_ordering = data.get("ordering") or {}
+        current_report_type = data.get("report_type", "")
+
         ctx = super().get_context_data(**kwargs)
         ctx.update(
             {
@@ -70,6 +73,14 @@ class HtmxMultiseekFormPage(TemplateView):
                 "AND": AND,
                 "OR": OR,
                 "ANDNOT": ANDNOT,
+                # Ordering + report-type UI inputs persist their choices via
+                # the htmx endpoints below. Surface the registry's options
+                # plus the current selection so the selects round-trip.
+                "ordering_options": list(registry.ordering or []),
+                "report_types": registry.get_report_types(self.request),
+                "current_order_index": current_ordering.get("order_0", "0"),
+                "current_order_dir": current_ordering.get("order_0_dir", ""),
+                "current_report_type": current_report_type,
             }
         )
         return ctx

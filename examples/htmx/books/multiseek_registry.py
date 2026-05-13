@@ -82,5 +82,6 @@ registry = create_registry(
     default_ordering=["-title", "authors", "year"],
     report_types=[
         ReportType("list", _("list")),
+        ReportType("table", _("table")),
     ],
 )

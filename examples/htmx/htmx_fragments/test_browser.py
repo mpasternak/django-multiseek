@@ -41,11 +41,11 @@ def test_fill_value_and_submit_filters_results(live_server, page, books_fixture)
     page.wait_for_load_state("networkidle")
 
     # The string-field value input is inside the .ms-value-widget div.
-    page.locator(".ms-value-string").first.fill("test")
-
-    # Debounce: htmx field-value endpoint fires on 300ms keyup-changed.
-    # Give it a beat so the session is updated before Send Query.
-    page.wait_for_timeout(400)
+    inp = page.locator(".ms-value-string").first
+    inp.fill("test")
+    # Force the change event to flush — htmx's hx-trigger fires on change.
+    inp.blur()
+    page.wait_for_timeout(800)
 
     # Send Query button does hx-get to /htmx/results/ targeting #multiseek-results.
     page.get_by_role("button", name="Send query").click()

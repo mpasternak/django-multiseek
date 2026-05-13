@@ -537,6 +537,46 @@ def set_field_prev_op(request, elpath):
     return HttpResponse("")
 
 
+@csrf_protect
+def set_ordering(request):
+    """POST → store the current "sort by" choice in the session.
+
+    Accepts ``order_index`` (string-of-int referencing ``registry.ordering``)
+    and ``order_dir`` ("1" for descending, empty for ascending). Stored at
+    session JSON's top-level ``ordering`` key under the bundled
+    ``order_0`` / ``order_0_dir`` slot names that
+    ``MultiseekRegistry.apply_ordering_to_queryset`` reads from.
+    """
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    idx = request.POST.get("order_index", "")
+    direction = request.POST.get("order_dir", "")
+    data = _load_form(request.session)
+    ordering = data.get("ordering")
+    if not isinstance(ordering, dict):
+        ordering = {}
+    ordering["order_0"] = idx
+    if direction:
+        ordering["order_0_dir"] = direction
+    else:
+        ordering.pop("order_0_dir", None)
+    data["ordering"] = ordering
+    _save_form(request.session, data)
+    return HttpResponse("")
+
+
+@csrf_protect
+def set_report_type(request):
+    """POST → store the picked report type index into the session JSON."""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    idx = request.POST.get("report_type", "")
+    data = _load_form(request.session)
+    data["report_type"] = idx
+    _save_form(request.session, data)
+    return HttpResponse("")
+
+
 def autocomplete_suggestions(request, elpath):
     """GET /htmx/autocomplete/<elpath>/?q=… → HTML fragment listing
     matching items for the autocomplete field at <elpath>.
