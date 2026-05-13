@@ -1,0 +1,14 @@
+[project]
+name = "multiseek-alpine-example"
+version = "0.0.1"
+description = "Variant 3 example for django-multiseek: Bootstrap 5 + Alpine.js, no jQuery"
+requires-python = ">=3.10"
+dependencies = [
+    "Django>=4.2",
+    "django-autocomplete-light>=3.8.1",
+    "django-multiseek",
+    "model-bakery",
+]
+
+[tool.uv.sources]
+django-multiseek = { path = "../../", editable = true }

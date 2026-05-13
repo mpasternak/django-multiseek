@@ -1,0 +1,31 @@
+{% extends "multiseek/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-3">
+    {% if errors %}
+        <div class="alert alert-danger" role="alert">
+            {% blocktrans %}Errors occured. Please verify if the input form you given is correct.{% endblocktrans %}
+            <ul class="mb-0">
+                {% for elem in errors %}
+                    <li>{{ elem }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        {% if description %}
+            <p class="text-muted small mb-2"><strong>{% trans "Query: " %}</strong>{{ description|safe }}</p>
+        {% endif %}
+
+        {% if object_list %}
+            <ul class="list-group">
+                {% for element in object_list %}
+                    <li class="list-group-item">{{ element }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">{% trans "No elements" %}</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

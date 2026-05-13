@@ -1,0 +1,9 @@
+{% load static %}
+<script>
+    // CSRF token; read by Alpine.js component before submitting the form.
+    // Referencing {{ csrf_token }} server-side also forces Django to set
+    // the csrftoken cookie, so the X-CSRFToken header path works too.
+    window.multiseekCSRFToken = '{{ csrf_token }}';
+    window.djangoLanguageCode = '{{ LANGUAGE_CODE }}';
+</script>
+<script defer src="{% static 'multiseek/js/multiseek-alpine.js' %}"></script>

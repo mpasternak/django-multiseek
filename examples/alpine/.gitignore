@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+db.sqlite3
+collected_static/
+uv.lock
+
+# Counter the repo-root `static/` ignore so this example's static dir is tracked.
+!static/

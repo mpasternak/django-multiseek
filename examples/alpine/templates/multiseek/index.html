@@ -1,0 +1,302 @@
+{% extends "multiseek/base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% include "multiseek/multiseek_head.html" %}
+{% endblock %}
+
+{% block title %}{% trans "Multiseek" %} (Alpine.js){% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <header class="mb-3 d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0">django-multiseek <small class="text-muted fs-6">— Bootstrap 5 + Alpine.js</small></h1>
+        <small class="text-muted">no jQuery, no build step</small>
+    </header>
+
+    {% comment %}
+        Root Alpine component. Receives server-rendered config as initial state:
+        - fields: list of registered field labels
+        - ops:    {label: [op_label, ...]}
+        - types:  {label: type_constant}
+        - value_lists: {label: [value, ...]}
+        - autocompletes: {label: url}
+
+        js_fields / js_ops / js_types / js_value_lists / js_autocompletes are
+        already JSON strings (Python json.dumps output) — we drop them straight
+        into <script type="application/json"> tags. The Alpine component reads
+        them via JSON.parse on init().
+    {% endcomment %}
+    <script id="ms-fields" type="application/json">{{ js_fields|safe }}</script>
+    <script id="ms-ops" type="application/json">{{ js_ops|safe }}</script>
+    <script id="ms-types" type="application/json">{{ js_types|safe }}</script>
+    <script id="ms-value-lists" type="application/json">{{ js_value_lists|safe }}</script>
+    <script id="ms-autocompletes" type="application/json">{{ js_autocompletes|safe }}</script>
+    <script id="ms-config" type="application/json">{
+        "removeLastFieldMessage": "{{ js_remove_message|escapejs }}",
+        "and_label": "{{ js_and|escapejs }}",
+        "or_label": "{{ js_or|escapejs }}",
+        "initializeEmpty": {% if initialize_empty_form %}true{% else %}false{% endif %},
+        "orderingPrefix": "{{ MULTISEEK_ORDERING_PREFIX|escapejs }}",
+        "reportTypeKey": "{{ MULTISEEK_REPORT_TYPE|escapejs }}",
+        "savedForms": [{% for form in saved_forms %}{"pk": {{ form.pk }}, "label": "{{ form|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}],
+        "userCanSave": {% if user_allowed_to_save_forms %}true{% else %}false{% endif %}
+    }</script>
+
+    <div x-data="multiseekForm()" x-init="init()" id="multiseek-root">
+        {# ----- root frame ----- #}
+        <template x-for="frame in frames" :key="frame.uid">
+            <div class="border rounded p-3 mb-3 bg-light" :id="'frame-' + frame.uid">
+                <template x-for="(elem, idx) in frame.elements" :key="elem.uid">
+                    <div class="mb-2">
+                        {# prev_op selector (only shown for non-first elements in a frame) #}
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-2">
+                                <template x-if="idx > 0">
+                                    <select class="form-select form-select-sm" x-model="elem.prev_op" :id="'prev-op-' + elem.uid">
+                                        <option value="and" x-text="t('and')"></option>
+                                        <option value="or" x-text="t('or')"></option>
+                                        <option value="andnot" x-text="t('and not')"></option>
+                                    </select>
+                                </template>
+                            </div>
+
+                            {# ---------- a regular field row ---------- #}
+                            <template x-if="elem.kind === 'field'">
+                                <div class="col-md-10">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-md-3">
+                                            <select class="form-select form-select-sm"
+                                                    x-model="elem.field"
+                                                    @change="onFieldChange(elem)"
+                                                    :id="'type-' + elem.uid">
+                                                <template x-for="f in fields" :key="f">
+                                                    <option :value="f" x-text="f"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <select class="form-select form-select-sm"
+                                                    x-model="elem.operator"
+                                                    @change="onOperatorChange(elem)"
+                                                    :id="'op-' + elem.uid">
+                                                <template x-for="op in opsFor(elem.field)" :key="op">
+                                                    <option :value="op" x-text="op"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-5">
+                                            {# value widget: rendered conditionally on field type #}
+
+                                            {# STRING widget #}
+                                            <template x-if="typeFor(elem.field) === 'string'">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       x-model="elem.value"
+                                                       :id="'value-' + elem.uid">
+                                            </template>
+
+                                            {# INTEGER widget #}
+                                            <template x-if="typeFor(elem.field) === 'integer'">
+                                                <input type="number"
+                                                       step="1"
+                                                       class="form-control form-control-sm"
+                                                       x-model.number="elem.value"
+                                                       :id="'value-' + elem.uid">
+                                            </template>
+
+                                            {# DECIMAL widget #}
+                                            <template x-if="typeFor(elem.field) === 'decimal'">
+                                                <input type="number"
+                                                       step="0.001"
+                                                       class="form-control form-control-sm"
+                                                       x-model.number="elem.value"
+                                                       :id="'value-' + elem.uid">
+                                            </template>
+
+                                            {# RANGE widget — two integer inputs serialized as JSON string #}
+                                            <template x-if="typeFor(elem.field) === 'range'">
+                                                <div class="d-flex gap-1 align-items-center">
+                                                    <input type="number"
+                                                           class="form-control form-control-sm"
+                                                           placeholder="from"
+                                                           x-model.number="elem.value_min"
+                                                           :id="'value_min-' + elem.uid">
+                                                    <span class="text-muted small">—</span>
+                                                    <input type="number"
+                                                           class="form-control form-control-sm"
+                                                           placeholder="to"
+                                                           x-model.number="elem.value_max"
+                                                           :id="'value_max-' + elem.uid">
+                                                </div>
+                                            </template>
+
+                                            {# DATE widget — flatpickr; the range form is enabled for operators with idx > 5 #}
+                                            <template x-if="typeFor(elem.field) === 'date'">
+                                                <div class="d-flex gap-1 align-items-center">
+                                                    <input type="text"
+                                                           class="form-control form-control-sm flatpickr-date"
+                                                           placeholder="YYYY-MM-DD"
+                                                           x-model="elem.value"
+                                                           x-init="initFlatpickr($el)"
+                                                           :id="'value-' + elem.uid">
+                                                    <template x-if="isDateRangeOp(elem)">
+                                                        <input type="text"
+                                                               class="form-control form-control-sm flatpickr-date"
+                                                               placeholder="YYYY-MM-DD"
+                                                               x-model="elem.value_max"
+                                                               x-init="initFlatpickr($el)"
+                                                               :id="'value_max-' + elem.uid">
+                                                    </template>
+                                                </div>
+                                            </template>
+
+                                            {# VALUE_LIST widget — select with server-rendered options #}
+                                            <template x-if="typeFor(elem.field) === 'value-list'">
+                                                <select class="form-select form-select-sm"
+                                                        x-model="elem.value"
+                                                        :id="'value-' + elem.uid">
+                                                    <template x-for="v in valueListFor(elem.field)" :key="v">
+                                                        <option :value="v" x-text="v"></option>
+                                                    </template>
+                                                </select>
+                                            </template>
+
+                                            {# AUTOCOMPLETE widget — degraded to a plain text input in this variant. #}
+                                            {# A future iteration could swap in select2 (vanilla port) or tom-select. #}
+                                            <template x-if="typeFor(elem.field) === 'autocomplete'">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="autocomplete (degraded)"
+                                                       x-model="elem.value"
+                                                       :id="'value-' + elem.uid">
+                                            </template>
+                                        </div>
+
+                                        <div class="col-md-1 text-end">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    @click="removeField(frame, elem)"
+                                                    :id="'close-button-' + elem.uid"
+                                                    title="Remove field">&times;</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            {# ---------- a nested frame ---------- #}
+                            <template x-if="elem.kind === 'frame'">
+                                <div class="col-md-10">
+                                    <div class="border rounded p-2 bg-white">
+                                        <small class="text-muted">Sub-frame</small>
+                                        {# Render the nested frame's elements recursively via subFrame() #}
+                                        <template x-for="(sub, sidx) in elem.elements" :key="sub.uid">
+                                            <div class="mt-2">
+                                                <em class="text-muted small" x-text="describeSub(sub, sidx)"></em>
+                                            </div>
+                                        </template>
+                                        <div class="mt-2">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                    @click="addFieldToFrame(elem)">+ field</button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    @click="removeFrame(frame, elem)">Remove frame</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="mt-2 d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-primary" id="add_field" @click="addField(frame)">+ field</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="add_frame" @click="addFrame(frame)">+ frame</button>
+                </div>
+            </div>
+        </template>
+
+        {# ----- report types ----- #}
+        {% if report_types %}
+            <div class="row g-2 mb-3 align-items-center">
+                <label class="col-md-2 col-form-label col-form-label-sm">{% trans "Report type:" %}</label>
+                <div class="col-md-3">
+                    <select class="form-select form-select-sm" x-model="reportType" @change="sendQuery()">
+                        {% for t in report_types %}
+                            <option value="{{ forloop.counter0 }}">{{ t.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        {% endif %}
+
+        {# ----- ordering ----- #}
+        <div class="row g-2 mb-3">
+            {% for element in order_boxes %}
+                <div class="col-md-3">
+                    <label class="form-label small">{{ element }}</label>
+                    <select class="form-select form-select-sm"
+                            x-model="ordering[{{ forloop.counter0 }}].field"
+                            @change="sendQuery()">
+                        {% for o in ordering %}
+                            <option value="{{ forloop.counter0 }}">{{ o.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-check form-check-inline mt-1">
+                        <input class="form-check-input" type="checkbox"
+                               x-model="ordering[{{ forloop.counter0 }}].desc"
+                               @change="sendQuery()"
+                               id="order_{{ forloop.counter0 }}_dir">
+                        <label class="form-check-label small" for="order_{{ forloop.counter0 }}_dir">
+                            {% trans "descending" %}
+                        </label>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# ----- action buttons ----- #}
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary" id="sendQueryButton" @click="sendQuery()">
+                        {% trans "Send query" %}
+                    </button>
+                    <button type="button" class="btn btn-danger" id="resetFormButton" @click="resetForm()">
+                        {% trans "Reset form" %}
+                    </button>
+                    {% if user_allowed_to_save_forms %}
+                        <button type="button" class="btn btn-warning" id="saveFormButton" @click="saveForm()">
+                            {% trans "Save form" %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select id="formsSelector"
+                        class="form-select form-select-sm"
+                        x-show="savedForms.length > 0"
+                        @change="loadForm($event.target.value)">
+                    <option value="">{% trans "choose form to load..." %}</option>
+                    {% for form in saved_forms %}
+                        <option value="{{ form.pk }}">{{ form }}</option>
+                    {% endfor %}
+                </select>
+                {% if not user_allowed_to_save_forms %}
+                    {% url "admin:index" as admin_index %}
+                    <p class="small text-muted mt-2">
+                        {% blocktrans %}Please go to <a href="{{ admin_index }}">admin page</a> to log in, then come back. You will be able to save created forms.{% endblocktrans %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ----- results iframe ----- #}
+        {% include "multiseek/multiseek_results_frame.html" %}
+    </div>
+</div>
+{% endblock %}
