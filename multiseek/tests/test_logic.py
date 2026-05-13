@@ -340,7 +340,7 @@ class TestMultiseekRegistry(TestCase):
 
         self.maxDiff = None
 
-        ex = u"""$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
+        ex = """$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
 $('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
 $('#frame-0').multiseekFrame('addFrame', 'and');
 $('#frame-1').multiseekFrame('addField', 'foo', 'equals', 'foo', null);
@@ -354,9 +354,7 @@ $('#frame-2').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');
 \t\t$("select[name=_ms_report_type] option").eq(1).prop("selected", true);
 \t\tif (window.Foundation) {
 \t\t\t$("input[name=order_1_dir]").next().toggleClass("checked", true)
-\t\t}\n""" % dict(
-            equal=EQUAL
-        )
+\t\t}\n"""
 
         self.assertEqual(ex, res)
 

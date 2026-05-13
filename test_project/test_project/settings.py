@@ -84,30 +84,19 @@ SECRET_KEY = '(_163dr0#ijuk2=13)wlkc#cqdnj&f^uy@vuo)$@&tz%d1jand'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            # insert your TEMPLATE_DIRS here
-        ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.core.context_processors.request',
-                'django.core.context_processors.static',
+                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
+                'django.template.context_processors.static',
                 'django.contrib.auth.context_processors.auth',
-                'django.core.context_processors.i18n'
+                'django.template.context_processors.i18n',
             ],
         },
     },
 ]
-
-import django
-if django.VERSION > (1,8):
-    TEMPLATES[0]['OPTIONS']['context_processors'] = [
-        'django.contrib.messages.context_processors.messages',
-        'django.template.context_processors.request',
-        'django.template.context_processors.static',
-        'django.contrib.auth.context_processors.auth',
-        'django.template.context_processors.i18n'
-    ]
 
 MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',

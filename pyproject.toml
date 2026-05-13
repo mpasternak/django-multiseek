@@ -46,6 +46,7 @@ dev = [
     "mock",
     "model_bakery",
     "psycopg2-binary",
+    "ruff",
 ]
 
 [tool.setuptools.packages.find]
@@ -70,9 +71,15 @@ addopts = [
 [tool.ruff]
 target-version = "py310"
 line-length = 120
+extend-exclude = ["**/migrations/**"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test aggregator deliberately re-exports everything from sibling modules
+# so the suite can be discovered as a single package.
+"multiseek/tests/__init__.py" = ["F401", "F403"]
 
 [tool.bumpver]
 current_version = "0.9.49"
