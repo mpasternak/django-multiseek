@@ -80,19 +80,22 @@ wrote to it), this works without any JS.
 
 ## What's functional, what's TODO
 
-| Field type     | Status                                                                |
-|----------------|-----------------------------------------------------------------------|
-| `string`       | Fully functional — text input, all operators, send-query end to end.  |
-| `integer`      | Generic text input; works if user types a number.                     |
-| `date`         | TODO — needs date-picker widget; users see a plain text box.          |
-| `range`        | TODO — needs two-value widget; users see a plain text box.            |
-| `autocomplete` | TODO — needs select2/dal integration without JS state.                |
-| `value-list`   | TODO — should render a `<select>` populated from the registry values. |
-| `boolean`      | TODO — should render a checkbox / yes-no select.                      |
+| Field type     | Status                                                                       |
+|----------------|------------------------------------------------------------------------------|
+| `string`       | Fully functional — text input, all operators, send-query end to end.         |
+| `integer`      | `<input type="number">`.                                                     |
+| `decimal`      | `<input type="number" step="any">`.                                          |
+| `range`        | Two number inputs (`value_min`, `value_max`) combined server-side into JSON. |
+| `date`         | Two `<input type="date">` (start + optional end for in-range operators).     |
+| `value-list`   | `<select>` populated from the registry's values callable / queryset.         |
+| `boolean`      | `<select>` with yes/no (`BooleanQueryObject` uses the value-list widget).    |
+| `autocomplete` | TODO — needs server-rendered options datalist; falls back to plain text.     |
 
-The scope cap for the first cut of Variant 4 is "string fields end to end".
-Other types are still discoverable through the type-select dropdown but show
-a generic text input with a "TODO" hint until typed widgets land.
+The split inputs for `range` and `date` round-trip through the session: open
+the form, set values, reload — the inputs come back pre-filled. The server
+combines `value_min`/`value_max` (or `value_date`/`value_date_max`) into the
+JSON shape `RangeQueryObject` / `DateQueryObject` expects in
+`set_field_value` (`htmx_fragments/views.py`).
 
 Other known gaps:
 

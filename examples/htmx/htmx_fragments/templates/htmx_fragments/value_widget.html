@@ -1,29 +1,90 @@
 {% load i18n htmx_fragments_tags %}{% comment %}
-Renders the type-specific value-entry widget. For Variant 4 we ship a
-functional widget for the STRING field type. Other types (date, range,
-autocomplete, value-list) are rendered as a generic text input that lets
-the user enter the JSON-shaped value manually; making them first-class
-is on the TODO list (see README).
+Type-specific value-entry widget. The Variant 4 (htmx) goal is to keep
+the browser's HTML form controls doing as much work as possible — no
+custom JS picker. Range/date use split inputs combined server-side.
 {% endcomment %}
 <div class="ms-value-widget" id="value-widget-{{ field_path|dotted_path_id }}">
-  {% if field_inner_type == "string" %}
-    <input type="text"
-           name="value"
-           value="{{ field.value|default_if_none:'' }}"
+  {% if field_inner_type == "range" %}
+    <input type="number" name="value_min" value="{{ range_min }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-include="closest .ms-value-widget"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-range-min" placeholder="{% trans 'min' %}" />
+    <input type="number" name="value_max" value="{{ range_max }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-include="closest .ms-value-widget"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-range-max" placeholder="{% trans 'max' %}" />
+
+  {% elif field_inner_type == "date" %}
+    <input type="date" name="value_date" value="{{ date_iso }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-include="closest .ms-value-widget"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-date" />
+    <input type="date" name="value_date_max" value="{{ date_iso_max }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-include="closest .ms-value-widget"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-date-max"
+           title="{% trans 'optional end date (for in-range operators)' %}" />
+
+  {% elif field_inner_type == "value-list" %}
+    <select name="value"
+            hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+            hx-trigger="change"
+            hx-swap="none"
+            class="ms-value-select">
+      <option value="">{% trans "(choose)" %}</option>
+      {% for v in value_list %}
+        <option value="{{ v }}"{% if v == field.value %} selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+
+  {% elif field_inner_type == "integer" %}
+    <input type="number" name="value" value="{{ field.value|default_if_none:'' }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-integer" placeholder="{% trans 'integer' %}" />
+
+  {% elif field_inner_type == "decimal" %}
+    <input type="number" step="any" name="value" value="{{ field.value|default_if_none:'' }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-decimal" placeholder="{% trans 'decimal' %}" />
+
+  {% elif field_inner_type == "string" %}
+    <input type="text" name="value" value="{{ field.value|default_if_none:'' }}"
            hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
            hx-trigger="change, keyup changed delay:300ms"
            hx-swap="none"
            class="ms-value ms-value-string"
            placeholder="{% trans 'value' %}" />
-  {% else %}
-    <input type="text"
-           name="value"
-           value="{{ field.value|default_if_none:'' }}"
+
+  {% elif field_inner_type == "autocomplete" %}
+    {# Without JS we degrade to typing the pk. A proper htmx autocomplete
+       would back this with a /htmx/autocomplete/<field>/ endpoint feeding
+       a <datalist>, but that's left as a TODO so the variant stays focused. #}
+    <input type="text" name="value" value="{{ field.value|default_if_none:'' }}"
            hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
-           hx-trigger="change, keyup changed delay:300ms"
+           hx-trigger="change"
            hx-swap="none"
-           class="ms-value ms-value-generic"
-           placeholder="{% trans 'value (TODO: typed widget)' %}" />
-    <small class="ms-todo">{% trans "TODO: widget for type" %} <code>{{ field_inner_type }}</code></small>
+           class="ms-value-autocomplete"
+           placeholder="{% trans 'autocomplete pk' %}" />
+    <small class="ms-todo">{% trans "TODO: typed autocomplete dropdown" %}</small>
+
+  {% else %}
+    <input type="text" name="value" value="{{ field.value|default_if_none:'' }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-trigger="change"
+           hx-swap="none"
+           class="ms-value-generic"
+           placeholder="{% trans 'value' %}" />
   {% endif %}
 </div>

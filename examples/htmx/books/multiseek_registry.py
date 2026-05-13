@@ -3,6 +3,7 @@
 Uses the public API documented in `multiseek/__init__.py`: import directly
 from `multiseek` rather than from `multiseek.logic`.
 """
+
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 

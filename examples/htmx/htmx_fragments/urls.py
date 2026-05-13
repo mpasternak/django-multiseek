@@ -12,6 +12,7 @@ Paths are simple, stable as long as no element is added or removed at an
 earlier index in the same level. Because every mutation returns a re-rendered
 fragment, this is fine in practice.
 """
+
 from django.urls import path
 
 from htmx_fragments import views

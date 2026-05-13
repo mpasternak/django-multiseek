@@ -9,6 +9,7 @@ registry metadata for the field/operator selects.
 We also make sure the session always has at least one field on first load,
 so the user can see the form immediately rather than an empty container.
 """
+
 import json
 
 from django.conf import settings
@@ -52,9 +53,7 @@ class HtmxMultiseekFormPage(TemplateView):
         registry = get_registry(self.registry or settings.MULTISEEK_REGISTRY)
         _ensure_initial_form(self.request.session, registry)
 
-        raw = self.request.session.get(MULTISEEK_SESSION_KEY) or json.dumps(
-            {"form_data": [None]}
-        )
+        raw = self.request.session.get(MULTISEEK_SESSION_KEY) or json.dumps({"form_data": [None]})
         data = json.loads(raw)
         form_data = data.get("form_data") or [None]
 
@@ -67,9 +66,7 @@ class HtmxMultiseekFormPage(TemplateView):
                 "fields": fields,
                 "field_labels": [str(f.label) for f in fields],
                 "field_types": {str(f.label): f.type for f in fields},
-                "field_ops": {
-                    str(f.label): [str(op) for op in f.ops] for f in fields
-                },
+                "field_ops": {str(f.label): [str(op) for op in f.ops] for f in fields},
                 "AND": AND,
                 "OR": OR,
                 "ANDNOT": ANDNOT,

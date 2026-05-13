@@ -80,12 +80,28 @@
                 this.savedForms = config.savedForms || [];
                 this.userCanSave = !!config.userCanSave;
 
-                // seed an empty root frame plus one field
-                const rootFrame = this._makeFrame();
-                this.frames.push(rootFrame);
-
-                if (config.initializeEmpty !== false) {
-                    this.addField(rootFrame);
+                // Try to hydrate from existing session form_data first.
+                // Falls back to an empty root frame + one default field if the
+                // session is empty or unparseable.
+                const formDataEl = document.getElementById("ms-form-data");
+                let hydrated = false;
+                if (formDataEl && formDataEl.textContent.trim()) {
+                    try {
+                        const formData = JSON.parse(formDataEl.textContent);
+                        if (Array.isArray(formData) && formData.length > 0) {
+                            this.frames.push(this._hydrateFrame(formData, true));
+                            hydrated = true;
+                        }
+                    } catch (e) {
+                        // fall through to empty-form init
+                    }
+                }
+                if (!hydrated) {
+                    const rootFrame = this._makeFrame();
+                    this.frames.push(rootFrame);
+                    if (config.initializeEmpty !== false) {
+                        this.addField(rootFrame);
+                    }
                 }
 
                 // initialize ordering state (defaults: field=0, desc=false)
@@ -115,6 +131,59 @@
                     prev_op: "and",
                     elements: [],
                 };
+            },
+
+            /* ----- hydration from multiseek form_data ----- */
+            _hydrateField(elem, isFirst) {
+                const t = this.types[elem.field] || "string";
+                const f = {
+                    uid: nextUid(),
+                    kind: "field",
+                    field: elem.field || (this.fields[0] || ""),
+                    operator: elem.operator || "",
+                    value: elem.value || "",
+                    value_min: null,
+                    value_max: null,
+                    prev_op: isFirst ? "and" : (elem.prev_op || "and"),
+                };
+                // Split JSON-encoded range/date values back into per-input bindings.
+                if (t === "range" && elem.value) {
+                    try {
+                        const parsed = JSON.parse(elem.value);
+                        if (Array.isArray(parsed) && parsed.length === 2) {
+                            f.value_min = parsed[0];
+                            f.value_max = parsed[1];
+                        }
+                    } catch (e) { /* leave value_min/_max null */ }
+                } else if (t === "date" && elem.value) {
+                    try {
+                        const parsed = JSON.parse(elem.value);
+                        if (Array.isArray(parsed)) {
+                            f.value = parsed[0] || "";
+                            if (parsed.length > 1) f.value_max = parsed[1];
+                        }
+                    } catch (e) { /* leave as-is */ }
+                }
+                return f;
+            },
+
+            _hydrateFrame(arr, isRoot) {
+                // arr is a multiseek form_data list: [prev_op, elem_1, elem_2, ...]
+                const frame = {
+                    uid: nextUid(),
+                    kind: "frame",
+                    prev_op: isRoot ? "and" : (arr[0] || "and"),
+                    elements: [],
+                };
+                for (let i = 1; i < arr.length; i++) {
+                    const elem = arr[i];
+                    if (Array.isArray(elem)) {
+                        frame.elements.push(this._hydrateFrame(elem, false));
+                    } else if (elem && typeof elem === "object") {
+                        frame.elements.push(this._hydrateField(elem, i === 1));
+                    }
+                }
+                return frame;
             },
 
             _makeField(opts) {

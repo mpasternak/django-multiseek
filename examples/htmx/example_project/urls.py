@@ -4,6 +4,7 @@ We replace multiseek's bundled ``index`` view with our own htmx-aware view
 so the form page has the context it needs to render server-side. All other
 multiseek endpoints (results, reset, save_form, ...) remain unchanged.
 """
+
 from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import redirect

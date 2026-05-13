@@ -26,6 +26,7 @@ The path is bound into the URL as a single string and parsed back into a tuple
 of integers. Each fragment view walks the tree to that path, mutates, writes
 back to the session, and returns the appropriate rendered fragment.
 """
+
 import json
 
 from django.conf import settings
@@ -159,6 +160,49 @@ def _render_frame(request, registry, form_data, parts, prev_op):
     return render(request, "htmx_fragments/frame.html", ctx)
 
 
+def value_widget_context(node, field_def):
+    """Type-specific context for value_widget.html.
+
+    Parses the stored ``value`` (which is JSON for range/date) into widget-
+    friendly pieces. For value-list types, resolves ``field_def.values`` (which
+    may be a list, a callable, or a queryset) into a flat list of strings.
+    """
+    ctx = {}
+    if field_def is None:
+        return ctx
+    val = node.get("value") or ""
+    t = field_def.type
+    if t == "range":
+        rmin, rmax = "", ""
+        if val:
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, list) and len(parsed) == 2:
+                    rmin, rmax = parsed[0], parsed[1]
+            except (TypeError, ValueError):
+                pass
+        ctx.update({"range_min": rmin, "range_max": rmax})
+    elif t == "date":
+        date_iso, date_iso_max = "", ""
+        if val:
+            try:
+                parsed = json.loads(val)
+                if isinstance(parsed, list):
+                    if len(parsed) >= 1:
+                        date_iso = parsed[0] or ""
+                    if len(parsed) >= 2:
+                        date_iso_max = parsed[1] or ""
+            except (TypeError, ValueError):
+                pass
+        ctx.update({"date_iso": date_iso, "date_iso_max": date_iso_max})
+    elif t == "value-list":
+        values = field_def.values
+        if callable(values):
+            values = values()
+        ctx["value_list"] = [str(v) for v in values]
+    return ctx
+
+
 def _render_field(request, registry, form_data, parts):
     """Render the field fragment at ``parts``."""
     node = _walk(form_data, parts)
@@ -173,11 +217,10 @@ def _render_field(request, registry, form_data, parts):
             "field_path": ".".join(str(p) for p in parts),
             "field_def": field_def,
             "field_inner_type": field_def.type if field_def is not None else None,
-            "field_ops_for_field": (
-                [str(op) for op in field_def.ops] if field_def is not None else []
-            ),
+            "field_ops_for_field": ([str(op) for op in field_def.ops] if field_def is not None else []),
         }
     )
+    ctx.update(value_widget_context(node, field_def))
     return render(request, "htmx_fragments/field.html", ctx)
 
 
@@ -193,6 +236,7 @@ def _render_value_widget(request, registry, form_data, parts):
         "field_def": field_def,
         "field_inner_type": field_def.type if field_def is not None else None,
     }
+    ctx.update(value_widget_context(node, field_def))
     return render(request, "htmx_fragments/value_widget.html", ctx)
 
 
@@ -369,9 +413,10 @@ def change_field_type(request, elpath):
 def set_field_value(request, elpath):
     """POST -> store the user-edited value/operator in the session.
 
-    Accepts ``value`` and optional ``operator`` in POST. Returns an empty
-    body; the input already shows the value the user just typed, so no swap
-    is required.
+    For most field types ``value`` arrives directly in POST. For range and
+    date types the widget posts split inputs (``value_min``/``value_max`` or
+    ``value_date``/``value_date_max``) that we combine into the JSON shape
+    multiseek's QueryObjects expect.
     """
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -387,8 +432,33 @@ def set_field_value(request, elpath):
 
     if "operator" in request.POST:
         node["operator"] = request.POST["operator"]
-    if "value" in request.POST:
+
+    field_def = _registry().get_field_by_name(node.get("field", ""))
+    field_type = field_def.type if field_def else None
+
+    if field_type == "range":
+        vmin = request.POST.get("value_min", "")
+        vmax = request.POST.get("value_max", "")
+        try:
+            node["value"] = json.dumps([int(vmin), int(vmax)])
+        except (TypeError, ValueError):
+            # Either bound missing or non-integer — leave value empty so
+            # impacts_query() drops the clause rather than erroring.
+            node["value"] = ""
+    elif field_type == "date":
+        d1 = request.POST.get("value_date", "")
+        d2 = request.POST.get("value_date_max", "")
+        if d1 and d2:
+            node["value"] = json.dumps([d1, d2])
+        elif d1:
+            node["value"] = json.dumps([d1])
+        elif d2:
+            node["value"] = json.dumps([d2])
+        else:
+            node["value"] = ""
+    elif "value" in request.POST:
         node["value"] = request.POST["value"]
+
     _save_form(request.session, data)
     return HttpResponse("")
 

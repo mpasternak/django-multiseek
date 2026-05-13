@@ -28,6 +28,8 @@
         into <script type="application/json"> tags. The Alpine component reads
         them via JSON.parse on init().
     {% endcomment %}
+    {# form_data from session, used by Alpine to hydrate on page reload. #}
+    <script id="ms-form-data" type="application/json">{{ form_data_json|default:"[]"|safe }}</script>
     <script id="ms-fields" type="application/json">{{ js_fields|safe }}</script>
     <script id="ms-ops" type="application/json">{{ js_ops|safe }}</script>
     <script id="ms-types" type="application/json">{{ js_types|safe }}</script>

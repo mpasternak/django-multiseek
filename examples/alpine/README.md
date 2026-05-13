@@ -96,14 +96,16 @@ small and the JS file readable:
   Replacing this with a vanilla-JS combobox (e.g. `tom-select`,
   `accessible-autocomplete`, or a small custom `fetch()`-driven dropdown)
   is the natural next step.
-- **Session-restore via `js_init`**. The bundled
-  `MultiseekFormPage.get_context_data` produces a `js_init` string of
-  jQuery commands to rebuild a previously-saved form. The Alpine variant
-  ignores it; reloading the page starts from an empty form. The
-  `Load form` selector still works because it calls
-  `./load_form/<pk>` → which sets session state → which renders the page —
-  but the reconstructed form is again empty (until session-restore is
-  re-implemented as a JSON walker on top of the Alpine state).
+- ~~**Session-restore via `js_init`**~~ — **fixed**. A custom
+  `AlpineMultiseekFormPage` (in `books/views.py`) overrides the bundled
+  index URL and exposes the session's `form_data` JSON to the template
+  via `<script id="ms-form-data" type="application/json">…</script>`.
+  Alpine's `init()` then walks it with `_hydrateFrame`/`_hydrateField`,
+  rebuilding the reactive state — including parsing range / date JSON
+  values back into per-input bindings (`value_min`/`value_max`, etc.).
+  Reloading the page now preserves the form. `Load form` works correctly
+  because `./load_form/<pk>` writes to the session that the next render
+  reads from.
 - **Nested-frame rendering depth**. The template renders one level of
   nested frames inline with a "Sub-frame" placeholder. Deeply nested
   frames (3+ levels) render but show only a textual description for

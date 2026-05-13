@@ -35,7 +35,8 @@ appropriate endpoint so the server stays the canonical state.
     {% endfor %}
   </select>
 
-  {% include "htmx_fragments/value_widget.html" with field=field field_path=field_path field_inner_type=field|field_inner_type %}
+  {% comment %}Inclusion tag computes per-field type-specific context (range_min, value_list, date_iso, …). A plain include cannot reach into the registry per-field on its own.{% endcomment %}
+  {% render_value_widget field field_path %}
 
   <button type="button"
           hx-delete="{% url 'htmx_fragments:delete_element' field_path %}"
