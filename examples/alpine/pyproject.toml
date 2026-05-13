@@ -10,5 +10,12 @@ dependencies = [
     "model-bakery",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-django",
+    "pytest-playwright",
+]
+
 [tool.uv.sources]
 django-multiseek = { path = "../../", editable = true }
