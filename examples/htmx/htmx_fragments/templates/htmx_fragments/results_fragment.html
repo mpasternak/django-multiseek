@@ -12,11 +12,38 @@
     <p><strong>{% trans "Query:" %}</strong> {{ description|safe }}</p>
   {% endif %}
 
-  <ol>
-    {% for element in object_list %}
-      <li>{{ element }}</li>
-    {% empty %}
-      <li>{% trans "No elements" %}</li>
-    {% endfor %}
-  </ol>
+  {% if report_type == "table" %}
+    <table style="border-collapse: collapse; width: 100%;">
+      <thead>
+        <tr style="background: #f0f0f0;">
+          <th style="border: 1px solid #ccc; padding: 4px 8px; text-align: left;">{% trans "Title" %}</th>
+          <th style="border: 1px solid #ccc; padding: 4px 8px;">{% trans "Year" %}</th>
+          <th style="border: 1px solid #ccc; padding: 4px 8px;">{% trans "Language" %}</th>
+          <th style="border: 1px solid #ccc; padding: 4px 8px;">{% trans "Authors" %}</th>
+          <th style="border: 1px solid #ccc; padding: 4px 8px;">{% trans "Available" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for b in object_list %}
+        <tr>
+          <td style="border: 1px solid #ccc; padding: 4px 8px;">{{ b.title }}</td>
+          <td style="border: 1px solid #ccc; padding: 4px 8px;">{{ b.year }}</td>
+          <td style="border: 1px solid #ccc; padding: 4px 8px;">{{ b.language }}</td>
+          <td style="border: 1px solid #ccc; padding: 4px 8px;">{% for a in b.authors.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+          <td style="border: 1px solid #ccc; padding: 4px 8px;">{% if b.available %}✓{% else %}—{% endif %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" style="border: 1px solid #ccc; padding: 4px 8px; color: #888;">{% trans "No elements" %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <ol>
+      {% for element in object_list %}
+        <li>{{ element }}</li>
+      {% empty %}
+        <li>{% trans "No elements" %}</li>
+      {% endfor %}
+    </ol>
+  {% endif %}
 {% endif %}

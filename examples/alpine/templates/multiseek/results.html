@@ -17,14 +17,41 @@
             <p class="text-muted small mb-2"><strong>{% trans "Query: " %}</strong>{{ description|safe }}</p>
         {% endif %}
 
-        {% if object_list %}
-            <ul class="list-group">
-                {% for element in object_list %}
-                    <li class="list-group-item">{{ element }}</li>
+        {% if report_type == "table" %}
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th>{% trans "Title" %}</th>
+                        <th>{% trans "Year" %}</th>
+                        <th>{% trans "Language" %}</th>
+                        <th>{% trans "Authors" %}</th>
+                        <th>{% trans "Available" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for b in object_list %}
+                    <tr>
+                        <td>{{ b.title }}</td>
+                        <td>{{ b.year }}</td>
+                        <td>{{ b.language }}</td>
+                        <td>{% for a in b.authors.all %}{{ a }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                        <td>{% if b.available %}✓{% else %}—{% endif %}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-muted">{% trans "No elements" %}</td></tr>
                 {% endfor %}
-            </ul>
+                </tbody>
+            </table>
         {% else %}
-            <p class="text-muted">{% trans "No elements" %}</p>
+            {% if object_list %}
+                <ul class="list-group">
+                    {% for element in object_list %}
+                        <li class="list-group-item">{{ element }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">{% trans "No elements" %}</p>
+            {% endif %}
         {% endif %}
     {% endif %}
 </div>
