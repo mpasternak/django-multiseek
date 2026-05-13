@@ -42,7 +42,6 @@ dev = [
     "pytest-xdist",
     "pytest-playwright",
     "pytest-cov",
-    "coveralls",
     "model_bakery",
     "psycopg2-binary",
     "ruff",

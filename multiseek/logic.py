@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 import decimal
 import importlib
 import json
 from collections import namedtuple
 from datetime import datetime, timedelta
 from decimal import Decimal
+from typing import Any
 
 from dateutil.parser import parse
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Q
+from django.db.models import Model, Q, QuerySet
+from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.text import camel_case_to_spaces as get_verbose_name
@@ -140,7 +144,7 @@ class QueryObject:
     ops = None
     public = True
 
-    def __init__(self, field_name=None, label=None, public=None):
+    def __init__(self, field_name: str | None = None, label: str | None = None, public: bool | None = None) -> None:
         if field_name is not None:
             self.field_name = field_name
 
@@ -153,13 +157,13 @@ class QueryObject:
         if public is not None:
             self.public = public
 
-    def value_from_web(self, value):
+    def value_from_web(self, value: Any) -> Any:
         """
         Prepare the value from web for use in self.real_query function.
         """
         return value
 
-    def impacts_query(self, value, operator):
+    def impacts_query(self, value: Any, operator: str) -> bool:
         """Returns True or False, depending on the operator and value.
 
         For some fields, combination of operator and value does not
@@ -178,18 +182,18 @@ class QueryObject:
         # By default we return True here
         return True
 
-    def value_for_description(self, value):
+    def value_for_description(self, value: Any) -> str:
         """Return value for description - readable for end-user, for placement
         on web page."""
         return self.value_from_web(value)
 
-    def value_to_web(self, value):
+    def value_to_web(self, value: Any) -> Any:
         return value
 
-    def query_for(self, value, operation):
+    def query_for(self, value: Any, operation: str) -> Q | None:
         return self.real_query(self.value_from_web(value), operation)
 
-    def real_query(self, value, operation, validate_operation=True):
+    def real_query(self, value: Any, operation: str, validate_operation: bool = True) -> Q | None:
         """
         Prepare a real query - return a Q object.
 
@@ -213,14 +217,12 @@ class QueryObject:
 
         return ret
 
-    def enabled(self, request=None):
+    def enabled(self, request: HttpRequest | None = None) -> bool:
         """This function can be used to conditionally enable some
         QueryObjects, depending on the logged user or site
         configuration.
 
         By default, all QueryObjects are available for non-logged in users.
-
-        :type request: django.http.request.HttpRequest
         """
         if self.public:
             return True
@@ -286,7 +288,13 @@ class AutocompleteQueryObject(QueryObject):
     model = None
     url = None
 
-    def __init__(self, field_name=None, label=None, model=None, url=None):
+    def __init__(
+        self,
+        field_name: str | None = None,
+        label: str | None = None,
+        model: type[Model] | None = None,
+        url: str | None = None,
+    ) -> None:
         super().__init__(field_name, label)
 
         if model is not None:
@@ -476,7 +484,12 @@ class ValueListQueryObject(QueryObject):
     ops = [EQUAL, DIFFERENT]
     values = None
 
-    def __init__(self, field_name=None, label=None, values=None):
+    def __init__(
+        self,
+        field_name: str | None = None,
+        label: str | None = None,
+        values: list[str] | Any = None,
+    ) -> None:
         super().__init__(field_name, label)
         if values is not None:
             self.values = values
@@ -510,15 +523,12 @@ Ordering = namedtuple("Ordering", ["field", "label"])
 
 
 class ReportType:
-    def __init__(self, id, label, public=True):
+    def __init__(self, id: str, label: str, public: bool = True) -> None:
         self.id = id
         self.label = label
         self.public = public
 
-    def enabled(self, request=None):
-        """
-        :type request: django.http.request.HttpRequest
-        """
+    def enabled(self, request: HttpRequest | None = None) -> bool:
         if self.public:
             return True
 
@@ -561,11 +571,11 @@ class MultiseekRegistry:
     report_types = None
     default_ordering = None
 
-    def __init__(self):
-        self.fields = []
-        self.field_by_name = {}
-        self.default_ordering = {}
-        self.report_types = []
+    def __init__(self) -> None:
+        self.fields: list[QueryObject] = []
+        self.field_by_name: dict[str, QueryObject] = {}
+        self.default_ordering: dict[str, str] = {}
+        self.report_types: list[ReportType] = []
 
     def set_default_ordering(self, *args):
         self.default_ordering = {}
@@ -591,11 +601,8 @@ class MultiseekRegistry:
             if str(field.label) == name:
                 return field
 
-    def add_field(self, field):
-        """Add a field to multiseek registry.
-
-        "ptype field: multiseek.logic.QueryObject
-        """
+    def add_field(self, field: QueryObject) -> None:
+        """Add a field to multiseek registry."""
         if field.field_name:
             for pfx in [MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE]:
                 assert not field.field_name.startswith(pfx), "Field names cannot start with '" + pfx + "'"
@@ -683,7 +690,7 @@ class MultiseekRegistry:
 
         return ret
 
-    def get_query(self, data, errors=None):
+    def get_query(self, data: list, errors: list | None = None) -> Q | None:
         """Return a Django ``Q`` object for the given parsed form data.
 
         Pass ``errors`` as a list to collect ``(exception, element)`` tuples
@@ -751,7 +758,12 @@ class MultiseekRegistry:
 
         return qs
 
-    def get_query_for_model(self, data, removed_manually=None, errors=None):
+    def get_query_for_model(
+        self,
+        data: dict | list | None,
+        removed_manually: list[int] | None = None,
+        errors: list | None = None,
+    ) -> QuerySet:
         if data is None:
             return self.get_default_queryset_for_model()
 
@@ -858,7 +870,7 @@ class MultiseekRegistry:
         return ret
 
 
-def create_registry(model, *args, **kw):
+def create_registry(model: type[Model] | None, *args: QueryObject, **kw: Any) -> MultiseekRegistry:
     r = MultiseekRegistry()
     r.model = model
     for field in args:
@@ -879,11 +891,7 @@ def create_registry(model, *args, **kw):
 _cached_registry = {}
 
 
-def get_registry(registry):
-    """
-    :rtype: MultiseekRegistry
-    """
-
+def get_registry(registry: str | MultiseekRegistry | Any) -> MultiseekRegistry:
     if isinstance(registry, str):
         if registry not in _cached_registry:
             m = importlib.import_module(registry).registry

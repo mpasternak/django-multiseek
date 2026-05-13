@@ -24,6 +24,7 @@ from multiseek.views import (
     ERR_NO_FORM_DATA,
     ERR_PARSING_DATA,
     MULTISEEK_SESSION_KEY,
+    MULTISEEK_SESSION_KEY_REMOVED,
     OVERWRITE_PROMPT,
     MultiseekFormPage,
     MultiseekResults,
@@ -264,6 +265,22 @@ class TestMultiseekResults(RegistryMixin, TestCase):
         res = self.mr.describe_multiseek_data()
         self.assertNotIn("<script>", res.lower())
 
+    def test_remove_by_hand_returns_400_when_list_full(self):
+        """Issue #10: the 'manual exclusion list' cap at 2048 returned 403
+        (Forbidden) for what is actually a request-shape problem. Bad
+        Request is the correct semantic; clients can distinguish 400
+        from real auth failures."""
+        from django.test import Client
+
+        client = Client()
+        # Pre-populate the cap with a fresh session.
+        session = client.session
+        session[MULTISEEK_SESSION_KEY_REMOVED] = list(range(2048))
+        session.save()
+        # Adding one more must be rejected with 400, not 403.
+        resp = client.get("/multiseek/remove-from-results/9999")
+        self.assertEqual(resp.status_code, 400)
+
     def test_describe_multiseek_data_escapes_xss_in_operator(self):
         """Issue #4: operator from user JSON must be HTML-escaped.
 
@@ -366,3 +383,44 @@ class TestLoadFormURLPattern(TestCase):
         match = resolve("/multiseek/load_form/123")
         self.assertEqual(match.url_name, "load_form")
         self.assertEqual(match.kwargs, {"search_form_pk": 123})
+
+
+class TestPublicAPI(TestCase):
+    """Issue #10: the package's public API should be importable from
+    `multiseek` directly, not only via `multiseek.logic`."""
+
+    def test_public_api_re_exports(self):
+        from multiseek import (
+            AND,
+            ANDNOT,
+            OR,
+            AutocompleteQueryObject,
+            BooleanQueryObject,
+            DateQueryObject,
+            DecimalQueryObject,
+            IntegerQueryObject,
+            MultiseekRegistry,
+            QueryObject,
+            RangeQueryObject,
+            StringQueryObject,
+            ValueListQueryObject,
+            create_registry,
+            get_registry,
+        )
+
+        self.assertTrue(callable(create_registry))
+        self.assertTrue(callable(get_registry))
+        self.assertTrue(issubclass(StringQueryObject, QueryObject))
+        self.assertEqual({AND, OR, ANDNOT}, {"and", "or", "andnot"})
+        # Other symbols referenced to silence ruff F401 — they should all
+        # be re-exported via multiseek/__init__.py.
+        _ = (
+            AutocompleteQueryObject,
+            BooleanQueryObject,
+            DateQueryObject,
+            DecimalQueryObject,
+            IntegerQueryObject,
+            MultiseekRegistry,
+            RangeQueryObject,
+            ValueListQueryObject,
+        )

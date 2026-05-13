@@ -2,11 +2,10 @@ import json
 
 from django import http, shortcuts
 from django.db import transaction
-from django.http import HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import format_html
-from django.utils.translation import gettext_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
 from django.views.generic import ListView, TemplateView
@@ -238,7 +237,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         data = self.get_multiseek_data()
         registry = get_registry(self.registry)
 
-        gettext_lazy("andnot")  # Leave this line.
+        _("andnot")  # Leave this line — keeps "andnot" in the translation catalog.
 
         def _recur(d):
             cur = 0
@@ -247,7 +246,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             while cur < len(d):
                 if isinstance(d[cur], list):
                     if d[cur][0] is not None:
-                        ret += format_html(" <b>{}</b> ", str(gettext_lazy(d[cur][0])).upper())
+                        ret += format_html(" <b>{}</b> ", str(_(d[cur][0])).upper())
                     ret += "(" + _recur(d[cur][1:]) + ")"
                 else:
                     f = registry.get_field_by_name(d[cur]["field"])
@@ -257,7 +256,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                     if impacts_query:
                         if "prev_op" in d[cur] and d[cur]["prev_op"] is not None:
                             tmp = d[cur]["prev_op"]
-                            ret += format_html(" <b>{}</b> ", str(gettext_lazy(tmp)).upper())
+                            ret += format_html(" <b>{}</b> ", str(_(tmp)).upper())
 
                         value = f.value_for_description(d[cur]["value"])
 
@@ -316,8 +315,8 @@ def manually_add_or_remove(request, pk, add=True):
         if len(data) < 2048:
             data.add(pk)
         else:
-            # Prevent DOS OOM attack
-            return HttpResponseForbidden()
+            # Cap exists to prevent unbounded session growth (DoS).
+            return HttpResponseBadRequest()
 
     else:
         try:
