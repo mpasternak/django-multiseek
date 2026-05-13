@@ -1,0 +1,54 @@
+{% load i18n htmx_fragments_tags %}{% comment %}
+Renders one frame (root or sub). The frame itself is a list
+  [prev_op, child_1, child_2, ...]
+We dispatch on the type of each child: a dict is a field, a list is a
+sub-frame.
+{% endcomment %}
+<div class="ms-frame" id="frame-{{ frame_path|dotted_path_id }}" data-path="{{ frame_path }}">
+  {% if not is_root %}
+    <div class="ms-frame-prev-op">
+      <label>
+        {% trans "Combine with previous:" %}
+        <select hx-post="{% url 'htmx_fragments:set_field_prev_op' frame_path %}"
+                hx-trigger="change"
+                hx-swap="none"
+                name="prev_op">
+          <option value="and" {% if frame_prev_op == 'and' %}selected{% endif %}>{% trans "AND" %}</option>
+          <option value="or" {% if frame_prev_op == 'or' %}selected{% endif %}>{% trans "OR" %}</option>
+          <option value="andnot" {% if frame_prev_op == 'andnot' %}selected{% endif %}>{% trans "AND NOT" %}</option>
+        </select>
+      </label>
+    </div>
+  {% endif %}
+
+  <div class="ms-field-list" id="field-list-{{ frame_path|dotted_path_id }}">
+    {% for child in frame %}
+      {% if not forloop.first %}
+        {% with child_path=frame_path|append_index:forloop.counter0 %}
+          {% if child.field %}
+            {% include "htmx_fragments/field.html" with field=child field_path=child_path %}
+          {% else %}
+            {% include "htmx_fragments/frame.html" with frame=child frame_path=child_path frame_prev_op=child.0 is_root=False %}
+          {% endif %}
+        {% endwith %}
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="ms-frame-buttons">
+    <button type="button"
+            hx-post="{% url 'htmx_fragments:add_field' frame_path %}"
+            hx-target="#field-list-{{ frame_path|dotted_path_id }}"
+            hx-swap="beforeend">{% trans "Add field" %}</button>
+    <button type="button"
+            hx-post="{% url 'htmx_fragments:add_frame' frame_path %}"
+            hx-target="#field-list-{{ frame_path|dotted_path_id }}"
+            hx-swap="beforeend">{% trans "Add frame" %}</button>
+    {% if not is_root %}
+      <button type="button"
+              hx-delete="{% url 'htmx_fragments:delete_element' frame_path %}"
+              hx-target="#frame-{{ frame_path|dotted_path_id }}"
+              hx-swap="outerHTML">{% trans "Remove frame" %}</button>
+    {% endif %}
+  </div>
+</div>

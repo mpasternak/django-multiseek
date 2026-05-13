@@ -1,0 +1,34 @@
+{% extends "multiseek/base.html" %}
+{% load i18n htmx_fragments_tags %}
+
+{% block content %}
+<h1>{% trans "Multiseek (htmx)" %}</h1>
+<p>
+  {% blocktrans %}Variant 4 — server-rendered fragments. The session is the
+  single source of truth; every add/remove is one HTTP round-trip.{% endblocktrans %}
+</p>
+
+{% comment %}
+The view inserts form_data (parsed list) and form_data_json (string) into
+the context. See htmx_fragments.views_form.HtmxMultiseekFormPage.
+{% endcomment %}
+
+{% include "htmx_fragments/frame.html" with frame=form_data frame_path="0" frame_prev_op=None is_root=True %}
+
+<div class="ms-actions">
+  {% comment %}
+  Send Query: standard <form> POST. The current form_data is already in the
+  session, so we resubmit it here too (no JS state to serialise in the
+  browser).
+  {% endcomment %}
+  <form method="post" action="{% url 'multiseek:results' %}">
+    {% csrf_token %}
+    <input type="hidden" name="json" value="{{ form_data_json }}" />
+    <button type="submit">{% trans "Send query" %}</button>
+  </form>
+
+  <form method="get" action="{% url 'multiseek:reset' %}">
+    <button type="submit">{% trans "Reset form" %}</button>
+  </form>
+</div>
+{% endblock %}

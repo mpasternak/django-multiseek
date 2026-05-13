@@ -1,0 +1,29 @@
+{% load i18n htmx_fragments_tags %}{% comment %}
+Renders the type-specific value-entry widget. For Variant 4 we ship a
+functional widget for the STRING field type. Other types (date, range,
+autocomplete, value-list) are rendered as a generic text input that lets
+the user enter the JSON-shaped value manually; making them first-class
+is on the TODO list (see README).
+{% endcomment %}
+<div class="ms-value-widget" id="value-widget-{{ field_path|dotted_path_id }}">
+  {% if field_inner_type == "string" %}
+    <input type="text"
+           name="value"
+           value="{{ field.value|default_if_none:'' }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-trigger="change, keyup changed delay:300ms"
+           hx-swap="none"
+           class="ms-value ms-value-string"
+           placeholder="{% trans 'value' %}" />
+  {% else %}
+    <input type="text"
+           name="value"
+           value="{{ field.value|default_if_none:'' }}"
+           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+           hx-trigger="change, keyup changed delay:300ms"
+           hx-swap="none"
+           class="ms-value ms-value-generic"
+           placeholder="{% trans 'value (TODO: typed widget)' %}" />
+    <small class="ms-todo">{% trans "TODO: widget for type" %} <code>{{ field_inner_type }}</code></small>
+  {% endif %}
+</div>

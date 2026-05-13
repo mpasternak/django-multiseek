@@ -1,0 +1,45 @@
+{% load i18n htmx_fragments_tags %}{% comment %}
+Renders one field row. Each select/input wires an htmx POST back to the
+appropriate endpoint so the server stays the canonical state.
+{% endcomment %}
+<div class="ms-field" id="field-{{ field_path|dotted_path_id }}" data-path="{{ field_path }}">
+  {% if field.prev_op %}
+    <select hx-post="{% url 'htmx_fragments:set_field_prev_op' field_path %}"
+            hx-trigger="change"
+            hx-swap="none"
+            name="prev_op"
+            class="ms-prev-op">
+      <option value="and" {% if field.prev_op == 'and' %}selected{% endif %}>{% trans "AND" %}</option>
+      <option value="or" {% if field.prev_op == 'or' %}selected{% endif %}>{% trans "OR" %}</option>
+      <option value="andnot" {% if field.prev_op == 'andnot' %}selected{% endif %}>{% trans "AND NOT" %}</option>
+    </select>
+  {% endif %}
+
+  <select hx-post="{% url 'htmx_fragments:change_field_type' field_path %}"
+          hx-target="#field-{{ field_path|dotted_path_id }}"
+          hx-swap="outerHTML"
+          name="field"
+          class="ms-field-type">
+    {% for label in field_labels %}
+      <option value="{{ label }}" {% if label == field.field %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+
+  <select hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
+          hx-trigger="change"
+          hx-swap="none"
+          name="operator"
+          class="ms-operator">
+    {% for op in field|field_ops_for_field %}
+      <option value="{{ op }}" {% if op == field.operator %}selected{% endif %}>{{ op }}</option>
+    {% endfor %}
+  </select>
+
+  {% include "htmx_fragments/value_widget.html" with field=field field_path=field_path field_inner_type=field|field_inner_type %}
+
+  <button type="button"
+          hx-delete="{% url 'htmx_fragments:delete_element' field_path %}"
+          hx-target="#field-{{ field_path|dotted_path_id }}"
+          hx-swap="outerHTML"
+          class="ms-remove">{% trans "Remove" %}</button>
+</div>

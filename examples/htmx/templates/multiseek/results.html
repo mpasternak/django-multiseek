@@ -1,0 +1,29 @@
+{% extends "multiseek/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Multiseek results (htmx)" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Results" %}</h1>
+
+<p><a href="{% url 'multiseek:index' %}">&laquo; {% trans "back to form" %}</a></p>
+
+{% if errors %}
+  <p>{% blocktrans %}Errors occurred. Please verify the input form is correct.{% endblocktrans %}</p>
+  <ul>
+    {% for elem in errors %}<li>{{ elem }}</li>{% endfor %}
+  </ul>
+{% else %}
+  {% if description %}
+    <p><strong>{% trans "Query:" %}</strong> {{ description|safe }}</p>
+  {% endif %}
+
+  <ol>
+    {% for element in object_list %}
+      <li>{{ element }}</li>
+    {% empty %}
+      <li>{% trans "No elements" %}</li>
+    {% endfor %}
+  </ol>
+{% endif %}
+{% endblock %}
