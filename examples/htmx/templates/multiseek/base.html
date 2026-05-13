@@ -1,17 +1,12 @@
-{% load i18n %}<!doctype html>
+{% load static i18n %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}{% trans "Multiseek (htmx)" %}{% endblock %}</title>
 
-  {% comment %}
-  Variant 4: htmx is the only client-side dependency. No bundled multiseek
-  widget JS, no Foundation, no Alpine.
-  {% endcomment %}
-  <script src="https://unpkg.com/htmx.org@1.9.12"
-          integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
-          crossorigin="anonymous"></script>
+  {% comment %}Variant 4: htmx is the only client-side dependency. Run `python manage.py fetch_assets` once during setup to download it into static/vendor/htmx/ — served locally so CI / offline environments don't depend on a public CDN.{% endcomment %}
+  <script src="{% static 'multiseek/vendor/htmx/htmx.min.js' %}"></script>
 
   <style>
     body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 1rem auto; padding: 0 1rem; color: #222; }

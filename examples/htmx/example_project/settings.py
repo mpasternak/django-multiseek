@@ -24,6 +24,7 @@ SITE_ID = 1
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 # Order matters: the project's own templates directory comes first so that it
 # overrides templates shipped with the `multiseek` app (`templates/multiseek/`).

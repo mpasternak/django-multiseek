@@ -76,3 +76,10 @@ uv.lock
 
 # Claude Code state (per-machine; includes ephemeral worktrees)
 .claude/
+
+# Vendored frontend assets for the example projects.
+# Each example ships a `manage.py fetch_assets` command that re-downloads
+# these on demand — they're not source.
+examples/*/static/multiseek/vendor/
+examples/*/collected_static/
+examples/*/staticfiles/
