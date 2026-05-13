@@ -99,9 +99,7 @@ EQUALITY_OPS_FEMALE = [EQUAL_FEMALE, DIFFERENT_FEMALE]
 EQUALITY_OPS_NONE = [EQUAL_NONE, DIFFERENT_NONE]
 EQUALITY_OPS_BOTH = [EQUAL_BOTH, DIFFERENT_BOTH]
 
-EQUALITY_OPS_ALL = (
-    EQUALITY_OPS_MALE + EQUALITY_OPS_FEMALE + EQUALITY_OPS_NONE + EQUALITY_OPS_BOTH
-)
+EQUALITY_OPS_ALL = EQUALITY_OPS_MALE + EQUALITY_OPS_FEMALE + EQUALITY_OPS_NONE + EQUALITY_OPS_BOTH
 
 DIFFERENT_ALL = DIFFERENT, DIFFERENT_FEMALE, DIFFERENT_NONE, DIFFERENT_BOTH
 
@@ -227,10 +225,7 @@ class QueryObject:
         if self.public:
             return True
 
-        if (
-            request is not None
-            and eventually_callable(request.user.is_authenticated) is True
-        ):
+        if request is not None and eventually_callable(request.user.is_authenticated) is True:
             return True
 
         return False
@@ -246,10 +241,7 @@ class StringQueryObject(QueryObject):
         value,
         operator,
     ):
-        if (
-            operator in [CONTAINS, NOT_CONTAINS, STARTS_WITH, NOT_STARTS_WITH]
-            and not value
-        ):
+        if operator in [CONTAINS, NOT_CONTAINS, STARTS_WITH, NOT_STARTS_WITH] and not value:
             return False
         return True
 
@@ -303,9 +295,7 @@ class AutocompleteQueryObject(QueryObject):
 
     def get_url(self):
         if self.url is None:
-            raise ImproperlyConfigured(
-                "Please specify the autocomplete URL for %r" % self
-            )
+            raise ImproperlyConfigured("Please specify the autocomplete URL for %r" % self)
 
         return reverse(self.url)
 
@@ -368,13 +358,9 @@ class DateQueryObject(QueryObject):
                 }
             )
         elif operation in EQUALITY_OPS_ALL:
-            return Q(
-                **{self.field_name + "__range": (value, value + timedelta(days=1))}
-            )
+            return Q(**{self.field_name + "__range": (value, value + timedelta(days=1))})
         elif operation in DIFFERENT_ALL:
-            return ~Q(
-                **{self.field_name + "__range": (value, value + timedelta(days=1))}
-            )
+            return ~Q(**{self.field_name + "__range": (value, value + timedelta(days=1))})
         elif operation in GREATER_OPS_ALL:
             return Q(**{self.field_name + "__gte": value + timedelta(days=1)})
         elif operation in LESSER_OPS_ALL:
@@ -534,10 +520,7 @@ class ReportType:
         if self.public:
             return True
 
-        if (
-            request is not None
-            and eventually_callable(request.user.is_authenticated) is True
-        ):
+        if request is not None and eventually_callable(request.user.is_authenticated) is True:
             return True
 
         return False
@@ -613,16 +596,12 @@ class MultiseekRegistry:
         """
         if field.field_name:
             for pfx in [MULTISEEK_ORDERING_PREFIX, MULTISEEK_REPORT_TYPE]:
-                assert not field.field_name.startswith(pfx), (
-                    "Field names cannot start with '" + pfx + "'"
-                )
+                assert not field.field_name.startswith(pfx), "Field names cannot start with '" + pfx + "'"
         self.fields.append(field)
         self.field_by_name = dict([(f.label, f) for f in self.fields])
 
         # Check if every label is unique
-        assert len(self.field_by_name.keys()) == len(
-            self.fields
-        ), "All fields must have unique names"
+        assert len(self.field_by_name.keys()) == len(self.fields), "All fields must have unique names"
 
     def field_by_type(self, type, request=None):
         """Return a list of fields by type."""
@@ -651,10 +630,7 @@ class MultiseekRegistry:
             raise UnknownField("Field type %r not found!" % field)
 
         if field["operator"] not in [str(x) for x in f.ops]:
-            raise UnknownOperation(
-                "Operation %r not valid for field %r"
-                % (field["operator"], field["field"])
-            )
+            raise UnknownOperation("Operation %r not valid for field %r" % (field["operator"], field["field"]))
 
         if field.get("prev_op", None) not in [AND, OR, ANDNOT, None]:
             raise UnknownOperation("%r" % field)
@@ -773,7 +749,6 @@ class MultiseekRegistry:
 
         return qs
 
-
     def get_query_for_model(self, data, removed_manually=None, errors=None):
         if data is None:
             return self.get_default_queryset_for_model()
@@ -803,10 +778,7 @@ class MultiseekRegistry:
 
         for elem in element[1:]:
             if isinstance(elem, list):
-                result.append(
-                    "$('#frame-%s').multiseekFrame('addFrame', '%s')"
-                    % (current_frame, elem[0])
-                )
+                result.append("$('#frame-%s').multiseekFrame('addFrame', '%s')" % (current_frame, elem[0]))
                 result.extend(self.recreate_form_recursive(elem, info))
 
             else:
@@ -819,13 +791,9 @@ class MultiseekRegistry:
                 else:
                     prev_op = "'" + prev_op + "'"
                 s = "$('#frame-%i').multiseekFrame('addField', '%s', '%s', '%s', %s)"
-                value = self.get_field_by_name(elem["field"]).value_to_web(
-                    elem["value"]
-                )
+                value = self.get_field_by_name(elem["field"]).value_to_web(elem["value"])
 
-                result.append(
-                    s % (current_frame, elem["field"], elem["operator"], value, prev_op)
-                )
+                result.append(s % (current_frame, elem["field"], elem["operator"], value, prev_op))
                 info.field += 1
 
         return result
@@ -858,9 +826,7 @@ class MultiseekRegistry:
                 key = "%s%s" % (MULTISEEK_ORDERING_PREFIX, no)
                 if key in ordering:
                     result.append(
-                        "\t\t"
-                        '$("select[name=%s] option").eq(%s).prop("selected", true)'
-                        % (key, ordering[key])
+                        '\t\t$("select[name=%s] option").eq(%s).prop("selected", true)' % (key, ordering[key])
                     )
                     # foundation.append(
                     #     '\t\t\t'
@@ -869,14 +835,8 @@ class MultiseekRegistry:
                 key = key + "_dir"
                 if key in ordering:
                     if ordering[key] == "1":
-                        result.append(
-                            "\t\t" '$("input[name=%s]").attr("checked", true)' % key
-                        )
-                        foundation.append(
-                            "\t\t\t"
-                            '$("input[name=%s]").next().toggleClass("checked", true)'
-                            % key
-                        )
+                        result.append('\t\t$("input[name=%s]").attr("checked", true)' % key)
+                        foundation.append('\t\t\t$("input[name=%s]").next().toggleClass("checked", true)' % key)
 
         if "report_type" in data:
             if data["report_type"]:
@@ -892,11 +852,7 @@ class MultiseekRegistry:
 
         ret = ";\n".join(result) + ";\n"
         if foundation:
-            ret += (
-                "\t\tif (window.Foundation) {\n"
-                + ";\n".join(foundation)
-                + "\n\t\t}\n"
-            )
+            ret += "\t\tif (window.Foundation) {\n" + ";\n".join(foundation) + "\n\t\t}\n"
         return ret
 
 

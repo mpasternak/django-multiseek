@@ -26,9 +26,7 @@ class compile_translations(Command):
     def run(self):
         locale_dir = os.path.join(os.path.dirname(__file__), "multiseek")
         if not os.path.isdir(locale_dir):
-            logger.warning(
-                "multiseek directory not found, skipping compilemessages"
-            )
+            logger.warning("multiseek directory not found, skipping compilemessages")
             return
 
         curdir = os.getcwd()

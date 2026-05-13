@@ -4,7 +4,9 @@ import sys
 
 # Add ../multiseek to sys.path
 
-sys.path = [ os.path.join(os.path.dirname(__file__), '..'), ] + sys.path
+sys.path = [
+    os.path.join(os.path.dirname(__file__), ".."),
+] + sys.path
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "test_project.settings")

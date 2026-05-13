@@ -8,8 +8,8 @@ class TestModels(TransactionTestCase):
     def test_search_form_manager(self):
         u = baker.make(User)
 
-        s1 = baker.make(SearchForm, owner=u, public=False, name='A')
-        s2 = baker.make(SearchForm, owner=u, public=True, name='B')
+        s1 = baker.make(SearchForm, owner=u, public=False, name="A")
+        s2 = baker.make(SearchForm, owner=u, public=True, name="B")
 
         res = SearchForm.objects.get_for_user(AnonymousUser())
         self.assertEqual(list(res), [s2])

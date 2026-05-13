@@ -1,15 +1,23 @@
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from multiseek.logic import Ordering, ReportType, DateQueryObject, \
-    AutocompleteQueryObject, StringQueryObject, RangeQueryObject, \
-    create_registry, ValueListQueryObject, IntegerQueryObject, \
-    BooleanQueryObject
+from multiseek.logic import (
+    Ordering,
+    ReportType,
+    DateQueryObject,
+    AutocompleteQueryObject,
+    StringQueryObject,
+    RangeQueryObject,
+    create_registry,
+    ValueListQueryObject,
+    IntegerQueryObject,
+    BooleanQueryObject,
+)
 from test_app.models import Author, Book, Language
 
 
 class TitleQueryObject(StringQueryObject):
-    field_name = 'title'
+    field_name = "title"
     label = _("Title")
 
 
@@ -17,7 +25,7 @@ class AuthorQueryObject(AutocompleteQueryObject):
     label = _("Author")
     model = Author
     field_name = "authors"
-    search_fields = ['first_name', 'last_name']
+    search_fields = ["first_name", "last_name"]
 
     def get_url(self):
         return reverse("author-autocomplete")
@@ -29,7 +37,7 @@ class YearQueryObject(RangeQueryObject):
 
 
 class LanguageQueryObject(ValueListQueryObject):
-    field_name = 'language__name'
+    field_name = "language__name"
     values = Language.objects.all
     label = _("Language")
 
@@ -48,6 +56,7 @@ class AvailableQueryObject(BooleanQueryObject):
     field_name = "available"
     label = _("Available")
 
+
 registry = create_registry(
     Book,
     TitleQueryObject(),
@@ -63,9 +72,10 @@ registry = create_registry(
         Ordering("authors", _("author")),
         Ordering("year", _("year")),
     ],
-    default_ordering=['-title', 'authors', 'year'],
+    default_ordering=["-title", "authors", "year"],
     report_types=[
         ReportType("list", _("list")),
         ReportType("table", _("table")),
-        ReportType("secret", _("secret"), public=False)
-    ])
+        ReportType("secret", _("secret"), public=False),
+    ],
+)

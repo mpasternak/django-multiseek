@@ -6,9 +6,7 @@ def select_select2_autocomplete(page, container_selector, value):
     page.locator(container_selector).click()
     page.locator(".select2-search__field").fill(value)
     # Wait for AJAX results to load (not the "Searching..." indicator)
-    page.locator(
-        ".select2-results__option:not(.loading-results)"
-    ).first.wait_for(state="visible")
+    page.locator(".select2-results__option:not(.loading-results)").first.wait_for(state="visible")
     page.keyboard.press("Enter")
     # Wait for dropdown to close, confirming the selection took effect
     page.locator(".select2-dropdown").wait_for(state="hidden")
@@ -67,10 +65,7 @@ class SequentialDialogHandler:
         while len(self.handled) < n and time.time() < deadline:
             self.page.wait_for_timeout(100)
         if len(self.handled) < n:
-            raise TimeoutError(
-                f"Expected {n} dialogs, got {len(self.handled)} "
-                f"after {timeout}s"
-            )
+            raise TimeoutError(f"Expected {n} dialogs, got {len(self.handled)} after {timeout}s")
 
     def detach(self):
         self.page.remove_listener("dialog", self._handle)

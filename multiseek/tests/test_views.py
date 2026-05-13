@@ -109,9 +109,7 @@ class TestViews(RegistryMixin, TestCase):
     def test_get_registry(self):
         self.assertEqual(get_registry({}), {})
 
-        self.assertEqual(
-            get_registry("test_app.multiseek_registry"), multiseek_registry.registry
-        )
+        self.assertEqual(get_registry("test_app.multiseek_registry"), multiseek_registry.registry)
 
     def test_user_allowed_to_save_forms(self):
         class MockUser:
@@ -143,24 +141,16 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
         self.request.POST = {}
 
         self.request.POST["json"] = None
-        self.assertEqual(
-            self.msp.get_context_data(), dict(result=str(ERR_NO_FORM_DATA))
-        )
+        self.assertEqual(self.msp.get_context_data(), dict(result=str(ERR_NO_FORM_DATA)))
 
         self.request.POST["json"] = "wcale, nie, json"
-        self.assertEqual(
-            self.msp.get_context_data(), dict(result=str(ERR_PARSING_DATA))
-        )
+        self.assertEqual(self.msp.get_context_data(), dict(result=str(ERR_PARSING_DATA)))
 
         self.request.POST["json"] = '[{"field": "foo", "bad": "field"}]'
-        self.assertEqual(
-            self.msp.get_context_data(), dict(result=str(ERR_LOADING_DATA))
-        )
+        self.assertEqual(self.msp.get_context_data(), dict(result=str(ERR_LOADING_DATA)))
 
         self.request.POST["json"] = (
-            '{"form_data": [{"field": "foo", "operation": "'
-            + str(EQUAL)
-            + '", "value": "foo"}]}'
+            '{"form_data": [{"field": "foo", "operation": "' + str(EQUAL) + '", "value": "foo"}]}'
         )
         self.request.POST["name"] = ""
         self.assertEqual(self.msp.get_context_data(), dict(result=str(ERR_FORM_NAME)))
@@ -171,9 +161,7 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
 
         self.request.POST["overwrite"] = "true"
         self.request.user = baker.make(User)
-        self.assertEqual(
-            self.msp.get_context_data()["result"], "saved"
-        )  # dict(result=SAVED, pk=1))
+        self.assertEqual(self.msp.get_context_data()["result"], "saved")  # dict(result=SAVED, pk=1))
 
         self.assertEqual(SearchForm.objects.all().count(), 1)
         self.assertEqual(SearchForm.objects.all()[0].public, False)
@@ -198,24 +186,18 @@ class TestMultiseekLoadForm(TestCase):
         self.assertEqual(res.status_code, 404)
 
     def test_load_form_existent_public_ok(self):
-        sf = SearchForm.objects.create(
-            name="foo", owner=self.user, public=True, data="some data"
-        )
+        sf = SearchForm.objects.create(name="foo", owner=self.user, public=True, data="some data")
         res = load_form(self.anon_req, sf.pk)
         self.assertEqual(res.status_code, 302)
         self.assertEqual(self.anon_req.session[MULTISEEK_SESSION_KEY], sf.data)
 
     def test_load_form_forbidden(self):
-        sf = SearchForm.objects.create(
-            name="foo", owner=self.user, public=False, data="some data"
-        )
+        sf = SearchForm.objects.create(name="foo", owner=self.user, public=False, data="some data")
         res = load_form(self.anon_req, sf.pk)
         self.assertEqual(res.status_code, 403)
 
     def test_load_form_non_public_logged_in_user(self):
-        sf = SearchForm.objects.create(
-            name="foo", owner=self.user, public=False, data="some data"
-        )
+        sf = SearchForm.objects.create(name="foo", owner=self.user, public=False, data="some data")
         res = load_form(self.normal_req, sf.pk)
         self.assertEqual(res.status_code, 302)
 

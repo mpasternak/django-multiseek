@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Language(models.Model):
     name = models.TextField()
     description = models.TextField()
@@ -9,12 +8,13 @@ class Language(models.Model):
     def __str__(self):
         return self.name
 
+
 class Author(models.Model):
     last_name = models.TextField()
     first_name = models.TextField()
 
     def __str__(self):
-        return u"%s %s" % (self.first_name, self.last_name)
+        return "%s %s" % (self.first_name, self.last_name)
 
 
 class Book(models.Model):
@@ -27,5 +27,4 @@ class Book(models.Model):
     available = models.BooleanField(default=False)
 
     def __str__(self):
-        return u"%s by %s" % (self.title, u", ".join(
-            [str(author) for author in self.authors.all()]))
+        return "%s by %s" % (self.title, ", ".join([str(author) for author in self.authors.all()]))

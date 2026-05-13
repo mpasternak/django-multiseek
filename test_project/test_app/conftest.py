@@ -99,23 +99,15 @@ class MultiseekWebPage:
         return self.extract_field_data(id)
 
     def serialize(self):
-        return self.page.evaluate(
-            "$('#frame-0').multiseekFrame('serialize')"
-        )
+        return self.page.evaluate("$('#frame-0').multiseekFrame('serialize')")
 
     def get_field_value(self, field):
-        return self.page.evaluate(
-            f'$("#{field}").multiseekField("getValue")'
-        )
+        return self.page.evaluate(f'$("#{field}").multiseekField("getValue")')
 
     def add_frame(self, frame="frame-0", prev_op=None):
         if not prev_op:
-            return self.page.evaluate(
-                f"""$("#{frame}").multiseekFrame('addFrame');"""
-            )
-        return self.page.evaluate(
-            f"""$("#{frame}").multiseekFrame('addFrame', '{prev_op}');"""
-        )
+            return self.page.evaluate(f"""$("#{frame}").multiseekFrame('addFrame');""")
+        return self.page.evaluate(f"""$("#{frame}").multiseekFrame('addFrame', '{prev_op}');""")
 
     def add_field(self, frame, label, op, value):
         code = """
@@ -179,9 +171,7 @@ class MultiseekWebPage:
 def multiseek_page(page, live_server, initial_data):
     page.goto(live_server.url + reverse("multiseek:index"))
     registry = get_registry(settings.MULTISEEK_REGISTRY)
-    yield MultiseekWebPage(
-        page=page, registry=registry, live_server_url=live_server.url
-    )
+    yield MultiseekWebPage(page=page, registry=registry, live_server_url=live_server.url)
 
 
 @pytest.fixture

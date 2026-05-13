@@ -57,9 +57,7 @@ def test_multiseek(multiseek_page):
 
 
 @pytest.mark.django_db
-def test_liveserver_picks_up_database_changes_direct(
-    initial_data, page, live_server
-):
+def test_liveserver_picks_up_database_changes_direct(initial_data, page, live_server):
     page.goto(live_server.url)
     assert "english" in page.content()
 
@@ -75,24 +73,18 @@ def test_liveserver_picks_up_database_changes_direct(
 @pytest.mark.django_db
 def test_change_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
-    field["type"].select_option(
-        value=str(multiseek_registry.YearQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.YearQueryObject.label))
 
     field = multiseek_page.get_field(FIELD)
     assert field["inner_type"] == logic.RANGE
     assert len(field["value"]) == 2
 
-    field["type"].select_option(
-        value=str(multiseek_registry.LanguageQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.LanguageQueryObject.label))
 
     field = multiseek_page.get_field(FIELD)
     assert field["inner_type"] == logic.VALUE_LIST
 
-    field["type"].select_option(
-        value=str(multiseek_registry.AuthorQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.AuthorQueryObject.label))
 
     field = multiseek_page.get_field(FIELD)
     assert field["inner_type"] == logic.AUTOCOMPLETE
@@ -116,9 +108,7 @@ def test_serialize_form(multiseek_page):
         field["value_widget"].fill("aaapud!")
 
     field = multiseek_page.get_field("field-0")
-    field["type"].select_option(
-        value=str(multiseek_registry.YearQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.YearQueryObject.label))
 
     field = multiseek_page.get_field("field-0")
     field["value_widget"][0].fill("1999")
@@ -126,9 +116,7 @@ def test_serialize_form(multiseek_page):
 
     field = multiseek_page.get_field("field-1")
     field["prev-op"].select_option(value="or")
-    field["type"].select_option(
-        value=str(multiseek_registry.LanguageQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.LanguageQueryObject.label))
 
     field = multiseek_page.get_field("field-1")
     field["value_widget"].select_option(value=str(_("english")))
@@ -225,13 +213,9 @@ def test_autocomplete_field(multiseek_page):
     assert Language.objects.count()
 
     field = multiseek_page.get_field(FIELD)
-    field["type"].select_option(
-        value=str(multiseek_registry.AuthorQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.AuthorQueryObject.label))
 
-    select_select2_autocomplete(
-        multiseek_page.page, ".select2-container", "Smith"
-    )
+    select_select2_autocomplete(multiseek_page.page, ".select2-container", "Smith")
 
     got = multiseek_page.serialize()
     expect = [
@@ -254,9 +238,7 @@ def test_autocomplete_field_bug(multiseek_page):
     HTTP error 500, which is not what we need..."""
 
     field = multiseek_page.get_field(FIELD)
-    field["type"].select_option(
-        value=str(multiseek_registry.AuthorQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.AuthorQueryObject.label))
 
     multiseek_page.page.locator("#sendQueryButton").click()
     multiseek_page.page.wait_for_timeout(1000)
@@ -272,9 +254,7 @@ def test_autocomplete_field_bug_2(multiseek_page):
     time of writing, we get a javascript error."""
 
     field = multiseek_page.get_field(FIELD)
-    field["type"].select_option(
-        value=str(multiseek_registry.AuthorQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.AuthorQueryObject.label))
 
     multiseek_page.page.locator("#sendQueryButton").click()
     multiseek_page.page.wait_for_timeout(1000)
@@ -292,13 +272,9 @@ def test_autocomplete_field_bug_2(multiseek_page):
 @pytest.mark.django_db
 def test_set_join(multiseek_page):
     multiseek_page.page.locator("#add_field").click()
-    multiseek_page.page.evaluate(
-        "$('#field-1').multiseekField('prevOperation').val('or')"
-    )
+    multiseek_page.page.evaluate("$('#field-1').multiseekField('prevOperation').val('or')")
 
-    ret = multiseek_page.page.evaluate(
-        "$('#field-1').multiseekField('prevOperation').val()"
-    )
+    ret = multiseek_page.page.evaluate("$('#field-1').multiseekField('prevOperation').val()")
 
     assert ret == "or"
 
@@ -309,13 +285,9 @@ def test_set_join(multiseek_page):
         "",
     )
 
-    multiseek_page.page.evaluate(
-        "$('#field-2').multiseekField('prevOperation').val('or')"
-    )
+    multiseek_page.page.evaluate("$('#field-2').multiseekField('prevOperation').val('or')")
 
-    ret = multiseek_page.page.evaluate(
-        "$('#field-2').multiseekField('prevOperation').val()"
-    )
+    ret = multiseek_page.page.evaluate("$('#field-2').multiseekField('prevOperation').val()")
 
     assert ret == "or"
 
@@ -329,9 +301,7 @@ def test_set_frame_join(multiseek_page):
     """
     )
 
-    ret = multiseek_page.page.evaluate(
-        "$('#frame-2').multiseekFrame('getPrevOperationValue')"
-    )
+    ret = multiseek_page.page.evaluate("$('#frame-2').multiseekFrame('getPrevOperationValue')")
 
     assert ret == "or"
 
@@ -346,12 +316,8 @@ def test_add_field_value_list(multiseek_page):
     )
 
     field = multiseek_page.get_field("field-1")
-    assert field["type"].input_value() == str(
-        multiseek_registry.LanguageQueryObject.label
-    )
-    assert field["op"].input_value() == str(
-        multiseek_registry.LanguageQueryObject.ops[1]
-    )
+    assert field["type"].input_value() == str(multiseek_registry.LanguageQueryObject.label)
+    assert field["op"].input_value() == str(multiseek_registry.LanguageQueryObject.ops[1])
     assert field["value"] == str(_("polish"))
 
 
@@ -440,13 +406,9 @@ def test_frame_bug(multiseek_page):
 def test_date_field(multiseek_page):
     field = multiseek_page.get_field("field-0")
 
-    field["type"].select_option(
-        value=str(multiseek_registry.DateLastUpdatedQueryObject.label)
-    )
+    field["type"].select_option(value=str(multiseek_registry.DateLastUpdatedQueryObject.label))
     field = multiseek_page.get_field("field-0")
-    field["op"].select_option(
-        value=str(multiseek_registry.DateLastUpdatedQueryObject.ops[6])
-    )
+    field["op"].select_option(value=str(multiseek_registry.DateLastUpdatedQueryObject.ops[6]))
 
     expected = [
         None,
@@ -459,9 +421,7 @@ def test_date_field(multiseek_page):
     ]
     assert multiseek_page.serialize() == expected
 
-    field["op"].select_option(
-        value=str(multiseek_registry.DateLastUpdatedQueryObject.ops[3])
-    )
+    field["op"].select_option(value=str(multiseek_registry.DateLastUpdatedQueryObject.ops[3]))
     expected = [
         None,
         {
@@ -482,34 +442,22 @@ def test_removed_records(multiseek_page, live_server, initial_data):
     multiseek_page.page.goto(live_server.url + "/multiseek/results")
     assert "A book with" in multiseek_page.page.content()
     assert "Second book" in multiseek_page.page.content()
-    multiseek_page.page.evaluate(
-        """$("a:contains('\\u274c')").first().click()"""
-    )
+    multiseek_page.page.evaluate("""$("a:contains('\\u274c')").first().click()""")
     multiseek_page.page.wait_for_timeout(1000)
 
     multiseek_page.page.goto(live_server.url + "/multiseek/results")
     assert "A book with" in multiseek_page.page.content()
     assert "Second book" not in multiseek_page.page.content()
-    assert (
-        "1 record(s) has been removed manually"
-        in multiseek_page.page.content()
-    )
+    assert "1 record(s) has been removed manually" in multiseek_page.page.content()
 
-    multiseek_page.page.evaluate(
-        """$("a:contains('\\u274c')").first().click()"""
-    )
+    multiseek_page.page.evaluate("""$("a:contains('\\u274c')").first().click()""")
     multiseek_page.page.wait_for_timeout(1000)
-    multiseek_page.page.evaluate(
-        """$("a:contains('\\u274c')").first().click()"""
-    )
+    multiseek_page.page.evaluate("""$("a:contains('\\u274c')").first().click()""")
     multiseek_page.page.wait_for_timeout(1000)
     multiseek_page.page.goto(live_server.url + "/multiseek/results")
     assert "A book with" in multiseek_page.page.content()
     assert "Second book" not in multiseek_page.page.content()
-    assert (
-        "1 record(s) has been removed manually"
-        in multiseek_page.page.content()
-    )
+    assert "1 record(s) has been removed manually" in multiseek_page.page.content()
 
 
 @pytest.mark.django_db
@@ -547,19 +495,13 @@ def test_form_save_anon_bug(multiseek_page):
 
 @pytest.mark.django_db
 def test_public_report_types_secret_report_invisible(multiseek_page):
-    elem = multiseek_page.page.locator(
-        "[name=_ms_report_type]"
-    ).locator("option")
+    elem = multiseek_page.page.locator("[name=_ms_report_type]").locator("option")
     assert elem.count() == 2
 
 
 @pytest.mark.django_db
-def test_logged_in_secret_report_visible(
-    multiseek_admin_page, admin_user, initial_data
-):
-    elem = multiseek_admin_page.page.locator(
-        "[name=_ms_report_type]"
-    ).first.locator("option")
+def test_logged_in_secret_report_visible(multiseek_admin_page, admin_user, initial_data):
+    elem = multiseek_admin_page.page.locator("[name=_ms_report_type]").first.locator("option")
     assert elem.count() == 3
 
 
@@ -571,15 +513,13 @@ def test_save_form_logged_in(multiseek_admin_page, initial_data):
 @pytest.mark.django_db
 def test_save_form_server_error(multiseek_admin_page, initial_data):
     NAME = "testowy formularz"
-    multiseek_admin_page.page.evaluate(
-        "multiseek.SAVE_FORM_URL='/unexistent';"
-    )
+    multiseek_admin_page.page.evaluate("multiseek.SAVE_FORM_URL='/unexistent';")
 
     # Save form -- prompt for name, then confirm public, then error alert
     handler = SequentialDialogHandler(multiseek_admin_page.page)
-    handler.expect_prompt(NAME)   # Enter form name
-    handler.expect_accept()       # Should it be public?
-    handler.expect_accept()       # Error notification
+    handler.expect_prompt(NAME)  # Enter form name
+    handler.expect_accept()  # Should it be public?
+    handler.expect_accept()  # Error notification
     multiseek_admin_page.click_save_button()
     handler.wait_for_count(3)
     handler.detach()
@@ -607,8 +547,8 @@ def test_save_form_save(multiseek_admin_page, initial_data):
     # prompt(name) -> confirm(public?) -> alert(saved!)
     handler = SequentialDialogHandler(page)
     handler.expect_prompt(NAME)  # Enter form name
-    handler.expect_accept()      # Should it be public? -> Yes
-    handler.expect_accept()      # Form saved notification
+    handler.expect_accept()  # Should it be public? -> Yes
+    handler.expect_accept()  # Form saved notification
     multiseek_admin_page.click_save_button()
     handler.wait_for_count(3)
     handler.detach()
@@ -620,9 +560,9 @@ def test_save_form_save(multiseek_admin_page, initial_data):
     # prompt(name) -> confirm(public?) -> confirm(overwrite?) -> alert(saved!)
     handler = SequentialDialogHandler(page)
     handler.expect_prompt(NAME)
-    handler.expect_accept()      # public? -> Yes
-    handler.expect_accept()      # overwrite? -> Yes
-    handler.expect_accept()      # saved notification
+    handler.expect_accept()  # public? -> Yes
+    handler.expect_accept()  # overwrite? -> Yes
+    handler.expect_accept()  # saved notification
     multiseek_admin_page.click_save_button()
     handler.wait_for_count(4)
     handler.detach()
@@ -633,9 +573,9 @@ def test_save_form_save(multiseek_admin_page, initial_data):
     # Save form under the SAME NAME again -- also accept overwrite
     handler = SequentialDialogHandler(page)
     handler.expect_prompt(NAME)
-    handler.expect_accept()      # public? -> Yes
-    handler.expect_accept()      # overwrite? -> Yes
-    handler.expect_accept()      # saved notification
+    handler.expect_accept()  # public? -> Yes
+    handler.expect_accept()  # overwrite? -> Yes
+    handler.expect_accept()  # saved notification
     multiseek_admin_page.click_save_button()
     handler.wait_for_count(4)
     handler.detach()
@@ -646,9 +586,9 @@ def test_save_form_save(multiseek_admin_page, initial_data):
     # Overwrite as NOT public
     handler = SequentialDialogHandler(page)
     handler.expect_prompt(NAME)
-    handler.expect_dismiss()     # public? -> No
-    handler.expect_accept()      # overwrite? -> Yes
-    handler.expect_accept()      # saved notification
+    handler.expect_dismiss()  # public? -> No
+    handler.expect_accept()  # overwrite? -> Yes
+    handler.expect_accept()  # saved notification
     multiseek_admin_page.click_save_button()
     handler.wait_for_count(4)
     handler.detach()
@@ -673,9 +613,7 @@ def test_load_form(multiseek_admin_page, initial_data):
 
     field = multiseek_admin_page.extract_field_data("field-0")
 
-    assert field["selected"] == str(
-        multiseek_admin_page.registry.fields[2].label
-    )
+    assert field["selected"] == str(multiseek_admin_page.registry.fields[2].label)
     assert field["value"][0] == 2000
     assert field["value"][1] == 2010
 
@@ -712,9 +650,7 @@ def test_bug_2(multiseek_admin_page, initial_data):
     elements = multiseek_admin_page.page.locator("[name=prev-op]")
     for i in range(elements.count()):
         elem = elements.nth(i)
-        visibility = elem.evaluate(
-            "el => getComputedStyle(el).visibility"
-        )
+        visibility = elem.evaluate("el => getComputedStyle(el).visibility")
         if visibility != "hidden":
             assert elem.input_value() == logic.OR
 

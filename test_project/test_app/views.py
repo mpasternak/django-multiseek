@@ -6,7 +6,7 @@ from test_app.models import Author
 
 
 def root(request):
-    return redirect(reverse('multiseek:index'))
+    return redirect(reverse("multiseek:index"))
 
 
 class AuthorAutocomplete(autocomplete.Select2QuerySetView):

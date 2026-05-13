@@ -67,9 +67,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         fields = registry.get_fields(self.request)
 
         js_fields = json.dumps([str(x.label) for x in fields])
-        js_ops = json.dumps(
-            dict([(str(f.label), [str(x) for x in f.ops]) for f in fields])
-        )
+        js_ops = json.dumps(dict([(str(f.label), [str(x) for x in f.ops]) for f in fields]))
         js_types = json.dumps(dict([(str(f.label), f.type) for f in fields]))
 
         js_autocompletes = json.dumps(
@@ -103,8 +101,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         js_init = registry.recreate_form(form_data)
 
         js_removed = ",".join(
-            '"%(x)s"' % dict(x=x)
-            for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
+            '"%(x)s"' % dict(x=x) for x in self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, [])
         )
         return dict(
             js_fields=js_fields,
@@ -154,9 +151,7 @@ class JSONResponseMixin:
         return self.get_json_response(self.convert_context_to_json(context))
 
     def get_json_response(self, content, **httpresponse_kwargs):
-        return http.HttpResponse(
-            content, content_type="application/json", **httpresponse_kwargs
-        )
+        return http.HttpResponse(content, content_type="application/json", **httpresponse_kwargs)
 
     def convert_context_to_json(self, context):
         return json.dumps(context)
@@ -204,9 +199,7 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
             obj.save()
 
         else:
-            obj = SearchForm.objects.create(
-                name=name, public=public, data=_json, owner=self.request.user
-            )
+            obj = SearchForm.objects.create(name=name, public=public, data=_json, owner=self.request.user)
 
         return dict(result=SAVED, pk=obj.pk)
 
@@ -231,9 +224,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             if self._json_cache is None:
                 self._json_cache = {}
             if self._json_cache.get("ordering") is None:
-                self._json_cache["ordering"] = get_registry(
-                    self.registry
-                ).default_ordering
+                self._json_cache["ordering"] = get_registry(self.registry).default_ordering
         return self._json_cache
 
     def get_removed_records(self):
@@ -253,7 +244,6 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             ret = ""
 
             while cur < len(d):
-
                 if isinstance(d[cur], list):
                     if d[cur][0] is not None:
                         ret += " <b>" + str(gettext_lazy(d[cur][0])).upper() + "</b> "
@@ -264,7 +254,6 @@ class MultiseekResults(MultiseekPageMixin, ListView):
                     impacts_query = f.impacts_query(d[cur]["value"], d[cur]["operator"])
 
                     if impacts_query:
-
                         if "prev_op" in d[cur] and d[cur]["prev_op"] is not None:
                             tmp = d[cur]["prev_op"]
                             ret += " <b>" + str(gettext_lazy(tmp)).upper() + "</b> "
@@ -289,17 +278,12 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         return _recur(data["form_data"][1:])
 
     def get_context_data(self, **kwargs):
-        report_type = get_registry(self.registry).get_report_type(
-            self.get_multiseek_data(), self.request
-        )
+        report_type = get_registry(self.registry).get_report_type(self.get_multiseek_data(), self.request)
         description = self.describe_multiseek_data()
         removed_ids = self.get_removed_records()
 
         res = super().get_context_data(
-            report_type=report_type,
-            description=description,
-            removed_ids=removed_ids,
-            **kwargs
+            report_type=report_type, description=description, removed_ids=removed_ids, **kwargs
         )
 
         res["errors"] = getattr(self, "_multiseek_errors", [])

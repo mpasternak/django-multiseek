@@ -96,9 +96,7 @@ class TestQueryObject(TestCase):
         self.assertEqual(py3k_test_string("(NOT (AND: (u'foo', u'foobar')))"), str(res))
 
     def test_query_for_raises(self):
-        self.assertRaises(
-            UnknownOperation, self.q.query_for, "foobar", "unknown operation"
-        )
+        self.assertRaises(UnknownOperation, self.q.query_for, "foobar", "unknown operation")
 
 
 class TestStringQueryObject(TestCase):
@@ -221,9 +219,7 @@ class TestMultiseekRegistry(TestCase):
         ]
 
     def test_add_field_raises(self):
-        self.assertRaises(
-            AssertionError, self.registry.add_field, StringQueryObject("foo")
-        )
+        self.assertRaises(AssertionError, self.registry.add_field, StringQueryObject("foo"))
 
     def test_field_by_type(self):
         self.assertEqual(len(self.registry.field_by_type(STRING)), 1)
@@ -233,9 +229,7 @@ class TestMultiseekRegistry(TestCase):
     def test_extract(self):
         self.assertEqual(self.registry.extract("field_name"), ["foo", "bar"])
 
-        self.assertEqual(
-            self.registry.extract("field_name", FakeRequest()), ["foo", "bar", "quux"]
-        )
+        self.assertEqual(self.registry.extract("field_name", FakeRequest()), ["foo", "bar", "quux"])
 
     def test_parse_field(self):
         self.assertRaises(ParseError, self.registry.parse_field, {})
@@ -252,9 +246,7 @@ class TestMultiseekRegistry(TestCase):
             dict(field="foo", operator="XXX", value="FO", prev_op=None),
         )
 
-        res = self.registry.parse_field(
-            dict(field="foo", operator=EQUALITY_OPS_ALL[0], value="foo", prev_op=None)
-        )
+        res = self.registry.parse_field(dict(field="foo", operator=EQUALITY_OPS_ALL[0], value="foo", prev_op=None))
 
         self.assertEqual(str(res), py3k_test_string("(AND: (u'foo', u'foo'))"))
 
@@ -289,16 +281,12 @@ class TestMultiseekRegistry(TestCase):
 
         errors = []
         res = self.registry.get_query(input, errors=errors)
-        self.assertEqual(
-            str(res), py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))")
-        )
+        self.assertEqual(str(res), py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))"))
         self.assertEqual(len(errors), 0)
 
     def test_get_query_errors(self):
         errors = []
-        self.registry.get_query(
-            json.loads(test_impossible_json)["form_data"], errors=errors
-        )
+        self.registry.get_query(json.loads(test_impossible_json)["form_data"], errors=errors)
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0][1]["field"], "foo")
 
