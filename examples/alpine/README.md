@@ -90,12 +90,14 @@ use:
 The Variant-3 demo deliberately leaves out a few niceties to keep the bundle
 small and the JS file readable:
 
-- **Autocomplete (django-autocomplete-light)**. The library is jQuery /
-  select2-flavored, which is exactly what this variant set out to remove.
-  Autocomplete fields render as a plain `<input type="text">` placeholder.
-  Replacing this with a vanilla-JS combobox (e.g. `tom-select`,
-  `accessible-autocomplete`, or a small custom `fetch()`-driven dropdown)
-  is the natural next step.
+- ~~**Autocomplete (django-autocomplete-light)**~~ — **fixed** with a
+  small vanilla-JS dropdown. We don't need select2 / jQuery at all: DAL's
+  autocomplete endpoint is a plain JSON API (`?q=…` returns
+  `{"results":[{"id":N,"text":"…"}]}`), so the Alpine value widget
+  posts a debounced `fetch()` and renders the results in a
+  `<div class="list-group">` below the input. Selection writes the pk
+  into `elem.value`. See `fetchAutocompleteSuggestions` /
+  `pickAutocompleteSuggestion` in `multiseek-alpine.js`.
 - ~~**Session-restore via `js_init`**~~ — **fixed**. A custom
   `AlpineMultiseekFormPage` (in `books/views.py`) overrides the bundled
   index URL and exposes the session's `form_data` JSON to the template
@@ -106,10 +108,15 @@ small and the JS file readable:
   Reloading the page now preserves the form. `Load form` works correctly
   because `./load_form/<pk>` writes to the session that the next render
   reads from.
-- **Nested-frame rendering depth**. The template renders one level of
-  nested frames inline with a "Sub-frame" placeholder. Deeply nested
-  frames (3+ levels) render but show only a textual description for
-  inner-most elements. Most real queries use 0–1 levels of nesting.
+- ~~**Nested-frame editing**~~ — **fixed** for 1 level of nesting (the
+  common case for AND/OR/AND-NOT groupings). The field-row markup is
+  factored out into `_field_row_alpine.html` and reused inside the
+  sub-frame template via `x-data="{ elem: sub, frame: elem }"` so the
+  partial sees the names it expects. Sub-frames now expose the same
+  field/operator/value widgets as the root level. Three+ levels of
+  nesting still summarise the deepest elements as text — recursive
+  Alpine templates don't compose cleanly past one level. Most real
+  queries don't go deeper.
 
 These are all surface-level gaps — the wire format is fully compatible
 with multiseek's Python core, so a server-side query produced via the

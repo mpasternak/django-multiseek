@@ -66,141 +66,45 @@
                             </div>
 
                             {# ---------- a regular field row ---------- #}
-                            <template x-if="elem.kind === 'field'">
-                                <div class="col-md-10">
-                                    <div class="row g-2 align-items-center">
-                                        <div class="col-md-3">
-                                            <select class="form-select form-select-sm"
-                                                    x-model="elem.field"
-                                                    @change="onFieldChange(elem)"
-                                                    :id="'type-' + elem.uid">
-                                                <template x-for="f in fields" :key="f">
-                                                    <option :value="f" x-text="f"></option>
-                                                </template>
-                                            </select>
-                                        </div>
+                            {% include "multiseek/_field_row_alpine.html" %}
 
-                                        <div class="col-md-3">
-                                            <select class="form-select form-select-sm"
-                                                    x-model="elem.operator"
-                                                    @change="onOperatorChange(elem)"
-                                                    :id="'op-' + elem.uid">
-                                                <template x-for="op in opsFor(elem.field)" :key="op">
-                                                    <option :value="op" x-text="op"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-5">
-                                            {# value widget: rendered conditionally on field type #}
-
-                                            {# STRING widget #}
-                                            <template x-if="typeFor(elem.field) === 'string'">
-                                                <input type="text"
-                                                       class="form-control form-control-sm"
-                                                       x-model="elem.value"
-                                                       :id="'value-' + elem.uid">
-                                            </template>
-
-                                            {# INTEGER widget #}
-                                            <template x-if="typeFor(elem.field) === 'integer'">
-                                                <input type="number"
-                                                       step="1"
-                                                       class="form-control form-control-sm"
-                                                       x-model.number="elem.value"
-                                                       :id="'value-' + elem.uid">
-                                            </template>
-
-                                            {# DECIMAL widget #}
-                                            <template x-if="typeFor(elem.field) === 'decimal'">
-                                                <input type="number"
-                                                       step="0.001"
-                                                       class="form-control form-control-sm"
-                                                       x-model.number="elem.value"
-                                                       :id="'value-' + elem.uid">
-                                            </template>
-
-                                            {# RANGE widget — two integer inputs serialized as JSON string #}
-                                            <template x-if="typeFor(elem.field) === 'range'">
-                                                <div class="d-flex gap-1 align-items-center">
-                                                    <input type="number"
-                                                           class="form-control form-control-sm"
-                                                           placeholder="from"
-                                                           x-model.number="elem.value_min"
-                                                           :id="'value_min-' + elem.uid">
-                                                    <span class="text-muted small">—</span>
-                                                    <input type="number"
-                                                           class="form-control form-control-sm"
-                                                           placeholder="to"
-                                                           x-model.number="elem.value_max"
-                                                           :id="'value_max-' + elem.uid">
-                                                </div>
-                                            </template>
-
-                                            {# DATE widget — flatpickr; the range form is enabled for operators with idx > 5 #}
-                                            <template x-if="typeFor(elem.field) === 'date'">
-                                                <div class="d-flex gap-1 align-items-center">
-                                                    <input type="text"
-                                                           class="form-control form-control-sm flatpickr-date"
-                                                           placeholder="YYYY-MM-DD"
-                                                           x-model="elem.value"
-                                                           x-init="initFlatpickr($el)"
-                                                           :id="'value-' + elem.uid">
-                                                    <template x-if="isDateRangeOp(elem)">
-                                                        <input type="text"
-                                                               class="form-control form-control-sm flatpickr-date"
-                                                               placeholder="YYYY-MM-DD"
-                                                               x-model="elem.value_max"
-                                                               x-init="initFlatpickr($el)"
-                                                               :id="'value_max-' + elem.uid">
-                                                    </template>
-                                                </div>
-                                            </template>
-
-                                            {# VALUE_LIST widget — select with server-rendered options #}
-                                            <template x-if="typeFor(elem.field) === 'value-list'">
-                                                <select class="form-select form-select-sm"
-                                                        x-model="elem.value"
-                                                        :id="'value-' + elem.uid">
-                                                    <template x-for="v in valueListFor(elem.field)" :key="v">
-                                                        <option :value="v" x-text="v"></option>
-                                                    </template>
-                                                </select>
-                                            </template>
-
-                                            {# AUTOCOMPLETE widget — degraded to a plain text input in this variant. #}
-                                            {# A future iteration could swap in select2 (vanilla port) or tom-select. #}
-                                            <template x-if="typeFor(elem.field) === 'autocomplete'">
-                                                <input type="text"
-                                                       class="form-control form-control-sm"
-                                                       placeholder="autocomplete (degraded)"
-                                                       x-model="elem.value"
-                                                       :id="'value-' + elem.uid">
-                                            </template>
-                                        </div>
-
-                                        <div class="col-md-1 text-end">
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    @click="removeField(frame, elem)"
-                                                    :id="'close-button-' + elem.uid"
-                                                    title="Remove field">&times;</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-
-                            {# ---------- a nested frame ---------- #}
+                            {% comment %}---------- a nested frame ---------- The sub-frame iterates its own elements and re-uses the same _field_row_alpine.html partial. We alias `elem` (= sub-frame) as `frame` and the iteration variable `sub` as `elem` via `x-data` so the partial sees the same names it expects. One level of nesting (which covers AND/OR groupings — the common case) is fully editable; deeper levels still fall back to describeSub.{% endcomment %}
                             <template x-if="elem.kind === 'frame'">
                                 <div class="col-md-10">
-                                    <div class="border rounded p-2 bg-white">
-                                        <small class="text-muted">Sub-frame</small>
-                                        {# Render the nested frame's elements recursively via subFrame() #}
+                                    <div class="multiseek-fieldset border rounded p-2 bg-white">
+                                        <div class="d-flex gap-2 align-items-center mb-2">
+                                            <small class="text-muted">Sub-frame</small>
+                                            <select class="form-select form-select-sm w-auto" x-model="elem.prev_op">
+                                                <option value="and" x-text="t('and')"></option>
+                                                <option value="or" x-text="t('or')"></option>
+                                                <option value="andnot" x-text="t('and not')"></option>
+                                            </select>
+                                        </div>
+
                                         <template x-for="(sub, sidx) in elem.elements" :key="sub.uid">
-                                            <div class="mt-2">
-                                                <em class="text-muted small" x-text="describeSub(sub, sidx)"></em>
+                                            <div class="row g-2 mb-2" x-data="{ elem: sub, frame: elem, _outerSidx: sidx }">
+                                                <div class="col-md-2">
+                                                    <template x-if="_outerSidx > 0">
+                                                        <select class="form-select form-select-sm" x-model="elem.prev_op">
+                                                            <option value="and" x-text="t('and')"></option>
+                                                            <option value="or" x-text="t('or')"></option>
+                                                            <option value="andnot" x-text="t('and not')"></option>
+                                                        </select>
+                                                    </template>
+                                                </div>
+
+                                                {# Re-use the same field-row partial. Includes the field/op/value/remove widgets. #}
+                                                {% include "multiseek/_field_row_alpine.html" %}
+
+                                                {# Grandchild sub-frame: 3+ levels deep — still summary-only. #}
+                                                <template x-if="elem.kind === 'frame'">
+                                                    <div class="col-md-10 ms-3 small text-muted">
+                                                        <em>(nested sub-frame — edit at top level)</em>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </template>
+
                                         <div class="mt-2">
                                             <button type="button"
                                                     class="btn btn-sm btn-outline-secondary"

@@ -150,6 +150,9 @@
                     value_min: null,
                     value_max: null,
                     prev_op: isFirst ? "and" : (elem.prev_op || "and"),
+                    _search: "",
+                    _suggestions: [],
+                    _suggestions_open: false,
                 };
                 // Split JSON-encoded range/date values back into per-input bindings.
                 if (t === "range" && elem.value) {
@@ -207,6 +210,10 @@
                     value_min: opts.value_min !== undefined ? opts.value_min : null,
                     value_max: opts.value_max !== undefined ? opts.value_max : null,
                     prev_op: opts.prev_op || "and",
+                    // Autocomplete UI state — only used when field type is "autocomplete".
+                    _search: opts._search || "",
+                    _suggestions: [],
+                    _suggestions_open: false,
                 };
 
                 // Sensible defaults for non-string widgets
@@ -215,6 +222,49 @@
                     f.value = opts.value !== undefined ? opts.value : (vl[0] || "");
                 }
                 return f;
+            },
+
+            /* ----- autocomplete (django-autocomplete-light backend) -----
+             * The DAL endpoint returns JSON of shape
+             * {"results": [{"id": <pk>, "text": "<label>"}, ...]}.
+             * We GET it with the user's query and render the results in a
+             * small Alpine-rendered dropdown below the input. Selection
+             * stores the pk in `elem.value`.
+             */
+            fetchAutocompleteSuggestions(elem) {
+                const url = this.autocompletes[elem.field];
+                if (!url) {
+                    elem._suggestions = [];
+                    elem._suggestions_open = false;
+                    return;
+                }
+                const q = elem._search || "";
+                fetch(url + "?q=" + encodeURIComponent(q), {
+                    headers: { Accept: "application/json" },
+                })
+                    .then((r) => r.json())
+                    .then((data) => {
+                        elem._suggestions = (data && data.results) || [];
+                        elem._suggestions_open = true;
+                    })
+                    .catch(() => {
+                        elem._suggestions = [];
+                        elem._suggestions_open = false;
+                    });
+            },
+
+            pickAutocompleteSuggestion(elem, suggestion) {
+                elem.value = String(suggestion.id);
+                elem._search = suggestion.text;
+                elem._suggestions = [];
+                elem._suggestions_open = false;
+            },
+
+            clearAutocompleteSelection(elem) {
+                elem.value = "";
+                elem._search = "";
+                elem._suggestions = [];
+                elem._suggestions_open = false;
             },
 
             /* ----- mutations ----- */

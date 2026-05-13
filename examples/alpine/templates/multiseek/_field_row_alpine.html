@@ -1,0 +1,145 @@
+{% load i18n %}
+{% comment %}Alpine.js field row partial — used by index.html for both root and sub-frame field rendering. Expects two Alpine variables in scope: `elem` (the field/sub-frame dict) and `frame` (its containing frame). Both are aliased via x-data on the include site for sub-frames.{% endcomment %}
+
+<template x-if="elem.kind === 'field'">
+    <div class="col-md-10">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <select class="form-select form-select-sm"
+                        x-model="elem.field"
+                        @change="onFieldChange(elem)"
+                        :id="'type-' + elem.uid">
+                    <template x-for="f in fields" :key="f">
+                        <option :value="f" x-text="f"></option>
+                    </template>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <select class="form-select form-select-sm"
+                        x-model="elem.operator"
+                        @change="onOperatorChange(elem)"
+                        :id="'op-' + elem.uid">
+                    <template x-for="op in opsFor(elem.field)" :key="op">
+                        <option :value="op" x-text="op"></option>
+                    </template>
+                </select>
+            </div>
+
+            <div class="col-md-5">
+                {# STRING widget #}
+                <template x-if="typeFor(elem.field) === 'string'">
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           x-model="elem.value"
+                           :id="'value-' + elem.uid">
+                </template>
+
+                {# INTEGER widget #}
+                <template x-if="typeFor(elem.field) === 'integer'">
+                    <input type="number"
+                           step="1"
+                           class="form-control form-control-sm"
+                           x-model.number="elem.value"
+                           :id="'value-' + elem.uid">
+                </template>
+
+                {# DECIMAL widget #}
+                <template x-if="typeFor(elem.field) === 'decimal'">
+                    <input type="number"
+                           step="0.001"
+                           class="form-control form-control-sm"
+                           x-model.number="elem.value"
+                           :id="'value-' + elem.uid">
+                </template>
+
+                {# RANGE widget — two integer inputs serialized as JSON string #}
+                <template x-if="typeFor(elem.field) === 'range'">
+                    <div class="d-flex gap-1 align-items-center">
+                        <input type="number"
+                               class="form-control form-control-sm"
+                               placeholder="from"
+                               x-model.number="elem.value_min"
+                               :id="'value_min-' + elem.uid">
+                        <span class="text-muted small">—</span>
+                        <input type="number"
+                               class="form-control form-control-sm"
+                               placeholder="to"
+                               x-model.number="elem.value_max"
+                               :id="'value_max-' + elem.uid">
+                    </div>
+                </template>
+
+                {# DATE widget — flatpickr; range form enabled for in-range operators #}
+                <template x-if="typeFor(elem.field) === 'date'">
+                    <div class="d-flex gap-1 align-items-center">
+                        <input type="text"
+                               class="form-control form-control-sm flatpickr-date"
+                               placeholder="YYYY-MM-DD"
+                               x-model="elem.value"
+                               x-init="initFlatpickr($el)"
+                               :id="'value-' + elem.uid">
+                        <template x-if="isDateRangeOp(elem)">
+                            <input type="text"
+                                   class="form-control form-control-sm flatpickr-date"
+                                   placeholder="YYYY-MM-DD"
+                                   x-model="elem.value_max"
+                                   x-init="initFlatpickr($el)"
+                                   :id="'value_max-' + elem.uid">
+                        </template>
+                    </div>
+                </template>
+
+                {# VALUE_LIST widget #}
+                <template x-if="typeFor(elem.field) === 'value-list'">
+                    <select class="form-select form-select-sm"
+                            x-model="elem.value"
+                            :id="'value-' + elem.uid">
+                        <template x-for="v in valueListFor(elem.field)" :key="v">
+                            <option :value="v" x-text="v"></option>
+                        </template>
+                    </select>
+                </template>
+
+                {% comment %}AUTOCOMPLETE widget — vanilla Alpine dropdown backed by django-autocomplete-light's JSON endpoint.{% endcomment %}
+                <template x-if="typeFor(elem.field) === 'autocomplete'">
+                    <div class="position-relative" @click.outside="elem._suggestions_open = false">
+                        <div class="input-group input-group-sm">
+                            <input type="text"
+                                   class="form-control form-control-sm"
+                                   x-model="elem._search"
+                                   @input.debounce.200ms="fetchAutocompleteSuggestions(elem)"
+                                   @focus="fetchAutocompleteSuggestions(elem)"
+                                   :placeholder="elem.value ? ('selected: pk=' + elem.value) : 'type to search…'"
+                                   :id="'value-' + elem.uid">
+                            <button type="button"
+                                    class="btn btn-outline-secondary"
+                                    x-show="elem.value"
+                                    @click="clearAutocompleteSelection(elem)"
+                                    title="clear selection">×</button>
+                        </div>
+                        <div class="list-group position-absolute w-100 shadow-sm"
+                             style="z-index: 1000; max-height: 12rem; overflow-y: auto"
+                             x-show="elem._suggestions_open && elem._suggestions.length"
+                             x-transition>
+                            <template x-for="s in elem._suggestions" :key="s.id">
+                                <button type="button"
+                                        class="list-group-item list-group-item-action py-1 px-2 small text-start"
+                                        @click.prevent="pickAutocompleteSuggestion(elem, s)"
+                                        x-text="s.text"></button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="col-md-1 text-end">
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        @click="removeField(frame, elem)"
+                        :id="'close-button-' + elem.uid"
+                        title="Remove field">&times;</button>
+            </div>
+        </div>
+    </div>
+</template>

@@ -88,7 +88,7 @@ def _replay_submit_form(client, page_html, csrf):
 
     body = form_match.group("body")
     data = {}
-    for inp in re.finditer(r'<input\b([^>]*)>', body):
+    for inp in re.finditer(r"<input\b([^>]*)>", body):
         attrs_in = inp.group(1)
         name_m = re.search(r'\bname="([^"]+)"', attrs_in)
         value_m = re.search(r'\bvalue="([^"]*)"', attrs_in)
@@ -113,7 +113,7 @@ def test_typing_a_value_then_submitting_actually_filters(books_db):
     the empty value, overwriting the freshly-htmx-updated session.
     """
     client = Client()
-    page = client.get("/multiseek/").content.decode()
+    client.get("/multiseek/")  # establishes session + sets default field
     csrf = client.cookies["csrftoken"].value
 
     # Step 2: htmx writes value="title" to session.
@@ -130,9 +130,7 @@ def test_typing_a_value_then_submitting_actually_filters(books_db):
     assert resp.status_code == 200, resp.content[:500]
 
     content = resp.content.decode()
-    assert "A book with a title" in content, (
-        "the matching book should be in the filtered results"
-    )
+    assert "A book with a title" in content, "the matching book should be in the filtered results"
     for non_match in books_db["others"]:
         assert non_match.title not in content, (
             f"non-matching book {non_match.title!r} appeared — the submission "
