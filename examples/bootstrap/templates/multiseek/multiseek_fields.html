@@ -1,0 +1,33 @@
+<div id="frame-0" class="frame"></div>
+
+<script type="text/javascript">
+    /* ------------------------------------------------------------------ */
+    /* Data containing the description of the form, generated server-side */
+    /* ------------------------------------------------------------------ */
+
+    var fields = {{ js_fields|safe }};
+    var ops = {{ js_ops|safe }};
+    var types = {{ js_types|safe }};
+    var value_lists = {{ js_value_lists|safe }};
+    var autocompletes = {{ js_autocompletes|safe }};
+    var last_field_remove_message = '{{ js_remove_message }}';
+    var removed = [{{ js_removed|safe }}];
+
+    /* ------------------------------------------------------ */
+    /* After loading the document, we initialize first frame  */
+    /* ------------------------------------------------------ */
+    $(document).ready(function () {
+        $("#frame-0").multiseekFrame();
+        {% if initialize_empty_form %}
+            $("#frame-0").multiseekFrame("addField");
+        {% endif %}
+        {% if js_init %}
+            {{ js_init|safe }}
+        {% endif %}
+        {% if saved_forms %}
+            $("#formsSelector").show();
+        {% else %}
+            $("#formsSelector").hide();
+        {% endif %}
+    });
+</script>

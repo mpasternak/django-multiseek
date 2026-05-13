@@ -1,0 +1,26 @@
+{% extends "multiseek/base.html" %}
+
+{% load i18n %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% include "multiseek/multiseek_head.html" %}
+{% endblock %}
+
+{% block title %}
+    {% trans "Multiseek" %}
+{% endblock %}
+
+{% block content %}
+    <h1 id="jq-error" class="text-danger">PLEASE INSTALL JQUERY</h1>
+    <script>
+        $(document).ready(function () {
+            $("#jq-error").hide();
+        });
+    </script>
+    {% include "multiseek/multiseek_fields.html" %}
+    {% include "multiseek/multiseek_report_types.html" %}
+    {% include "multiseek/multiseek_ordering.html" %}
+    {% include "multiseek/multiseek_buttons.html" %}
+    {% include "multiseek/multiseek_results_frame.html" %}
+{% endblock %}

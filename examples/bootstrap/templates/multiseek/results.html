@@ -1,0 +1,27 @@
+{% extends "multiseek/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    {% if errors %}
+        <div class="alert alert-danger">
+            {% blocktrans %}Errors occured. Please verify if the input form you given is correct.{% endblocktrans %}
+        </div>
+        <ul>
+            {% for elem in errors %}
+                <li>{{ elem }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% if description %}
+            <p class="text-muted">{% trans "Query: " %}{{ description|safe }}</p>
+        {% endif %}
+
+        <ul class="list-unstyled">
+            {% for element in object_list %}
+                <li>{{ element }}</li>
+            {% empty %}
+                <li>{% trans "No elements" %}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

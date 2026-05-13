@@ -1,0 +1,10 @@
+db.sqlite3
+__pycache__/
+*.pyc
+staticfiles/
+
+# The repo-root .gitignore excludes `static/`. We want to ship our local
+# static/multiseek/js/multiseek.js with the example, so explicitly re-include
+# everything under our static/ directory.
+!static/
+!static/**

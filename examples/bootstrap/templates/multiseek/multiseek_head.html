@@ -1,0 +1,19 @@
+{% load static %}
+{# jQuery / jQuery UI / flatpickr are loaded by base.html. This template
+   exposes the few globals that multiseek.js reads and then pulls in the
+   Bootstrap-flavored multiseek.js shipped from this project's static/. #}
+
+<script>
+    /* multiseek.js reads these before its widget definitions run */
+    djangoLanguageCode = '{{ LANGUAGE_CODE }}';
+
+    /* The Bootstrap variant uses flatpickr; flatpickr accepts the same
+       'Y-m-d' style format. We still set these globals for any legacy code
+       paths in multiseek.js that read them. */
+    multiseekDateFormat = 'Y-m-d';
+    multiseekDateWeekStart = 1;
+
+    /* Touching {{ csrf_token }} also sets the csrftoken cookie. */
+    multiseekCSRFToken = '{{ csrf_token }}';
+</script>
+<script src="{% static "multiseek/js/multiseek.js" %}" type="text/javascript"></script>
