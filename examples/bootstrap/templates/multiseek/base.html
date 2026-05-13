@@ -14,6 +14,9 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 
+    {% comment %}Bundled multiseek style.css — gives .multiseek-fieldset the translucent grey background so nested frames are visually distinguishable.{% endcomment %}
+    <link rel="stylesheet" href="{% static 'multiseek/css/style.css' %}">
+
     {# jQuery (still required by the imperative multiseek widget tree) #}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 

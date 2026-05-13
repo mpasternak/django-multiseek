@@ -17,6 +17,9 @@
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 
+    {% comment %}Bundled multiseek style.css — translucent grey background on .multiseek-fieldset (visual distinction for nested frames).{% endcomment %}
+    <link rel="stylesheet" href="{% static 'multiseek/css/style.css' %}">
+
     {% block extrahead %}{% endblock %}
 </head>
 <body>

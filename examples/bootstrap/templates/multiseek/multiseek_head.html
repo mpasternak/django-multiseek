@@ -1,6 +1,9 @@
 {% load static %}
 {% comment %}jQuery / jQuery UI / flatpickr are loaded by base.html. This template exposes the few globals that multiseek.js reads and then pulls in the Bootstrap-flavored multiseek.js shipped from this project's static/.{% endcomment %}
 
+{% comment %}Django's JavaScriptCatalog — provides the global `gettext()` that multiseek.js calls (e.g. inside makeFrameDOM). Without this script the form never renders ("gettext is not defined").{% endcomment %}
+<script src="{% url 'js_i18n_catalog' %}"></script>
+
 <script>
     /* multiseek.js reads these before its widget definitions run */
     djangoLanguageCode = '{{ LANGUAGE_CODE }}';

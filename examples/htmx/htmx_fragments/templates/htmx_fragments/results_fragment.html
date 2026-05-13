@@ -1,0 +1,22 @@
+{% load i18n %}
+{% comment %}Fragment-only results view: just the inner content. Rendered into the page's #multiseek-results div by an htmx swap when the user clicks Send Query. The bundled /multiseek/results/ still serves the full-page version (useful for direct navigation / bookmarking).{% endcomment %}
+<h2>{% trans "Results" %}</h2>
+
+{% if errors %}
+  <p>{% blocktrans %}Errors occurred. Please verify the input form is correct.{% endblocktrans %}</p>
+  <ul>
+    {% for elem in errors %}<li>{{ elem }}</li>{% endfor %}
+  </ul>
+{% else %}
+  {% if description %}
+    <p><strong>{% trans "Query:" %}</strong> {{ description|safe }}</p>
+  {% endif %}
+
+  <ol>
+    {% for element in object_list %}
+      <li>{{ element }}</li>
+    {% empty %}
+      <li>{% trans "No elements" %}</li>
+    {% endfor %}
+  </ol>
+{% endif %}

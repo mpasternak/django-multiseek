@@ -37,7 +37,7 @@ from django.views.decorators.csrf import csrf_protect
 
 from multiseek import AND, ANDNOT, OR
 from multiseek.logic import get_registry
-from multiseek.views import MULTISEEK_SESSION_KEY
+from multiseek.views import MULTISEEK_SESSION_KEY, MultiseekResults
 
 logger = logging.getLogger(__name__)
 
@@ -531,3 +531,19 @@ def set_field_prev_op(request, elpath):
         return HttpResponseBadRequest("Bad path")
     _save_form(request.session, data)
     return HttpResponse("")
+
+
+def results_fragment(request):
+    """Return ONLY the inner results HTML (no <html> wrapper).
+
+    Invoked by the htmx Send Query button via ``hx-get`` so the results
+    swap into a div under the form, matching the iframe-based UX of the
+    other variants. The bundled /multiseek/results/ URL is still
+    available for direct navigation.
+
+    Reuses MultiseekResults verbatim — only the template differs.
+    """
+    return MultiseekResults.as_view(
+        registry=settings.MULTISEEK_REGISTRY,
+        template_name="htmx_fragments/results_fragment.html",
+    )(request)

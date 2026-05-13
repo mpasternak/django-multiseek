@@ -8,27 +8,21 @@
   single source of truth; every add/remove is one HTTP round-trip.{% endblocktrans %}
 </p>
 
-{% comment %}
-The view inserts form_data (parsed list) and form_data_json (string) into
-the context. See htmx_fragments.views_form.HtmxMultiseekFormPage.
-{% endcomment %}
+{% comment %}The view inserts form_data (parsed list) and form_data_json (string) into the context. See htmx_fragments.views_form.HtmxMultiseekFormPage.{% endcomment %}
 
 {% include "htmx_fragments/frame.html" with frame=form_data frame_path="0" frame_prev_op=None is_root=True %}
 
 <div class="ms-actions">
-  {% comment %}
-  Send Query: standard <form> POST. The current form_data is already in the
-  session, so we resubmit it here too (no JS state to serialise in the
-  browser).
-  {% endcomment %}
-  <form method="post" action="{% url 'multiseek:results' %}">
-    {% csrf_token %}
-    <input type="hidden" name="json" value="{{ form_data_json }}" />
-    <button type="submit">{% trans "Send query" %}</button>
-  </form>
+  {% comment %}Send Query: htmx swap of the results fragment into the #multiseek-results div below — same in-page UX as the other variants' iframe. The session is the canonical state so no body is needed.{% endcomment %}
+  <button type="button"
+          hx-get="{% url 'htmx_fragments:results_fragment' %}"
+          hx-target="#multiseek-results"
+          hx-swap="innerHTML">{% trans "Send query" %}</button>
 
-  <form method="get" action="{% url 'multiseek:reset' %}">
+  <form method="get" action="{% url 'multiseek:reset' %}" style="display:inline">
     <button type="submit">{% trans "Reset form" %}</button>
   </form>
 </div>
+
+<div id="multiseek-results" class="ms-results"></div>
 {% endblock %}

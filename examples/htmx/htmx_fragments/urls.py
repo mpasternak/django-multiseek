@@ -26,4 +26,5 @@ urlpatterns = [
     path("field-type/<path:elpath>/", views.change_field_type, name="change_field_type"),
     path("field-value/<path:elpath>/", views.set_field_value, name="set_field_value"),
     path("field-prev-op/<path:elpath>/", views.set_field_prev_op, name="set_field_prev_op"),
+    path("results/", views.results_fragment, name="results_fragment"),
 ]
