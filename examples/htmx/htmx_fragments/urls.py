@@ -26,5 +26,7 @@ urlpatterns = [
     path("field-type/<path:elpath>/", views.change_field_type, name="change_field_type"),
     path("field-value/<path:elpath>/", views.set_field_value, name="set_field_value"),
     path("field-prev-op/<path:elpath>/", views.set_field_prev_op, name="set_field_prev_op"),
+    path("autocomplete/<path:elpath>/", views.autocomplete_suggestions, name="autocomplete"),
+    path("autocomplete-pick/<path:elpath>/", views.autocomplete_pick, name="autocomplete_pick"),
     path("results/", views.results_fragment, name="results_fragment"),
 ]

@@ -68,16 +68,24 @@ custom JS picker. Range/date use split inputs combined server-side.
            placeholder="{% trans 'value' %}" />
 
   {% elif field_inner_type == "autocomplete" %}
-    {# Without JS we degrade to typing the pk. A proper htmx autocomplete
-       would back this with a /htmx/autocomplete/<field>/ endpoint feeding
-       a <datalist>, but that's left as a TODO so the variant stays focused. #}
-    <input type="text" name="value" value="{{ field.value|default_if_none:'' }}"
-           hx-post="{% url 'htmx_fragments:set_field_value' field_path %}"
-           hx-trigger="change"
-           hx-swap="none"
-           class="ms-value-autocomplete"
-           placeholder="{% trans 'autocomplete pk' %}" />
-    <small class="ms-todo">{% trans "TODO: typed autocomplete dropdown" %}</small>
+    {% comment %}Real htmx-driven autocomplete: typing triggers a GET to /htmx/autocomplete/<path>/ which returns an HTML dropdown of matches; clicking a suggestion POSTs to /htmx/autocomplete-pick/<path>/ which records the pk in the session and returns the re-rendered widget (input filled with the picked label, dropdown cleared, hidden pk input set). No JS in this project.{% endcomment %}
+    <div class="ms-autocomplete">
+      <input type="text"
+             name="q"
+             value="{{ autocomplete_label|default:field.value|default_if_none:'' }}"
+             hx-get="{% url 'htmx_fragments:autocomplete' field_path %}"
+             hx-trigger="input changed delay:300ms, focus"
+             hx-target="#suggestions-{{ field_path|dotted_path_id }}"
+             hx-swap="outerHTML"
+             class="ms-value-autocomplete"
+             placeholder="{% trans 'type to search…' %}"
+             autocomplete="off" />
+    {% comment %}Hidden pk input — this is what server-side multiseek actually filters on; the visible <input name="search"> is the search box for the dropdown.{% endcomment %}
+    <input type="hidden"
+           name="value"
+           value="{{ field.value|default_if_none:'' }}" />
+    <div class="ms-suggestions" id="suggestions-{{ field_path|dotted_path_id }}"></div>
+    </div>
 
   {% else %}
     <input type="text" name="value" value="{{ field.value|default_if_none:'' }}"

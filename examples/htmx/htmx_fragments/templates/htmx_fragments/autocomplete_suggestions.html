@@ -1,0 +1,18 @@
+{% load htmx_fragments_tags %}{% comment %}Renders the dropdown body of suggestions. Each suggestion POSTs to autocomplete_pick to record the selection — the response re-renders the full value widget (input populated with the picked label, dropdown cleared, hidden pk input set).{% endcomment %}
+{% if results %}
+    <div class="ms-suggestions" id="suggestions-{{ path|dotted_path_id }}">
+        {% for pk, label in results %}
+            <button type="button"
+                    class="ms-suggestion"
+                    hx-post="{% url 'htmx_fragments:autocomplete_pick' path %}"
+                    hx-vals='{"pk": "{{ pk }}", "label": "{{ label|escapejs }}"}'
+                    hx-target="#value-widget-{{ path|dotted_path_id }}"
+                    hx-swap="outerHTML"
+                    title="Pick this result">{{ label }}</button>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="ms-suggestions ms-suggestions-empty" id="suggestions-{{ path|dotted_path_id }}">
+        {% if query %}<small>no matches for &quot;{{ query }}&quot;</small>{% endif %}
+    </div>
+{% endif %}

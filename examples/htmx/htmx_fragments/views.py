@@ -219,6 +219,10 @@ def value_widget_context(node, field_def):
         if callable(values):
             values = values()
         ctx["value_list"] = [str(v) for v in values]
+    elif t == "autocomplete":
+        # Show the human-readable label of the stored pk if we know it
+        # (we cached it under `_label` when the user picked a suggestion).
+        ctx["autocomplete_label"] = node.get("_label", "")
     return ctx
 
 
@@ -531,6 +535,73 @@ def set_field_prev_op(request, elpath):
         return HttpResponseBadRequest("Bad path")
     _save_form(request.session, data)
     return HttpResponse("")
+
+
+def autocomplete_suggestions(request, elpath):
+    """GET /htmx/autocomplete/<elpath>/?q=… → HTML fragment listing
+    matching items for the autocomplete field at <elpath>.
+
+    Reuses the field's registered ``AutocompleteQueryObject.model`` and
+    optional ``search_fields`` to run the lookup against the project's own
+    DB — no need to round-trip the DAL JSON endpoint over HTTP.
+    """
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+    parts = _parse_path(elpath)
+    if parts is None:
+        return HttpResponseBadRequest(f"Invalid path: {elpath!r}")
+
+    data = _load_form(request.session)
+    node = _walk(data["form_data"], parts)
+    if not isinstance(node, dict):
+        return HttpResponseBadRequest("Path does not refer to a field")
+
+    field_def = _registry().get_field_by_name(node.get("field", ""))
+    if field_def is None or field_def.type != "autocomplete":
+        return HttpResponseBadRequest("Field is not an autocomplete type")
+
+    q = (request.GET.get("q") or "").strip()
+    model = field_def.model
+    qs = model.objects.all() if model else []
+    if model and q:
+        from django.db.models import Q
+
+        search_fields = getattr(field_def, "search_fields", None) or ["name"]
+        filters = Q()
+        for f in search_fields:
+            filters |= Q(**{f + "__icontains": q})
+        qs = qs.filter(filters)
+    results = [(obj.pk, str(obj)) for obj in qs[:10]] if model else []
+
+    return render(
+        request,
+        "htmx_fragments/autocomplete_suggestions.html",
+        {"path": ".".join(str(p) for p in parts), "results": results, "query": q},
+    )
+
+
+@csrf_protect
+def autocomplete_pick(request, elpath):
+    """POST /htmx/autocomplete-pick/<elpath>/ with pk and label →
+    stores the pk + label in the session and returns the re-rendered
+    value widget (so the input shows the picked label and the dropdown
+    is dismissed)."""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    parts = _parse_path(elpath)
+    if parts is None:
+        return HttpResponseBadRequest(f"Invalid path: {elpath!r}")
+
+    data = _load_form(request.session)
+    node = _walk(data["form_data"], parts)
+    if not isinstance(node, dict):
+        return HttpResponseBadRequest("Path does not refer to a field")
+
+    node["value"] = request.POST.get("pk", "")
+    node["_label"] = request.POST.get("label", "")
+    _save_form(request.session, data)
+
+    return _render_value_widget(request, _registry(), data["form_data"], parts)
 
 
 def results_fragment(request):
