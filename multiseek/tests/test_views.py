@@ -1,6 +1,4 @@
-# -*- encoding: utf-8 -*-
 import json
-from builtins import str as text
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.test import TestCase
@@ -79,7 +77,7 @@ class TestViews(RegistryMixin, TestCase):
                     dict(
                         field="foo",
                         prev_op="or",
-                        operator=text(EQUALITY_OPS_ALL[0]),
+                        operator=str(EQUALITY_OPS_ALL[0]),
                         value="foo",
                     ),
                 ]
@@ -96,7 +94,7 @@ class TestViews(RegistryMixin, TestCase):
         self.assertEqual(ret["js_value_lists"], '{"baz": ["a", "b", "c"]}')
         self.assertEqual(
             ret["js_init"],
-            u"$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');\n",
+            "$('#frame-0').multiseekFrame('addField', 'foo', 'equals', 'foo', 'or');\n",
         )
 
     def test_reset_form(self):
@@ -146,26 +144,26 @@ class TestMultiseekSaveForm(RegistryMixin, TestCase):
 
         self.request.POST["json"] = None
         self.assertEqual(
-            self.msp.get_context_data(), dict(result=text(ERR_NO_FORM_DATA))
+            self.msp.get_context_data(), dict(result=str(ERR_NO_FORM_DATA))
         )
 
         self.request.POST["json"] = "wcale, nie, json"
         self.assertEqual(
-            self.msp.get_context_data(), dict(result=text(ERR_PARSING_DATA))
+            self.msp.get_context_data(), dict(result=str(ERR_PARSING_DATA))
         )
 
         self.request.POST["json"] = '[{"field": "foo", "bad": "field"}]'
         self.assertEqual(
-            self.msp.get_context_data(), dict(result=text(ERR_LOADING_DATA))
+            self.msp.get_context_data(), dict(result=str(ERR_LOADING_DATA))
         )
 
         self.request.POST["json"] = (
             '{"form_data": [{"field": "foo", "operation": "'
-            + text(EQUAL)
+            + str(EQUAL)
             + '", "value": "foo"}]}'
         )
         self.request.POST["name"] = ""
-        self.assertEqual(self.msp.get_context_data(), dict(result=text(ERR_FORM_NAME)))
+        self.assertEqual(self.msp.get_context_data(), dict(result=str(ERR_FORM_NAME)))
 
         baker.make(SearchForm, name="foo")
         self.request.POST["name"] = "foo"
@@ -233,9 +231,9 @@ class TestMultiseekResults(RegistryMixin, TestCase):
                 "form_data": [
                     None,
                     {
-                        "field": text(self.registry.fields[0].label),
-                        "operator": text(self.registry.fields[0].ops[0]),
-                        "value": u"foobar",
+                        "field": str(self.registry.fields[0].label),
+                        "operator": str(self.registry.fields[0].ops[0]),
+                        "value": "foobar",
                     },
                 ]
             }

@@ -1,9 +1,7 @@
-# -*- encoding: utf-8 -*-
-
-
 import decimal
 import importlib
 import json
+from collections import namedtuple
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -12,15 +10,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import html
-
-try:
-    from django.db.models.options import get_verbose_name
-except ImportError:
-    from django.utils.text import camel_case_to_spaces as get_verbose_name
-
-from builtins import str as text
-from collections import namedtuple
-
+from django.utils.text import camel_case_to_spaces as get_verbose_name
 from django.utils.translation import gettext_lazy as _
 
 MULTISEEK_REPORT_TYPE = "_ms_report_type"
@@ -138,7 +128,7 @@ def eventually_callable(obj):
     return obj
 
 
-class QueryObject(object):
+class QueryObject:
     """This is a Query Object!
 
     This object replaces the parameters that it gets from the web UI, which
@@ -213,7 +203,7 @@ class QueryObject(object):
         """
         ret = None
 
-        if operation in [text(x) for x in EQUALITY_OPS_ALL]:
+        if operation in [str(x) for x in EQUALITY_OPS_ALL]:
             ret = Q(**{self.field_name: value})
 
         else:
@@ -270,10 +260,10 @@ class StringQueryObject(QueryObject):
             return value.decode("utf-8")
 
     def value_for_description(self, value):
-        value = super(StringQueryObject, self).value_for_description(value)
+        value = super().value_for_description(value)
         if not value:
             return self.empty_value_description
-        return u'"%s"' % html.escape(value)
+        return '"%s"' % html.escape(value)
 
     def real_query(self, value, operation):
         ret = QueryObject.real_query(self, value, operation, validate_operation=False)
@@ -281,10 +271,10 @@ class StringQueryObject(QueryObject):
         if ret is not None:
             return ret
 
-        elif operation in [text(x) for x in [CONTAINS, NOT_CONTAINS]]:
+        elif operation in [str(x) for x in [CONTAINS, NOT_CONTAINS]]:
             ret = Q(**{self.field_name + "__icontains": value})
 
-        elif operation in [text(x) for x in [STARTS_WITH, NOT_STARTS_WITH]]:
+        elif operation in [str(x) for x in [STARTS_WITH, NOT_STARTS_WITH]]:
             ret = Q(**{self.field_name + "__startswith": value})
 
         else:
@@ -303,7 +293,7 @@ class AutocompleteQueryObject(QueryObject):
     url = None
 
     def __init__(self, field_name=None, label=None, model=None, url=None):
-        super(AutocompleteQueryObject, self).__init__(field_name, label)
+        super().__init__(field_name, label)
 
         if model is not None:
             self.model = model
@@ -321,7 +311,7 @@ class AutocompleteQueryObject(QueryObject):
 
     @classmethod
     def get_label(cls, model):
-        return text(model)
+        return str(model)
 
     def value_from_web(self, value):
         # The value should be an integer:
@@ -457,17 +447,17 @@ class AbstractNumberQueryObject(QueryObject):
         return True
 
     def real_query(self, value, operation):
-        if operation in [text(x) for x in EQUAL_ALL]:
+        if operation in [str(x) for x in EQUAL_ALL]:
             return Q(**{self.field_name: value})
-        elif operation in [text(x) for x in DIFFERENT_ALL]:
+        elif operation in [str(x) for x in DIFFERENT_ALL]:
             return ~Q(**{self.field_name: value})
-        elif operation in [text(x) for x in GREATER_OPS_ALL]:
+        elif operation in [str(x) for x in GREATER_OPS_ALL]:
             return Q(**{self.field_name + "__gt": value})
-        elif operation in [text(x) for x in LESSER_OPS_ALL]:
+        elif operation in [str(x) for x in LESSER_OPS_ALL]:
             return Q(**{self.field_name + "__lt": value})
-        elif operation in [text(x) for x in GREATER_OR_EQUAL_OPS_ALL]:
+        elif operation in [str(x) for x in GREATER_OR_EQUAL_OPS_ALL]:
             return Q(**{self.field_name + "__gte": value})
-        elif operation in [text(x) for x in LESSER_OR_EQUAL_OPS_ALL]:
+        elif operation in [str(x) for x in LESSER_OR_EQUAL_OPS_ALL]:
             return Q(**{self.field_name + "__lte": value})
         else:
             raise UnknownOperation(operation)
@@ -499,7 +489,7 @@ class ValueListQueryObject(QueryObject):
     values = None
 
     def __init__(self, field_name=None, label=None, values=None):
-        super(ValueListQueryObject, self).__init__(field_name, label)
+        super().__init__(field_name, label)
         if values is not None:
             self.values = values
 
@@ -613,7 +603,7 @@ class MultiseekRegistry:
 
     def get_field_by_name(self, name):
         for field in self.fields:
-            if text(field.label) == name:
+            if str(field.label) == name:
                 return field
 
     def add_field(self, field):
@@ -660,7 +650,7 @@ class MultiseekRegistry:
         if f is None:
             raise UnknownField("Field type %r not found!" % field)
 
-        if field["operator"] not in [text(x) for x in f.ops]:
+        if field["operator"] not in [str(x) for x in f.ops]:
             raise UnknownOperation(
                 "Operation %r not valid for field %r"
                 % (field["operator"], field["field"])
@@ -900,12 +890,12 @@ class MultiseekRegistry:
                 #     'Foundation.libs.forms.refresh_custom_select($("select[name=%s]"), true)' % MULTISEEK_REPORT_TYPE
                 # )
 
-        ret = u";\n".join(result) + u";\n"
+        ret = ";\n".join(result) + ";\n"
         if foundation:
             ret += (
-                u"\t\tif (window.Foundation) {\n"
-                + u";\n".join(foundation)
-                + u"\n\t\t}\n"
+                "\t\tif (window.Foundation) {\n"
+                + ";\n".join(foundation)
+                + "\n\t\t}\n"
             )
         return ret
 

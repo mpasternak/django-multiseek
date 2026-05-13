@@ -1,7 +1,4 @@
-# -*- encoding: utf-8 -*-
-
 import json
-from builtins import str as text
 from unittest import TestCase
 
 import pytest
@@ -54,7 +51,7 @@ test_json = json.dumps(
             None,
             dict(
                 field="foo",
-                operator=text(EQUALITY_OPS_ALL[0]),
+                operator=str(EQUALITY_OPS_ALL[0]),
                 value="foo",
                 prev_op=None,
             ),
@@ -71,7 +68,7 @@ test_impossible_json = json.dumps(
             None,
             dict(
                 field="foo",
-                operator=text(STRING_OPS[0]),  # "CONTAINS"
+                operator=str(STRING_OPS[0]),  # "CONTAINS"
                 value=None,
                 prev_op=None,
             ),
@@ -192,7 +189,7 @@ class TestIntegerQueryObject(TestCase):
 
         self.assertRaises(UnknownOperation, r.real_query, 123, "foo")
 
-        res = r.real_query(123, text(LESSER_OR_EQUAL))
+        res = r.real_query(123, str(LESSER_OR_EQUAL))
         self.assertEqual(str(res), py3k_test_string("(AND: (u'foo__lte', 123))"))
 
 
@@ -270,7 +267,7 @@ class TestMultiseekRegistry(TestCase):
                     None,
                     dict(
                         field="foo",
-                        operator=text(EQUALITY_OPS_ALL[0]),
+                        operator=str(EQUALITY_OPS_ALL[0]),
                         value="foo",
                         prev_op=None,
                     ),
@@ -278,7 +275,7 @@ class TestMultiseekRegistry(TestCase):
             ],
             dict(
                 field="foo",
-                operator=text(EQUALITY_OPS_ALL[0]),
+                operator=str(EQUALITY_OPS_ALL[0]),
                 value="bar",
                 prev_op="BAD OP",
             ),
@@ -319,10 +316,10 @@ class TestMultiseekRegistry(TestCase):
         self.registry.get_query_for_model(json.loads(test_buggy_json))
 
     def test_recreate_form(self):
-        op = text(EQUALITY_OPS_ALL[0])
-        fld_noop = dict(field="foo", operator=op, value=u"foo", prev_op=None)
-        fld_and = dict(field="foo", operator=op, value=u"foo", prev_op=AND)
-        fld_or = dict(field="foo", operator=op, value=u"foo", prev_op=OR)
+        op = str(EQUALITY_OPS_ALL[0])
+        fld_noop = dict(field="foo", operator=op, value="foo", prev_op=None)
+        fld_and = dict(field="foo", operator=op, value="foo", prev_op=AND)
+        fld_or = dict(field="foo", operator=op, value="foo", prev_op=OR)
         res = self.registry.recreate_form(
             {
                 "form_data": [

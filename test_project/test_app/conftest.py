@@ -5,7 +5,6 @@ import pytest
 from django.conf import settings
 from django.urls import reverse
 from model_bakery import baker
-from builtins import str as text
 from django.utils.translation import gettext_lazy as _
 
 from multiseek.logic import (
@@ -123,8 +122,8 @@ class MultiseekWebPage:
         $("#%(frame)s").multiseekFrame("addField", "%(label)s", "%(op)s", %(value)s);
         """ % dict(
             frame=frame,
-            label=text(label),
-            op=text(op),
+            label=str(label),
+            op=str(op),
             value=json.dumps(value),
         )
         self.page.evaluate(code)

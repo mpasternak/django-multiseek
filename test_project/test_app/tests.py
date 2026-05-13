@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from builtins import str as text
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from model_bakery import baker
@@ -77,7 +76,7 @@ def test_liveserver_picks_up_database_changes_direct(
 def test_change_field(multiseek_page):
     field = multiseek_page.get_field(FIELD)
     field["type"].select_option(
-        value=text(multiseek_registry.YearQueryObject.label)
+        value=str(multiseek_registry.YearQueryObject.label)
     )
 
     field = multiseek_page.get_field(FIELD)
@@ -85,14 +84,14 @@ def test_change_field(multiseek_page):
     assert len(field["value"]) == 2
 
     field["type"].select_option(
-        value=text(multiseek_registry.LanguageQueryObject.label)
+        value=str(multiseek_registry.LanguageQueryObject.label)
     )
 
     field = multiseek_page.get_field(FIELD)
     assert field["inner_type"] == logic.VALUE_LIST
 
     field["type"].select_option(
-        value=text(multiseek_registry.AuthorQueryObject.label)
+        value=str(multiseek_registry.AuthorQueryObject.label)
     )
 
     field = multiseek_page.get_field(FIELD)
@@ -118,7 +117,7 @@ def test_serialize_form(multiseek_page):
 
     field = multiseek_page.get_field("field-0")
     field["type"].select_option(
-        value=text(multiseek_registry.YearQueryObject.label)
+        value=str(multiseek_registry.YearQueryObject.label)
     )
 
     field = multiseek_page.get_field("field-0")
@@ -128,35 +127,35 @@ def test_serialize_form(multiseek_page):
     field = multiseek_page.get_field("field-1")
     field["prev-op"].select_option(value="or")
     field["type"].select_option(
-        value=text(multiseek_registry.LanguageQueryObject.label)
+        value=str(multiseek_registry.LanguageQueryObject.label)
     )
 
     field = multiseek_page.get_field("field-1")
-    field["value_widget"].select_option(value=text(_("english")))
+    field["value_widget"].select_option(value=str(_("english")))
 
     expected = [
         None,
         {
             "field": "Year",
-            "operator": text(RANGE_OPS[0]),
+            "operator": str(RANGE_OPS[0]),
             "value": "[1999,2000]",
             "prev_op": None,
         },
         {
             "field": "Language",
-            "operator": text(EQUAL),
+            "operator": str(EQUAL),
             "value": "english",
             "prev_op": OR,
         },
         {
             "field": "Title",
-            "operator": text(CONTAINS),
+            "operator": str(CONTAINS),
             "value": "aaapud!",
             "prev_op": AND,
         },
         {
             "field": "Title",
-            "operator": text(CONTAINS),
+            "operator": str(CONTAINS),
             "value": "aaapud!",
             "prev_op": AND,
         },
@@ -164,7 +163,7 @@ def test_serialize_form(multiseek_page):
             AND,
             {
                 "field": "Title",
-                "operator": text(CONTAINS),
+                "operator": str(CONTAINS),
                 "value": "aaapud!",
                 "prev_op": None,
             },
@@ -173,7 +172,7 @@ def test_serialize_form(multiseek_page):
             AND,
             {
                 "field": "Title",
-                "operator": text(CONTAINS),
+                "operator": str(CONTAINS),
                 "value": "",
                 "prev_op": None,
             },
@@ -227,7 +226,7 @@ def test_autocomplete_field(multiseek_page):
 
     field = multiseek_page.get_field(FIELD)
     field["type"].select_option(
-        value=text(multiseek_registry.AuthorQueryObject.label)
+        value=str(multiseek_registry.AuthorQueryObject.label)
     )
 
     select_select2_autocomplete(
@@ -239,7 +238,7 @@ def test_autocomplete_field(multiseek_page):
         None,
         make_field(
             multiseek_registry.AuthorQueryObject,
-            text(EQUAL),
+            str(EQUAL),
             str(Author.objects.filter(last_name="Smith")[0].pk),
             prev_op=None,
         ),
@@ -256,7 +255,7 @@ def test_autocomplete_field_bug(multiseek_page):
 
     field = multiseek_page.get_field(FIELD)
     field["type"].select_option(
-        value=text(multiseek_registry.AuthorQueryObject.label)
+        value=str(multiseek_registry.AuthorQueryObject.label)
     )
 
     multiseek_page.page.locator("#sendQueryButton").click()
@@ -274,7 +273,7 @@ def test_autocomplete_field_bug_2(multiseek_page):
 
     field = multiseek_page.get_field(FIELD)
     field["type"].select_option(
-        value=text(multiseek_registry.AuthorQueryObject.label)
+        value=str(multiseek_registry.AuthorQueryObject.label)
     )
 
     multiseek_page.page.locator("#sendQueryButton").click()
@@ -305,8 +304,8 @@ def test_set_join(multiseek_page):
 
     multiseek_page.add_field(
         FRAME,
-        text(multiseek_page.registry.fields[0].label),
-        text(multiseek_page.registry.fields[0].ops[0]),
+        str(multiseek_page.registry.fields[0].label),
+        str(multiseek_page.registry.fields[0].ops[0]),
         "",
     )
 
@@ -343,17 +342,17 @@ def test_add_field_value_list(multiseek_page):
         FRAME,
         multiseek_registry.LanguageQueryObject.label,
         multiseek_registry.LanguageQueryObject.ops[1],
-        text(_("polish")),
+        str(_("polish")),
     )
 
     field = multiseek_page.get_field("field-1")
-    assert field["type"].input_value() == text(
+    assert field["type"].input_value() == str(
         multiseek_registry.LanguageQueryObject.label
     )
-    assert field["op"].input_value() == text(
+    assert field["op"].input_value() == str(
         multiseek_registry.LanguageQueryObject.ops[1]
     )
-    assert field["value"] == text(_("polish"))
+    assert field["value"] == str(_("polish"))
 
 
 @pytest.mark.django_db
@@ -404,8 +403,8 @@ def test_refresh_bug(multiseek_page):
     frame["add_field"].click()
 
     field = multiseek_page.get_field("field-1")
-    field["prev-op"].select_option(value=text(_("or")))
-    assert field["prev-op"].input_value() == text(_("or"))
+    field["prev-op"].select_option(value=str(_("or")))
+    assert field["prev-op"].input_value() == str(_("or"))
 
     multiseek_page.page.locator("#sendQueryButton").click()
     multiseek_page.page.wait_for_timeout(500)
@@ -414,7 +413,7 @@ def test_refresh_bug(multiseek_page):
     multiseek_page.page.wait_for_load_state("networkidle")
 
     field = multiseek_page.get_field("field-1")
-    assert field["prev-op"].input_value() == text(_("or"))
+    assert field["prev-op"].input_value() == str(_("or"))
 
 
 @pytest.mark.django_db
@@ -442,11 +441,11 @@ def test_date_field(multiseek_page):
     field = multiseek_page.get_field("field-0")
 
     field["type"].select_option(
-        value=text(multiseek_registry.DateLastUpdatedQueryObject.label)
+        value=str(multiseek_registry.DateLastUpdatedQueryObject.label)
     )
     field = multiseek_page.get_field("field-0")
     field["op"].select_option(
-        value=text(multiseek_registry.DateLastUpdatedQueryObject.ops[6])
+        value=str(multiseek_registry.DateLastUpdatedQueryObject.ops[6])
     )
 
     expected = [
@@ -461,7 +460,7 @@ def test_date_field(multiseek_page):
     assert multiseek_page.serialize() == expected
 
     field["op"].select_option(
-        value=text(multiseek_registry.DateLastUpdatedQueryObject.ops[3])
+        value=str(multiseek_registry.DateLastUpdatedQueryObject.ops[3])
     )
     expected = [
         None,
@@ -674,7 +673,7 @@ def test_load_form(multiseek_admin_page, initial_data):
 
     field = multiseek_admin_page.extract_field_data("field-0")
 
-    assert field["selected"] == text(
+    assert field["selected"] == str(
         multiseek_admin_page.registry.fields[2].label
     )
     assert field["value"][0] == 2000

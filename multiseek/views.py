@@ -1,8 +1,4 @@
-# -*- encoding: utf-8 -*-
-
-
 import json
-from builtins import str as text
 
 from django import http, shortcuts
 from django.db import transaction
@@ -70,16 +66,16 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
 
         fields = registry.get_fields(self.request)
 
-        js_fields = json.dumps([text(x.label) for x in fields])
+        js_fields = json.dumps([str(x.label) for x in fields])
         js_ops = json.dumps(
-            dict([(text(f.label), [text(x) for x in f.ops]) for f in fields])
+            dict([(str(f.label), [str(x) for x in f.ops]) for f in fields])
         )
-        js_types = json.dumps(dict([(text(f.label), f.type) for f in fields]))
+        js_types = json.dumps(dict([(str(f.label), f.type) for f in fields]))
 
         js_autocompletes = json.dumps(
             dict(
                 [
-                    (text(field.label), reverse_or_just_url(field.get_url()))
+                    (str(field.label), reverse_or_just_url(field.get_url()))
                     for field in registry.field_by_type(AUTOCOMPLETE, self.request)
                 ]
             )
@@ -93,7 +89,7 @@ class MultiseekFormPage(MultiseekPageMixin, TemplateView):
         js_value_lists = json.dumps(
             dict(
                 [
-                    (text(field.label), [text(x) for x in get_values(field.values)])
+                    (str(field.label), [str(x) for x in get_values(field.values)])
                     for field in registry.field_by_type(VALUE_LIST, self.request)
                 ]
             )
@@ -153,7 +149,7 @@ def load_form(request, search_form_pk):
     return shortcuts.redirect("..")
 
 
-class JSONResponseMixin(object):
+class JSONResponseMixin:
     def render_to_response(self, context):
         return self.get_json_response(self.convert_context_to_json(context))
 
@@ -170,7 +166,7 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
     def get(self, request, *args, **kw):
         if not user_allowed_to_save_forms(request.user):
             return HttpResponseForbidden()
-        return super(MultiseekSaveForm, self).get(request, *args, **kw)
+        return super().get(request, *args, **kw)
 
     post = get
 
@@ -182,20 +178,20 @@ class MultiseekSaveForm(MultiseekPageMixin, JSONResponseMixin, TemplateView):
         overwrite = self.request.POST.get("overwrite") == "true"
 
         if not _json:
-            return dict(result=text(ERR_NO_FORM_DATA))
+            return dict(result=str(ERR_NO_FORM_DATA))
 
         try:
             json.loads(_json)
         except ValueError:
-            return dict(result=text(ERR_PARSING_DATA))
+            return dict(result=str(ERR_PARSING_DATA))
 
         try:
             get_registry(self.registry).recreate_form(json.loads(_json))
         except (TypeError, UnknownField, ParseError, UnknownOperation):
-            return dict(result=text(ERR_LOADING_DATA))
+            return dict(result=str(ERR_LOADING_DATA))
 
         if not name:
-            return dict(result=text(ERR_FORM_NAME))
+            return dict(result=str(ERR_FORM_NAME))
 
         if SearchForm.objects.filter(name=name).count():
             if not overwrite:
@@ -225,7 +221,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             session = request.session
             session[MULTISEEK_SESSION_KEY] = j
             session.save()
-        return super(MultiseekResults, self).get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
     def get_multiseek_data(self):
         if not self._json_cache:
@@ -260,7 +256,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
                 if isinstance(d[cur], list):
                     if d[cur][0] is not None:
-                        ret += " <b>" + text(gettext_lazy(d[cur][0])).upper() + "</b> "
+                        ret += " <b>" + str(gettext_lazy(d[cur][0])).upper() + "</b> "
                     ret += "(" + _recur(d[cur][1:]) + ")"
                 else:
                     f = registry.get_field_by_name(d[cur]["field"])
@@ -271,7 +267,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
 
                         if "prev_op" in d[cur] and d[cur]["prev_op"] is not None:
                             tmp = d[cur]["prev_op"]
-                            ret += " <b>" + text(gettext_lazy(tmp)).upper() + "</b> "
+                            ret += " <b>" + str(gettext_lazy(tmp)).upper() + "</b> "
 
                         value = f.value_for_description(d[cur]["value"])
 
@@ -299,7 +295,7 @@ class MultiseekResults(MultiseekPageMixin, ListView):
         description = self.describe_multiseek_data()
         removed_ids = self.get_removed_records()
 
-        res = super(ListView, self).get_context_data(
+        res = super().get_context_data(
             report_type=report_type,
             description=description,
             removed_ids=removed_ids,
