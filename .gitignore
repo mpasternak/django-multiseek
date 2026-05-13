@@ -72,3 +72,6 @@ ENV/
 
 # uv lock (library — not committed)
 uv.lock
+
+# Claude Code state (per-machine; includes ephemeral worktrees)
+.claude/

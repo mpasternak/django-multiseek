@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.models import AnonymousUser, User
 from django.test import Client, TestCase
 from django.test.client import RequestFactory
+from django.urls import resolve
 from mock import MagicMock
 from model_bakery import baker
 from test_app import multiseek_registry
@@ -285,3 +286,29 @@ class TestCSRFProtection(TestCase):
             },
         )
         self.assertNotEqual(resp.status_code, 403)
+
+
+class TestLoadFormURLPattern(TestCase):
+    """Regression tests for Issue #8: load_form URL routing.
+
+    The original pattern `r"^load_form/(?P<search_form_pk>\\d+)"` had two
+    issues:
+    1. No `$` anchor, so /load_form/<pk>/anything matched, the view ran
+       with the matching pk, and the trailing path was silently discarded.
+    2. The regex group captured pk as a string; switching to a `<int:>`
+       path converter resolves it as a proper int.
+    """
+
+    def test_load_form_url_rejects_trailing_path(self):
+        # Create a SearchForm so the view would succeed (return 302) if the
+        # URL pattern wrongly accepted the trailing junk. Post-fix the URL
+        # pattern itself rejects the request → 404 before the view runs.
+        user = baker.make(User)
+        sf = SearchForm.objects.create(name="x", owner=user, public=True, data="{}")
+        resp = self.client.get(f"/multiseek/load_form/{sf.pk}/extra-junk")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_load_form_url_resolves_pk_as_int(self):
+        match = resolve("/multiseek/load_form/123")
+        self.assertEqual(match.url_name, "load_form")
+        self.assertEqual(match.kwargs, {"search_form_pk": 123})
