@@ -4,7 +4,7 @@ from unittest import TestCase
 import pytest
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from multiseek.logic import (
     AND,

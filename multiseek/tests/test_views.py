@@ -1,10 +1,10 @@
 import json
+from unittest.mock import MagicMock
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.test import Client, TestCase
 from django.test.client import RequestFactory
 from django.urls import resolve
-from mock import MagicMock
 from model_bakery import baker
 from test_app import multiseek_registry
 from test_app.models import Author
