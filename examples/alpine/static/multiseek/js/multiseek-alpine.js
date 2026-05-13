@@ -63,6 +63,11 @@
 
             /* ----- lifecycle ----- */
             init() {
+                // Defense in depth — if anything re-triggers init (e.g.
+                // x-init referencing init()), we must not push a second
+                // root frame and produce a duplicate form.
+                if (this._inited) return;
+                this._inited = true;
                 this.fields = readJSON("ms-fields") || [];
                 this.ops = readJSON("ms-ops") || {};
                 this.types = readJSON("ms-types") || {};

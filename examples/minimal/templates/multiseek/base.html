@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}django-multiseek — minimal example{% endblock %}</title>
-{# Vendored assets — see static/multiseek/vendor/ and README.md #}
-<link rel="stylesheet" href="{% static 'multiseek/foundation-minimal.css' %}">
-<link rel="stylesheet" href="{% static 'multiseek/vendor/foundation-datepicker.css' %}">
+<title>{% block title %}django-multiseek — Foundation 6 example{% endblock %}</title>
+{% comment %}Foundation 6, jQuery, jQuery UI and foundation-datepicker are loaded from CDN — no yarn / node_modules / build step required. The hand-curated "minimal" CSS subset was replaced with the upstream Foundation 6 build because the curated subset had styling gaps. If you want fully-offline assets, mirror these URLs into static/multiseek/vendor/ and switch the hrefs.{% endcomment %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-datepicker@1.5.4/dist/css/foundation-datepicker.min.css">
 <link rel="stylesheet" href="{% static 'autocomplete_light/select2.css' %}">
-<script src="{% static 'multiseek/vendor/jquery.min.js' %}"></script>
-<script src="{% static 'multiseek/vendor/jquery-ui.min.js' %}"></script>
-<script src="{% static 'multiseek/vendor/foundation-datepicker.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/foundation-datepicker@1.5.4/dist/js/foundation-datepicker.min.js"></script>
 <script src="{% static 'autocomplete_light/autocomplete_light.js' %}"></script>
 <script src="{% static 'autocomplete_light/select2.js' %}"></script>
 {% block extrahead %}<script type="text/javascript" src="{% url 'js_i18n_catalog' %}"></script>{% endblock %}

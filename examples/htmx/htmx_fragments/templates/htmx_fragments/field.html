@@ -38,9 +38,10 @@ appropriate endpoint so the server stays the canonical state.
   {% comment %}Inclusion tag computes per-field type-specific context (range_min, value_list, date_iso, …). A plain include cannot reach into the registry per-field on its own.{% endcomment %}
   {% render_value_widget field field_path %}
 
+  {% comment %}Target the PARENT frame so all sibling paths get refreshed after delete. Otherwise the next click on a sibling lands on a stale data-path.{% endcomment %}
   <button type="button"
           hx-delete="{% url 'htmx_fragments:delete_element' field_path %}"
-          hx-target="#field-{{ field_path|dotted_path_id }}"
+          hx-target="#frame-{{ field_path|parent_path|dotted_path_id }}"
           hx-swap="outerHTML"
           class="ms-remove">{% trans "Remove" %}</button>
 </div>

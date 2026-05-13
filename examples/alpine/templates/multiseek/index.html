@@ -46,7 +46,8 @@
         "userCanSave": {% if user_allowed_to_save_forms %}true{% else %}false{% endif %}
     }</script>
 
-    <div x-data="multiseekForm()" x-init="init()" id="multiseek-root">
+    {# Alpine calls init() automatically when an x-data object has it; no x-init="init()" #}
+    <div x-data="multiseekForm()" id="multiseek-root">
         {# ----- root frame ----- #}
         <template x-for="frame in frames" :key="frame.uid">
             <div class="border rounded p-3 mb-3 bg-light" :id="'frame-' + frame.uid">

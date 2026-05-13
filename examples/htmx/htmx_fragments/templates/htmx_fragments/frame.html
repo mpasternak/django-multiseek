@@ -45,9 +45,10 @@ sub-frame.
             hx-target="#field-list-{{ frame_path|dotted_path_id }}"
             hx-swap="beforeend">{% trans "Add frame" %}</button>
     {% if not is_root %}
+      {% comment %}Target the PARENT frame (not this one) for the same path-staleness reason as in field.html.{% endcomment %}
       <button type="button"
               hx-delete="{% url 'htmx_fragments:delete_element' frame_path %}"
-              hx-target="#frame-{{ frame_path|dotted_path_id }}"
+              hx-target="#frame-{{ frame_path|parent_path|dotted_path_id }}"
               hx-swap="outerHTML">{% trans "Remove frame" %}</button>
     {% endif %}
   </div>

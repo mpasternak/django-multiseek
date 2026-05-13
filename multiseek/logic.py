@@ -3,6 +3,7 @@ from __future__ import annotations
 import decimal
 import importlib
 import json
+import logging
 from collections import namedtuple
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -16,6 +17,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.text import camel_case_to_spaces as get_verbose_name
 from django.utils.translation import gettext_lazy as _
+
+logger = logging.getLogger(__name__)
 
 MULTISEEK_REPORT_TYPE = "_ms_report_type"
 MULTISEEK_ORDERING_PREFIX = "order_"
@@ -639,7 +642,10 @@ class MultiseekRegistry:
             raise UnknownField("Field type %r not found!" % field)
 
         if field["operator"] not in [str(x) for x in f.ops]:
-            raise UnknownOperation("Operation %r not valid for field %r" % (field["operator"], field["field"]))
+            raise UnknownOperation(
+                "Operation %r not valid for field %r. Valid operators: %s"
+                % (field["operator"], field["field"], [str(x) for x in f.ops])
+            )
 
         if field.get("prev_op", None) not in [AND, OR, ANDNOT, None]:
             raise UnknownOperation("%r" % field)
@@ -666,13 +672,23 @@ class MultiseekRegistry:
                 try:
                     qobj = self.parse_field(elem)
                 except (ParseError, UnknownOperation, QueryMakesNoSense) as e:
+                    # Log the full context so the server log shows what blew
+                    # up, beyond the bare exception that goes back to the UI.
+                    logger.warning(
+                        "multiseek: failed to parse field elem=%r: %s", elem, e, exc_info=True
+                    )
                     errors.append((e, elem))
                     continue
 
                 prev_op = elem.get("prev_op", None)
 
             if qobj is None:
-                errors.append((UnknownOperation(), elem))
+                # parse_field returned None because impacts_query() returned
+                # False (the operator+value combination doesn't constrain the
+                # query — e.g. CONTAINS with empty value), or every child of a
+                # nested frame was itself a no-op. This is a silent skip, not
+                # an error: it would be misleading to flag the default empty
+                # field as a parse failure.
                 continue
 
             if ret is None:

@@ -285,10 +285,35 @@ class TestMultiseekRegistry(TestCase):
         self.assertEqual(len(errors), 0)
 
     def test_get_query_errors(self):
+        """A truly malformed payload (unknown operator) is logged as an error."""
+        payload = json.dumps(
+            {
+                "form_data": [
+                    None,
+                    dict(
+                        field="foo",
+                        operator="NOT A REAL OPERATOR",
+                        value="hello",
+                        prev_op=None,
+                    ),
+                ]
+            }
+        )
         errors = []
-        self.registry.get_query(json.loads(test_impossible_json)["form_data"], errors=errors)
+        self.registry.get_query(json.loads(payload)["form_data"], errors=errors)
         self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0][1]["field"], "foo")
+        self.assertIsInstance(errors[0][0], UnknownOperation)
+
+    def test_get_query_no_op_field_is_not_an_error(self):
+        """impacts_query=False means "this clause has no effect" (e.g. CONTAINS
+        with empty value). Pre-fix this was wrongly logged as UnknownOperation,
+        causing users who clicked Send Query without typing in the default field
+        to see a misleading "Errors occurred" banner."""
+        errors = []
+        # test_impossible_json: field=foo, operator=CONTAINS, value=None
+        # StringQueryObject.impacts_query("", CONTAINS) returns False.
+        self.registry.get_query(json.loads(test_impossible_json)["form_data"], errors=errors)
+        self.assertEqual(errors, [], "impacts_query=False must not produce an error")
 
     def test_registry_does_not_store_errors_as_instance_state(self):
         """Regression test for the cached-singleton race.
@@ -308,10 +333,18 @@ class TestMultiseekRegistry(TestCase):
         """Two get_query calls each get their own errors list with no
         cross-contamination. Pre-fix this was impossible because both
         calls wrote to the same self.errors."""
+        bad_payload = json.dumps(
+            {
+                "form_data": [
+                    None,
+                    dict(field="foo", operator="BOGUS OP", value="x", prev_op=None),
+                ]
+            }
+        )
         errors_a = []
         errors_b = []
 
-        self.registry.get_query(json.loads(test_impossible_json)["form_data"], errors=errors_a)
+        self.registry.get_query(json.loads(bad_payload)["form_data"], errors=errors_a)
         self.registry.get_query(json.loads(test_json)["form_data"], errors=errors_b)
 
         self.assertEqual(len(errors_a), 1)

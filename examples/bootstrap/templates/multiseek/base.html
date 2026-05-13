@@ -17,9 +17,7 @@
     {# jQuery (still required by the imperative multiseek widget tree) #}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    {# jQuery UI is referenced by some legacy code paths in multiseek.js
-       (used as a datepicker fallback). Loading it keeps the widget happy
-       and is cheap from the CDN. #}
+    {% comment %}jQuery UI is referenced by some legacy code paths in multiseek.js (used as a datepicker fallback). Loading it keeps the widget happy and is cheap from the CDN.{% endcomment %}
     <link rel="stylesheet"
           href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.min.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -27,8 +25,7 @@
     {# flatpickr JS #}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 
-    {# Local Bootstrap-flavored multiseek.js (overrides the bundled one because
-       STATICFILES_DIRS lists our project static/ first). #}
+    {% comment %}Local Bootstrap-flavored multiseek.js (overrides the bundled one because STATICFILES_DIRS lists our project static/ first).{% endcomment %}
     {% block extrahead %}{% endblock %}
 </head>
 <body>

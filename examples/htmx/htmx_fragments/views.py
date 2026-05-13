@@ -28,6 +28,7 @@ back to the session, and returns the appropriate rendered fragment.
 """
 
 import json
+import logging
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
@@ -37,6 +38,24 @@ from django.views.decorators.csrf import csrf_protect
 from multiseek import AND, ANDNOT, OR
 from multiseek.logic import get_registry
 from multiseek.views import MULTISEEK_SESSION_KEY
+
+logger = logging.getLogger(__name__)
+
+
+def _describe_shape(form_data):
+    """Compact one-line description of the form_data tree, for error logs."""
+
+    def _walk(node):
+        if isinstance(node, list):
+            return "[" + ", ".join(_walk(c) for c in node) + "]"
+        if isinstance(node, dict):
+            return "{field=%s, op=%s}" % (
+                node.get("field", "?"),
+                node.get("operator", "?"),
+            )
+        return repr(node)
+
+    return _walk(form_data)
 
 
 # ---------------------------------------------------------------------------
@@ -329,20 +348,35 @@ def add_frame(request, elpath):
 
 @csrf_protect
 def delete_element(request, elpath):
-    """DELETE -> remove the element at ``elpath``. Returns empty body."""
+    """DELETE -> remove the element at ``elpath``.
+
+    Returns the re-rendered PARENT frame (with hx-target on the delete button
+    pointing at it). Re-rendering the parent guarantees every surviving
+    sibling's data-path is rewritten, so a follow-up DELETE on a sibling
+    (whose path may have shifted) doesn't 400 with a stale path.
+    """
     if request.method != "DELETE":
         return HttpResponseNotAllowed(["DELETE"])
 
     parts = _parse_path(elpath)
     if parts is None:
-        return HttpResponseBadRequest("Bad path")
+        return HttpResponseBadRequest(f"Invalid path: {elpath!r}")
     if len(parts) < 2:
         return HttpResponseBadRequest("Cannot delete the root frame")
 
     data = _load_form(request.session)
     parent, idx = _walk_parent(data["form_data"], parts)
     if parent is None:
-        return HttpResponseBadRequest("Path does not exist")
+        # Path no longer addresses anything — surface a useful error so the
+        # browser console / server log shows what we tried.
+        msg = (
+            f"Path {elpath!r} not found in form_data. Current shape: "
+            f"{_describe_shape(data['form_data'])}. This usually means the "
+            f"DOM held a stale path after a sibling was removed; the parent "
+            f"frame should re-render on every delete so paths stay fresh."
+        )
+        logger.warning("htmx delete_element: %s", msg)
+        return HttpResponseBadRequest(msg)
 
     # Don't allow removing the last remaining real element of the root frame —
     # the bundled multiseek UI enforces the same invariant.
@@ -366,7 +400,15 @@ def delete_element(request, elpath):
             first[0] = None
 
     _save_form(request.session, data)
-    return HttpResponse("")
+
+    # Re-render the parent frame so every surviving child's path is fresh.
+    registry = _registry()
+    parent_parts = parts[:-1]
+    parent_frame = _walk(data["form_data"], parent_parts)
+    # parent_prev_op is the parent frame's own prev_op (only meaningful for
+    # non-root frames). _render_frame ignores it when is_root=True.
+    parent_prev_op = parent_frame[0] if len(parent_parts) > 1 else None
+    return _render_frame(request, registry, data["form_data"], parent_parts, parent_prev_op)
 
 
 @csrf_protect

@@ -25,6 +25,17 @@ def append_index(path, idx):
     return "%s.%d" % (path, idx)
 
 
+@register.filter
+def parent_path(path):
+    """``"0.2.3"`` -> ``"0.2"``. Root path ``"0"`` is returned unchanged
+    (the root has no parent; callers that target #frame-{parent} land on
+    the root in that case, which is intentional)."""
+    parts = path.split(".")
+    if len(parts) <= 1:
+        return path
+    return ".".join(parts[:-1])
+
+
 def _registry():
     return get_registry(settings.MULTISEEK_REGISTRY)
 
