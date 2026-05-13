@@ -1,7 +1,7 @@
 import json
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.test.client import RequestFactory
 from mock import MagicMock
 from model_bakery import baker
@@ -232,3 +232,56 @@ class TestMultiseekResults(RegistryMixin, TestCase):
         self.mr.post(self.request)
         res = self.mr.describe_multiseek_data()
         self.assertEqual(res, 'foo contains "foobar"')
+
+
+class TestCSRFProtection(TestCase):
+    """Regression tests for Issue #2.
+
+    Pre-fix every multiseek URL was wrapped in csrf_exempt, so POSTs
+    succeeded without a token — letting any cross-site request ride a
+    staff user's session to overwrite saved searches or pollute the
+    results-session JSON. Post-fix the views are CSRF-protected and
+    POSTs without a valid token must return 403.
+    """
+
+    def setUp(self):
+        self.client = Client(enforce_csrf_checks=True)
+
+    def test_results_post_without_csrf_token_is_forbidden(self):
+        resp = self.client.post("/multiseek/results/", {"json": "{}"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_save_form_post_without_csrf_token_is_forbidden(self):
+        staff = baker.make(User, is_staff=True)
+        self.client.force_login(staff)
+        resp = self.client.post(
+            "/multiseek/save_form/",
+            {"json": '{"form_data": [null]}', "name": "x"},
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_results_post_with_csrf_token_is_allowed(self):
+        # Visiting the form page renders {% csrf_token %}, which sets
+        # the csrftoken cookie via Django's CSRF middleware.
+        self.client.get("/multiseek/")
+        token = self.client.cookies["csrftoken"].value
+        resp = self.client.post(
+            "/multiseek/results/",
+            {"json": "{}", "csrfmiddlewaretoken": token},
+        )
+        self.assertNotEqual(resp.status_code, 403)
+
+    def test_save_form_post_with_csrf_token_is_allowed(self):
+        staff = baker.make(User, is_staff=True)
+        self.client.force_login(staff)
+        self.client.get("/multiseek/")
+        token = self.client.cookies["csrftoken"].value
+        resp = self.client.post(
+            "/multiseek/save_form/",
+            {
+                "json": '{"form_data": [null]}',
+                "name": "x",
+                "csrfmiddlewaretoken": token,
+            },
+        )
+        self.assertNotEqual(resp.status_code, 403)

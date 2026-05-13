@@ -290,6 +290,33 @@ class TestMultiseekRegistry(TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0][1]["field"], "foo")
 
+    def test_registry_does_not_store_errors_as_instance_state(self):
+        """Regression test for the cached-singleton race.
+
+        Pre-fix the registry kept `self.errors` and reset/mutated it on
+        every `get_query` call; concurrent requests against the same
+        module-cached registry would clobber each other. Post-fix the
+        attribute does not exist.
+        """
+        self.registry.get_query(json.loads(test_impossible_json)["form_data"])
+        self.assertFalse(
+            hasattr(self.registry, "errors"),
+            "MultiseekRegistry must not carry errors as instance state",
+        )
+
+    def test_get_query_errors_lists_are_independent(self):
+        """Two get_query calls each get their own errors list with no
+        cross-contamination. Pre-fix this was impossible because both
+        calls wrote to the same self.errors."""
+        errors_a = []
+        errors_b = []
+
+        self.registry.get_query(json.loads(test_impossible_json)["form_data"], errors=errors_a)
+        self.registry.get_query(json.loads(test_json)["form_data"], errors=errors_b)
+
+        self.assertEqual(len(errors_a), 1)
+        self.assertEqual(len(errors_b), 0)
+
     def test_get_query(self):
         gq = self.registry.get_query(json.loads(test_json)["form_data"])
         self.assertEqual(str(gq), py3k_test_string("(AND: (u'foo', u'foo'))"))
