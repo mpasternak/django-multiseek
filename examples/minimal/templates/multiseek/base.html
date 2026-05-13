@@ -10,8 +10,11 @@
 <link rel="stylesheet" href="{% static 'autocomplete_light/select2.css' %}">
 {% comment %}Bundled multiseek style.css — gives frames the translucent grey background so nested frames are visually distinguishable.{% endcomment %}
 <link rel="stylesheet" href="{% static 'multiseek/css/style.css' %}">
+{% comment %}Select2 library — required for the autocomplete (Author) field. django-autocomplete-light only ships an *adapter* for select2; the real library must be loaded separately.{% endcomment %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/foundation-datepicker@1.5.4/dist/js/foundation-datepicker.min.js"></script>
 <script src="{% static 'autocomplete_light/autocomplete_light.js' %}"></script>
 <script src="{% static 'autocomplete_light/select2.js' %}"></script>

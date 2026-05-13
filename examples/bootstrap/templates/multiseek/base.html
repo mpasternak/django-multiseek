@@ -28,6 +28,12 @@
     {# flatpickr JS #}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 
+    {% comment %}Select2 + django-autocomplete-light, for the Author autocomplete field. DAL only ships an adapter — the real select2 library has to come from elsewhere (here: jsdelivr).{% endcomment %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.full.min.js"></script>
+    <script src="{% static 'autocomplete_light/autocomplete_light.js' %}"></script>
+    <script src="{% static 'autocomplete_light/select2.js' %}"></script>
+
     {% comment %}Local Bootstrap-flavored multiseek.js (overrides the bundled one because STATICFILES_DIRS lists our project static/ first).{% endcomment %}
     {% block extrahead %}{% endblock %}
 </head>
