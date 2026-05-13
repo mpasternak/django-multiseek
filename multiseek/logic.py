@@ -674,9 +674,7 @@ class MultiseekRegistry:
                 except (ParseError, UnknownOperation, QueryMakesNoSense) as e:
                     # Log the full context so the server log shows what blew
                     # up, beyond the bare exception that goes back to the UI.
-                    logger.warning(
-                        "multiseek: failed to parse field elem=%r: %s", elem, e, exc_info=True
-                    )
+                    logger.warning("multiseek: failed to parse field elem=%r: %s", elem, e, exc_info=True)
                     errors.append((e, elem))
                     continue
 

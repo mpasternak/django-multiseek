@@ -1,3 +1,31 @@
+0.10.1
+------
+
+multiseek core:
+
+* ``MultiseekRegistry.get_query_recursive`` no longer flags a clause with
+  ``impacts_query() == False`` (e.g. ``CONTAINS`` with an empty value) as
+  an ``UnknownOperation`` error. It's now a silent no-op, matching what the
+  semantics always claimed. Previously users saw an "Errors occurred" banner
+  the moment they clicked Send Query on the default empty field.
+* ``UnknownOperation`` raised in ``parse_field`` now includes the list of
+  valid operators for the offending field, instead of just naming the
+  invalid one.
+* Parse failures inside ``get_query_recursive`` are logged at WARNING with
+  ``exc_info=True`` so the server log shows traceback / context instead of
+  a bare ``UnknownOperation()``.
+
+Example projects (under ``examples/``, not shipped on PyPI):
+
+* Four runnable reference frontends — Foundation 6 + jQuery (vendored),
+  Bootstrap 5 + jQuery, Bootstrap 5 + Alpine.js, and pure htmx — plus a
+  ``run_example.sh`` setup/run/test helper at the repo root.
+* Each ships a ``manage.py fetch_assets`` command that downloads its
+  JS/CSS dependencies into ``static/multiseek/vendor/`` so the demos
+  don't depend on public CDNs at runtime (and CI doesn't fail when an
+  egress is blocked).
+* Playwright smoke tests for every variant.
+
 0.10.0
 ------
 
