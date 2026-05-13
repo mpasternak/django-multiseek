@@ -1,0 +1,23 @@
+{% load static %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}django-multiseek — minimal example{% endblock %}</title>
+{# Vendored assets — see static/multiseek/vendor/ and README.md #}
+<link rel="stylesheet" href="{% static 'multiseek/foundation-minimal.css' %}">
+<link rel="stylesheet" href="{% static 'multiseek/vendor/foundation-datepicker.css' %}">
+<link rel="stylesheet" href="{% static 'autocomplete_light/select2.css' %}">
+<script src="{% static 'multiseek/vendor/jquery.min.js' %}"></script>
+<script src="{% static 'multiseek/vendor/jquery-ui.min.js' %}"></script>
+<script src="{% static 'multiseek/vendor/foundation-datepicker.js' %}"></script>
+<script src="{% static 'autocomplete_light/autocomplete_light.js' %}"></script>
+<script src="{% static 'autocomplete_light/select2.js' %}"></script>
+{% block extrahead %}<script type="text/javascript" src="{% url 'js_i18n_catalog' %}"></script>{% endblock %}
+</head>
+<body>
+<div class="grid-container">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>
