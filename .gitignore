@@ -37,6 +37,7 @@ ghostdriver.log
 chromedriver.log
 .idea/
 test_project/db.sqlite
+examples/*/db.sqlite3
 build/
 dist/
 django_multiseek.egg-info/*
