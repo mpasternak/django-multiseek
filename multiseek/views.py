@@ -306,15 +306,17 @@ class MultiseekResults(MultiseekPageMixin, ListView):
             **kwargs
         )
 
-        res["errors"] = get_registry(self.registry).errors
+        res["errors"] = getattr(self, "_multiseek_errors", [])
         return res
 
     def get_queryset(self):
         # TODO: jeżeli w sesji jest obiekt, którego NIE DA się sparse'ować, to
         # wówczas błąd podnoś i to samo w klasie MultiseekFormPage
+        self._multiseek_errors = []
         return get_registry(self.registry).get_query_for_model(
             self.get_multiseek_data(),
             self.request.session.get(MULTISEEK_SESSION_KEY_REMOVED, []),
+            errors=self._multiseek_errors,
         )
 
 

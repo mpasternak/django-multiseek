@@ -284,21 +284,26 @@ class TestMultiseekRegistry(TestCase):
             ),
         ]
 
-        self.registry.get_query(input)
-        self.assertEqual(len(self.registry.errors), 1)
+        errors = []
+        self.registry.get_query(input, errors=errors)
+        self.assertEqual(len(errors), 1)
 
         input[2]["prev_op"] = OR
 
-        res = self.registry.get_query(input)
+        errors = []
+        res = self.registry.get_query(input, errors=errors)
         self.assertEqual(
             str(res), py3k_test_string("(OR: (u'foo', u'foo'), (u'foo', u'bar'))")
         )
-        self.assertEqual(len(self.registry.errors), 0)
+        self.assertEqual(len(errors), 0)
 
     def test_get_query_errors(self):
-        self.registry.get_query(json.loads(test_impossible_json)["form_data"])
-        self.assertEqual(len(self.registry.errors), 1)
-        self.assertEqual(self.registry.errors[0][1]["field"], "foo")
+        errors = []
+        self.registry.get_query(
+            json.loads(test_impossible_json)["form_data"], errors=errors
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0][1]["field"], "foo")
 
     def test_get_query(self):
         gq = self.registry.get_query(json.loads(test_json)["form_data"])

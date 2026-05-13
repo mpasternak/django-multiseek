@@ -591,7 +591,6 @@ class MultiseekRegistry:
         self.field_by_name = {}
         self.default_ordering = {}
         self.report_types = []
-        self.errors = []
 
     def set_default_ordering(self, *args):
         self.default_ordering = {}
@@ -673,26 +672,32 @@ class MultiseekRegistry:
         if f.impacts_query(field["value"], field["operator"]):
             return f.query_for(field["value"], field["operator"])
 
-    def get_query_recursive(self, data):
-        """Recursivley get query, basing on a list of elements."""
+    def get_query_recursive(self, data, errors):
+        """Recursively build a query from a parsed list of elements.
+
+        `errors` is mutated in place with ``(exception, element)`` tuples for
+        any fields that fail to parse. It is passed in explicitly so this
+        method is safe to call from concurrent requests against the same
+        module-cached registry instance.
+        """
 
         ret = None
 
         for elem in data[1:]:
             if isinstance(elem, list):
-                qobj = self.get_query_recursive(elem)
+                qobj = self.get_query_recursive(elem, errors)
                 prev_op = elem[0]
             else:
                 try:
                     qobj = self.parse_field(elem)
                 except (ParseError, UnknownOperation, QueryMakesNoSense) as e:
-                    self.errors.append((e, elem))
+                    errors.append((e, elem))
                     continue
 
                 prev_op = elem.get("prev_op", None)
 
             if qobj is None:
-                self.errors.append((UnknownOperation(), elem))
+                errors.append((UnknownOperation(), elem))
                 continue
 
             if ret is None:
@@ -710,10 +715,16 @@ class MultiseekRegistry:
 
         return ret
 
-    def get_query(self, data):
-        """Return a query for a given JSON."""
-        self.errors = []
-        return self.get_query_recursive(data)
+    def get_query(self, data, errors=None):
+        """Return a Django ``Q`` object for the given parsed form data.
+
+        Pass ``errors`` as a list to collect ``(exception, element)`` tuples
+        for fields that fail to parse. When omitted, parse errors are
+        silently discarded.
+        """
+        if errors is None:
+            errors = []
+        return self.get_query_recursive(data, errors)
 
     def get_report_types(self, request=None):
         return [x for x in self.report_types if x.enabled(request)]
@@ -773,7 +784,7 @@ class MultiseekRegistry:
         return qs
 
 
-    def get_query_for_model(self, data, removed_manually=None):
+    def get_query_for_model(self, data, removed_manually=None, errors=None):
         if data is None:
             return self.get_default_queryset_for_model()
 
@@ -783,7 +794,7 @@ class MultiseekRegistry:
 
         query = None
         if "form_data" in data:
-            query = self.get_query(data["form_data"])
+            query = self.get_query(data["form_data"], errors=errors)
 
         retval = self.get_default_queryset_for_model()
         if query is not None:
