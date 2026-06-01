@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-multiseek"
-version = "0.10.1"
+version = "0.10.2"
 description = "Build a form to seek records using multiple parameters"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -53,9 +53,11 @@ include = ["multiseek*"]
 [tool.setuptools.package-data]
 multiseek = [
     "locale/*/LC_MESSAGES/*",
-    "static/multiseek/*.js",
-    "static/multiseek/*.css",
-    "templates/multiseek/*.html",
+    # Recursive globs: static assets live in subdirs (js/, css/), which a
+    # single-`*` glob does NOT match under modern setuptools. `**/*` ships
+    # every asset regardless of how the tree is organised.
+    "static/**/*",
+    "templates/**/*",
 ]
 
 [tool.pytest.ini_options]
@@ -80,7 +82,7 @@ select = ["E", "F", "W"]
 "multiseek/tests/__init__.py" = ["F401", "F403"]
 
 [tool.bumpver]
-current_version = "0.10.1"
+current_version = "0.10.2"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 commit = true

@@ -1,3 +1,17 @@
+0.10.2
+------
+
+Packaging fix:
+
+* Ship the static assets again. ``0.10.1`` built a wheel with **no**
+  ``static/`` directory: the ``[tool.setuptools.package-data]`` globs were
+  ``static/multiseek/*.js`` / ``*.css``, but the files live one level deeper
+  (``static/multiseek/js/multiseek.js``, ``static/multiseek/css/style.css``)
+  and a single ``*`` does not recurse under modern setuptools. Downstream
+  installs got HTTP 500 for ``multiseek.js`` / ``style.css``, leaving
+  ``formAsJSON`` / ``multiseekFrame`` undefined and the search form dead.
+  Globs are now recursive (``static/**/*``, ``templates/**/*``).
+
 0.10.1
 ------
 
