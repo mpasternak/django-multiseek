@@ -49,10 +49,10 @@ jobs:
         working-directory: test_project
         run: |
           yarn
-          uv run python manage.py collectstatic --noinput -v0
+          uv run --no-sync python manage.py collectstatic --noinput -v0
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run --no-sync pytest
 
   lint:
     runs-on: ubuntu-latest
