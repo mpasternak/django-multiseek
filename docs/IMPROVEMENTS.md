@@ -160,7 +160,7 @@ of both worlds (looks green, signals nothing).
 `multiseek/urls.py:54`:
 
 ```python
-url(r'^load_form/(?P<search_form_pk>\d+)', load_form, name="load_form")
+url(r"^load_form/(?P<search_form_pk>\d+)", load_form, name="load_form")
 ```
 
 No trailing `$`, so `/load_form/123/anything` matches. Add it for consistency

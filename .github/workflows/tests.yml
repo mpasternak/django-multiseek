@@ -45,6 +45,15 @@ jobs:
       - name: Pin Django version
         run: uv pip install "Django~=${{ matrix.django-version }}.0"
 
+      # pytest-django 4.13 dropped Django < 5.2: its _django_db_helper fixture
+      # reads TestCase._pre_setup_ran_eagerly, an attribute that only exists
+      # from Django 5.2 on. Without this pin every DB test errors out on the
+      # legacy matrix cells. pytest-django declares no Django dependency, so
+      # downgrading it cannot disturb the Django version pinned above.
+      - name: Pin pytest-django for legacy Django
+        if: matrix.django-version == '4.2' || matrix.django-version == '5.1'
+        run: uv pip install "pytest-django<4.13"
+
       - name: Install JS deps and collect static
         working-directory: test_project
         run: |
