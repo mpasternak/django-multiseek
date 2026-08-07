@@ -1,3 +1,10 @@
+Unreleased
+----------
+
+* Add support for Django 6.1 (Python 3.12+ only), tested in CI alongside
+  4.2, 5.1, 5.2 and 6.0. Declare the per-series ``Framework :: Django :: X.Y``
+  classifiers that were missing from ``pyproject.toml``.
+
 0.10.2
 ------
 
