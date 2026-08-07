@@ -1,9 +1,15 @@
-Unreleased
-----------
+0.10.3
+------
 
 * Add support for Django 6.1 (Python 3.12+ only), tested in CI alongside
   4.2, 5.1, 5.2 and 6.0. Declare the per-series ``Framework :: Django :: X.Y``
   classifiers that were missing from ``pyproject.toml``.
+* CI matrix fixes: exclude Python 3.10/3.11 from the Django 6.x rows (Django
+  6.x requires Python >= 3.12); run the suite with ``uv run --no-sync`` so the
+  resync no longer undoes the pinned Django version; pin ``pytest-django<4.13``
+  for the 4.2 / 5.1 rows, since newer pytest-django dropped Django < 5.2.
+* Fix the formatting of a code block in ``docs/IMPROVEMENTS.md`` (ruff 0.16
+  formats Markdown).
 
 0.10.2
 ------
